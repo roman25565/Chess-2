@@ -1,0 +1,63 @@
+%YAML 1.1
+%TAG !u! tag:unity3d.com,2011:
+--- !u!114 &11400000
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 0}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f5dd9fe2563d4e32a5d47a6e4e52e8a4, type: 3}
+  m_Name: Arrangement
+  m_EditorClassIdentifier: 
+  arrangements:
+  - row: 0
+    column: 6
+    pieceType: 1
+  - row: 1
+    column: 6
+    pieceType: 1
+  - row: 2
+    column: 6
+    pieceType: 1
+  - row: 3
+    column: 6
+    pieceType: 1
+  - row: 4
+    column: 6
+    pieceType: 1
+  - row: 5
+    column: 6
+    pieceType: 1
+  - row: 6
+    column: 6
+    pieceType: 1
+  - row: 7
+    column: 6
+    pieceType: 1
+  - row: 0
+    column: 7
+    pieceType: 1
+  - row: 1
+    column: 7
+    pieceType: 1
+  - row: 2
+    column: 7
+    pieceType: 1
+  - row: 3
+    column: 7
+    pieceType: 1
+  - row: 4
+    column: 7
+    pieceType: 1
+  - row: 5
+    column: 7
+    pieceType: 1
+  - row: 6
+    column: 7
+    pieceType: 1
+  - row: 7
+    column: 7
+    pieceType: 1
