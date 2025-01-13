@@ -20,7 +20,7 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private Button startLocalMatch;
     [SerializeField] private Button startTestMatch;
     [SerializeField] private Button hostLocalMatch;
-    [SerializeField]private ClientMatchmaker clientMatchmaker;
+    [SerializeField] private ClientMatchmaker clientMatchmaker;
     private void Start()
     {
         LoadSettings();

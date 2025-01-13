@@ -1,4 +1,5 @@
-﻿using Unity.Netcode;
+﻿using System;
+using Unity.Netcode;
 using UnityEngine;
 using Zenject;
 
@@ -36,7 +37,12 @@ public class MatchCore : NetworkBehaviour
     private MatchData _matchData;
     private bool _isInitialize;
 
-    public void Initialize(MatchData matchData)
+    private void Awake()
+    {
+        ProjectContext.Instance.Container.InjectGameObject(gameObject);
+    }
+
+    public void Init(MatchData matchData)
     {
         _matchData = matchData;
         
@@ -119,7 +125,7 @@ public class MatchCore : NetworkBehaviour
         _gameData.ActiveBoard.MovePiece(from, to);
         _matchData.GetPlayerData(playerId).IsMoving = false;
         
-        var anotherPlayer = _matchData.Player1.PlayerId == playerId ? _matchData.Player1 : _matchData.Player2;
+        var anotherPlayer = _matchData.Player1.PlayerId == playerId ? _matchData.Player2 : _matchData.Player1;
         
         anotherPlayer.IsMoving = true;
         _matchData.MovingPlayerId = anotherPlayer.PlayerId;
@@ -136,7 +142,10 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     public void UseMoveCommandRpc(Vector2Int from, Vector2Int to, ulong playerId)
     {
-        UseMove(from, to, playerId);
+        if (IsOwner)
+        {
+            UseMove(from, to, playerId);
+        }
     }
 }
 

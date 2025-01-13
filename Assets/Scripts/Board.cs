@@ -185,6 +185,11 @@ public class Board : MonoBehaviour
     {
         var result = new List<Vector2Int>();
         var steps = cell.Piece.Steps;
+        var direction = new Vector2Int(1, 1);
+        if (cell.Piece.IsRotated)
+        {
+            direction.y = -1;
+        } 
         foreach (var step in steps)
         {
             var point = new Vector2Int(cell.Row, cell.Column);
@@ -193,16 +198,16 @@ public class Board : MonoBehaviour
                 switch (stepDirection)
                 {
                     case Directions.Down:
-                        point.y += 1;
+                        point.y += 1 * direction.y;
                         break;
                     case Directions.Up:
-                        point.y -= 1;
+                        point.y -= 1 * direction.y;
                         break;
                     case Directions.Left:
-                        point.x -= 1;
+                        point.x -= 1 * direction.x;
                         break;
                     case Directions.Right:
-                        point.x += 1;
+                        point.x += 1 * direction.x;
                         break;
                 }
             }

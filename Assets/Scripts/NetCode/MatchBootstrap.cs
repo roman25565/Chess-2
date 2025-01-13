@@ -112,11 +112,6 @@ public class MatchBootstrap : NetworkBehaviour
     private void StartMatchServer(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
     {
         MatchCore coreServer = Instantiate(matchCore);
-        coreServer.GetComponent<NetworkObject>().Spawn();
-        var matchData = CreateMatchData(player1, player2, whitePlayerId);
-        ProjectContext.Instance.Container.InjectGameObject(coreServer.gameObject);
-        coreServer.Initialize(matchData);
-        coreServer.SetServerCore(coreServer);
         
         MatchCore corePlayer1 = Instantiate(matchCore, this.transform);
         corePlayer1.GetComponent<NetworkObject>().SpawnWithOwnership(player1.PlayerId);
@@ -125,6 +120,11 @@ public class MatchBootstrap : NetworkBehaviour
         MatchCore corePlayer2 = Instantiate(matchCore, this.transform);
         corePlayer2.GetComponent<NetworkObject>().SpawnWithOwnership(player2.PlayerId);
         corePlayer2.SetServerCore(coreServer);
+        
+        coreServer.GetComponent<NetworkObject>().Spawn();
+        var matchData = CreateMatchData(player1, player2, whitePlayerId);
+        coreServer.Init(matchData);
+        coreServer.SetServerCore(coreServer);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -157,8 +157,7 @@ public class MatchBootstrap : NetworkBehaviour
         {
             if (matchCore.IsOwner)
             {
-                ProjectContext.Instance.Container.InjectGameObject(matchCore.gameObject);
-                matchCore.Initialize(matchData);
+                matchCore.Init(matchData);
             }
         }
 
