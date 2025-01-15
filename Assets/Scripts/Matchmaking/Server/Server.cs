@@ -7,12 +7,16 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Services.Core;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
+#if UNITY_SERVER
 using Unity.Services.Multiplay;
+#endif
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
 public class Server : MonoBehaviour
 {
+#if UNITY_SERVER
+    
     string _ticketId;
 
     void Start()
@@ -136,4 +140,5 @@ public class Server : MonoBehaviour
             Debug.Log("Approved backfill ticket: " + _ticketId);
         }
     }
+#endif
 }

@@ -1,13 +1,15 @@
+#if UNITY_SERVER
 using Unity.Netcode;
 using Unity.Services.Multiplay;
+#endif
 using UnityEngine;
-
 /// <summary>
 /// An example of how to use SQP from the server using the Multiplay SDK.
 /// The ServerQueryHandler reports the given information to the Multiplay Service.
 /// </summary>
 public class Example_ServerQueryHandler : MonoBehaviour
 {
+    #if UNITY_SERVER
     const ushort k_DefaultMaxPlayers = 2;
     const string k_DefaultServerName = "MyServerExample";
     const string k_DefaultGameType = "MyGameType";
@@ -50,4 +52,5 @@ public class Example_ServerQueryHandler : MonoBehaviour
     {
         m_ServerQueryHandler.CurrentPlayers = newPlayerCount;
     }
+#endif
 }

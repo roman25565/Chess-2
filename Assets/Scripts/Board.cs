@@ -52,14 +52,6 @@ public class Board : MonoBehaviour
     
     public void SetMatchCore(MatchCore matchCore)
     {
-        foreach (var boardLinesKey in _boardLines.Keys)
-        {
-            foreach (var cel in _boardLines[boardLinesKey])
-            {
-                if (cel.Piece == null) continue;
-                Debug.Log($"cellId: {cel.Piece.OwnerId}");
-            }
-        }
         _matchCore = matchCore;
     }
     public void MovePiece(Vector2Int from, Vector2Int to)
@@ -72,48 +64,39 @@ public class Board : MonoBehaviour
         to.SetPiece(from.Piece);
         from.SetPiece(null);
     }
-    
+
     public void OnClick(Cell cell)
     {
-        foreach (var boardLinesKey in _boardLines.Keys)
+        if (_selectedCell == cell) Deselect();
+        else if (_selectedCell == null)
         {
-            foreach (var cel in _boardLines[boardLinesKey])
-            {
-                if (cel.Piece == null) continue;
-                Debug.Log($"cellId: {cel.Piece.OwnerId}");
-            }
+            if (cell.Piece.OwnerId == _matchCore.OwnerClientId) SelectMyPiece(cell);
+            else SelectEnemyPiece(cell);
         }
-        
-        if (cell.Piece != null && cell.Piece.OwnerId != _matchCore.OwnerClientId)
+        else if (IsValidMove(_selectedCell, cell))
         {
-            Debug.Log("cell.Piece.ownerId != _matchCore.OwnerClientId");
-            Debug.Log($"OwnerId: {_matchCore.OwnerClientId}, PieceID: {cell.Piece.OwnerId}");
+            _matchCore.TryMove(new Vector2Int(_selectedCell.Row, _selectedCell.Column),
+                new Vector2Int(cell.Row, cell.Column));
             Deselect();
-            return;
         }
-        if (_selectedCell == cell)
+        else if (cell.Piece != null) Select(cell);
+
+        return;
+
+        void SelectMyPiece(Cell cell1)
         {
-            Deselect();
-            return;
+            Select(cell1);
         }
-        if (_selectedCell == null)
+
+        void SelectEnemyPiece(Cell cell1)
         {
-            _selectedCell = cell;
-            Select();
-            return;
-        }
-        
-        if (IsValidMove(_selectedCell, cell))
-        {
-            _matchCore.TryMove(new Vector2Int(_selectedCell.Row,_selectedCell.Column), new Vector2Int(cell.Row,cell.Column));
-            Deselect();
+
         }
 
     }
 
     private void Deselect()
     {
-        Debug.Log("Deselect");
         if (_selectedCell != null)
         {
             _selectedCell.SetState(Cell.CellState.None); 
@@ -127,10 +110,11 @@ public class Board : MonoBehaviour
         }
     }
 
-    private void Select()
+    private void Select(Cell cell)
     {
-        Debug.Log("Select");
-        _points = GetLastPoints(_selectedCell);
+        Deselect();
+        _selectedCell = cell;
+        _points = GetLastPoints(cell);
         _points = ValidationPoints(_points);
         SettCellState(_points, Cell.CellState.Moved);
     }

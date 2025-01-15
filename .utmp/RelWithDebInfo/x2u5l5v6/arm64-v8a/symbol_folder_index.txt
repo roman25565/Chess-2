@@ -1,0 +1,1 @@
+C:\UnityP\Chess 2\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\build\intermediates\cxx\RelWithDebInfo\x2u5l5v6\obj\arm64-v8a

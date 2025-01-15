@@ -1,4 +1,5 @@
 ﻿using System;
+using Setting;
 using Unity.Netcode;
 using UnityEngine;
 using Zenject;
@@ -36,10 +37,27 @@ public class MatchCore : NetworkBehaviour
     private ulong _myId;
     private MatchData _matchData;
     private bool _isInitialize;
+    private float _lastUpdateTime;
 
     private void Awake()
     {
         ProjectContext.Instance.Container.InjectGameObject(gameObject);
+    }
+
+    private void Update()
+    {
+        if (IsOwner && _isInitialize)
+        {
+            var playerData = _matchData.GetPlayerData(_matchData.MovingPlayerId);
+            playerData.TimeToMove -= Time.deltaTime;
+            var time = playerData.TimeToMove;
+            
+            if (Mathf.Abs(playerData.TimeToMove - _lastUpdateTime) > 0.01f)
+            {
+                _lastUpdateTime = time;
+                UIManager.instance.SetTime(time, playerData.PlayerId != _myId);
+            }
+        }
     }
 
     public void Init(MatchData matchData)
@@ -122,6 +140,12 @@ public class MatchCore : NetworkBehaviour
 
     private void UseMove(Vector2Int from, Vector2Int to, ulong playerId)
     {
+        var board = _gameData.ActiveBoard;
+        var cell = board.GetCell(to.x, to.y);
+        if (cell.Piece != null)
+        {
+            DeathRattle(cell);
+        }
         _gameData.ActiveBoard.MovePiece(from, to);
         _matchData.GetPlayerData(playerId).IsMoving = false;
         
@@ -130,6 +154,46 @@ public class MatchCore : NetworkBehaviour
         anotherPlayer.IsMoving = true;
         _matchData.MovingPlayerId = anotherPlayer.PlayerId;
     }
+
+    private void DeathRattle(Cell cell)
+    {
+        switch (cell.Piece.PieceType)
+        {
+            case PieceType.Empty:
+                break;
+            case PieceType.Pawns:
+                break;
+            case PieceType.Rooks:
+                break;
+            case PieceType.Knights:
+                if (IsServer) LosePlayer(cell.Piece.OwnerId);
+                break;
+            case PieceType.Bishops:
+                break;
+            case PieceType.Queens:
+                break;
+            case PieceType.Kings:
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
+
+    private void LosePlayer(ulong loserId)
+    {
+        foreach (var allMatchCore in _allMatchCores)
+        {
+            allMatchCore.LosePlayerClientRpc(loserId);
+        }
+    }
+    [Rpc(SendTo.ClientsAndHost)]
+    private void LosePlayerClientRpc(ulong loserId)
+    {
+        if (!IsOwner) return;
+        
+        UIManager.instance.EndGame();
+    }
+
     private void SendToPlayersMove(Vector2Int from, Vector2Int to, ulong playerId)
     {
         foreach (var allMatchCore in _allMatchCores)

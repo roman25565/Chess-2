@@ -85,15 +85,6 @@ public class MatchBootstrap : NetworkBehaviour
             ArrangeFigures(player1);
             ArrangeFigures(player2);
             
-            foreach (var boardLinesKey in _gameData.ActiveBoard._boardLines.Keys)
-            {
-                foreach (var cel in _gameData.ActiveBoard._boardLines[boardLinesKey])
-                {
-                    if (cel.Piece == null) continue;
-                    Debug.Log($"cell2Id: {cel.Piece.OwnerId}");
-                }
-            }
-            Debug.Log($"player1: {player1.PlayerId} player2: {player2.PlayerId}");
             
             
             StartMatchServer(player1, player2, whitePlayerId);
@@ -198,13 +189,13 @@ public class MatchBootstrap : NetworkBehaviour
             {
                 IsMoving = player1.PlayerId == whitePlayerId,
                 PlayerId = player1.PlayerId,
-                TimeToMove = 10f
+                TimeToMove = 10f * 60,
             },
             Player2 = new PlayerData
             {
                 IsMoving = player2.PlayerId == whitePlayerId,
                 PlayerId = player2.PlayerId,
-                TimeToMove = 10f
+                TimeToMove = 10f * 60,
             }
         };
     }
