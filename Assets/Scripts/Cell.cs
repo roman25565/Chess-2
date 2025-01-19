@@ -2,10 +2,12 @@
 using Setting;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.EventSystems;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Zenject;
 
-public class Cell : MonoBehaviour
+public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     public enum CellState
     {
@@ -14,59 +16,72 @@ public class Cell : MonoBehaviour
         Moved = 2,
         Selected = 3,
     }
-    private CellState _state = CellState.None;
 
     [SerializeField] private Image pieceImage;
-    [SerializeField] private Image stateImage;
+    [SerializeField] private Image movedImage;
+    [SerializeField] private Image selectedImage;
     
     [Inject] Settings _setting;
-    public void SetState(CellState state)
+    public void SetMovedState(CellState state)
     {
-        _state = state;
         switch (state)
         {
-           case CellState.Attacked:
-               SetImage(_setting.CellStates.attacked);
-               break;
            case CellState.Moved:
-               SetImage(_setting.CellStates.moved);
-               break;
-           case CellState.Selected:
-               SetImage(_setting.CellStates.selected);
+               SetImage(movedImage, _setting.CellStates.moved);
                break;
            case CellState.None:
-               SetAlpha(stateImage, 0);
+               SetImage(movedImage, _setting.CellStates.none);
                break;
            default:
                throw new ArgumentOutOfRangeException(nameof(state), state, null);
         }
-        void SetImage(CellStatesData data)
+    }
+
+    public void SetSelectedState(CellState state)
+    {
+        switch (state)
         {
-            stateImage.sprite = data.Value;
-            SetAlpha(stateImage, data.Alpha);
+            case CellState.Selected:
+                SetImage(selectedImage, _setting.CellStates.selected);
+                break;
+            case CellState.None:
+                SetImage(selectedImage, _setting.CellStates.none);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(state), state, null);
         }
     }
-    
+
+    private void SetImage(Image image, CellStatesData data)
+    {
+        image.sprite = data.value;
+        image.color = data.color;
+    }
+
     public int Column { get; set; }
     public int Row { get; set; }
     public Piece Piece { get; private set; }
     public Board Board { get; set; }
-
-
+    
     public void SetPiece(Piece piece)
     {
+        Piece = piece;
         if (piece == null)
         {
             pieceImage.sprite = null;
             SetAlpha(pieceImage, 0);
             return;
         }
-        Piece = piece;
+        SetAlpha(pieceImage, 1);
         var skinIndex = Piece.Color == PieceColor.Black ? Piece.SelectedSkinIndex + 1 : Piece.SelectedSkinIndex;
         pieceImage.sprite = piece.Skins[skinIndex];
-        SetAlpha(pieceImage, 1);
 
-
+        void SetAlpha(Image image,float alpha)
+        {
+            var color = image.color;
+            color.a = alpha;
+            image.color = color;
+        }
     }
 
     public Cell Init(int row, int column, Board board, Piece piece = null)
@@ -80,15 +95,24 @@ public class Cell : MonoBehaviour
 
     public void OnClick()
     {
-        Debug.Log("Click");
-        Board.OnClick(this);
     }
-    
 
-    private void SetAlpha(Image image,float alpha)
+    public void OnPointerDown(PointerEventData eventData)
     {
-        var color = image.color;
-        color.a = alpha;
-        image.color = color;
+        if (Piece != null && Board.IsMyId(Piece.OwnerId))
+        {
+            transform.SetAsLastSibling();
+            Board.StartDragging(pieceImage.rectTransform);
+        }
+        if (!Board.IsSelectedCell(this))
+        {
+            Board.TryMove(this);
+        }
+    }
+
+    public void OnPointerUp(PointerEventData eventData)
+    {
+        Debug.Log("Board.IsSelectedCell(this)" + Board.IsSelectedCell(this));
+        Board.StopDragging();
     }
 }

@@ -13,11 +13,14 @@ MonoBehaviour:
   m_Name: CellStates
   m_EditorClassIdentifier: 
   attacked:
-    Value: {fileID: 0}
-    Alpha: 0
+    value: {fileID: 0}
+    color: {r: 1, g: 1, b: 1, a: 1}
   moved:
-    Value: {fileID: 4388435690512829059, guid: 099c3369a2e527b469c806ddec567fbd, type: 3}
-    Alpha: 0.5
-  sprite:
-    Value: {fileID: 0}
-    Alpha: 0
+    value: {fileID: 4388435690512829059, guid: 099c3369a2e527b469c806ddec567fbd, type: 3}
+    color: {r: 1, g: 1, b: 1, a: 0.5019608}
+  selected:
+    value: {fileID: 0}
+    color: {r: 1, g: 0.97040063, b: 0.023584902, a: 0.5019608}
+  none:
+    value: {fileID: 0}
+    color: {r: 1, g: 1, b: 1, a: 0}

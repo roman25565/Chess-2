@@ -1,15 +1,13 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Setting;
 using UnityEngine;
-using UnityEngine.Serialization;
-using UnityEngine.UI;
 using Zenject;
 
-public class Board : MonoBehaviour
+public abstract class AbstractBoard : MonoBehaviour
 {
     [Inject] GameData _gameData;
+    private MatchCore _matchCore;
     #region Init
     public Dictionary<int, List<Cell>> _boardLines;
 
@@ -58,11 +56,14 @@ public class Board : MonoBehaviour
             }
         }
     }
+    public void SetMatchCore(MatchCore matchCore)
+    {
+        _matchCore = matchCore;
+    }
     #endregion
-
+    
     [Inject] Settings _settings;
     private Cell _selectedCell;
-    private MatchCore _matchCore;
     private List<Vector2Int> _points;
     
     private bool _isDragging;
@@ -75,17 +76,14 @@ public class Board : MonoBehaviour
     
     public bool IsSelectedCell(Cell cell) => (_selectedCell == cell);
     public bool IsMyId(ulong id) => _matchCore.IsMyId(id);
+
     
-    public void SetMatchCore(MatchCore matchCore)
-    {
-        _matchCore = matchCore;
-    }
     public void MovePiece(Vector2Int from, Vector2Int to)
     {
         MovePiece(GetCell(from.x, from.y), GetCell(to.x, to.y));
     }
 
-    private void MovePiece(Cell from, Cell to)
+    public void MovePiece(Cell from, Cell to)
     {
         to.SetPiece(from.Piece);
         from.SetPiece(null);
@@ -99,39 +97,6 @@ public class Board : MonoBehaviour
         _secondSelectedCell.SetSelectedState(Cell.CellState.Selected);
     }
 
-    public void TryMove(Cell cell, bool isTab = true)
-    {
-        Debug.Log("_selectedCell != null " + _selectedCell != null);
-        if (isTab && _selectedCell == cell) Deselect();
-        else if (_selectedCell != null && IsValidMove(_selectedCell, cell))
-        {
-            _matchCore.TryMove(new Vector2Int(_selectedCell.Row, _selectedCell.Column),
-                new Vector2Int(cell.Row, cell.Column));
-            Deselect();
-        }
-        else if (cell.Piece != null)
-        {
-            if (cell.Piece.OwnerId == _matchCore.OwnerClientId) SelectMyPiece(cell);
-            else SelectEnemyPiece(cell);
-        }
-
-        return;
-
-        void SelectMyPiece(Cell cell1)
-        {
-            Select(cell1);
-            
-            _thirdSelectedCell?.SetSelectedState(Cell.CellState.None);
-            _thirdSelectedCell = cell1;
-            _thirdSelectedCell.SetSelectedState(Cell.CellState.Selected);
-        }
-
-        void SelectEnemyPiece(Cell cell1)
-        {
-
-        }
-    }
-
 
     public void StartDragging(RectTransform piece)
     {
@@ -143,29 +108,27 @@ public class Board : MonoBehaviour
 
     public void StopDragging()
     {
-        if (!_isDragging)
-        {
-            return;
-        }   
-        Debug.Log("_selectedCell" + _selectedCell == null);
+        if (!_isDragging) return;
+
         Cell cell = null;
-        if (_selectedCell != null)
-        {
-            cell = FindCellOnScreen(_draggingRectTransform.position.x, _draggingRectTransform.position.y);
-        }
+        cell = FindCellOnScreen(_draggingRectTransform.position.x, _draggingRectTransform.position.y);
+
         _draggingRectTransform.anchoredPosition = Vector2.zero;
         _draggingRectTransform = null;
-        
+
         if (cell == null) return;
-        
+
         _isDragging = false;
         Debug.Log(cell.Row + ", " + cell.Column);
         if (cell == _selectedCell && _draggingTime <= 1.5f)
         {
             return;
         }
-        TryMove(cell, false);
+
+        OnDraggingStop(cell);
     }
+
+    protected abstract void OnDraggingStop(Cell cell);
 
     private void Update()
     {

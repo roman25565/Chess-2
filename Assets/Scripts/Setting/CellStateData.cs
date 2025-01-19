@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "CellStates", menuName = "Settings/CellStates")]
 public class CellStates : ScriptableObject
@@ -6,11 +7,12 @@ public class CellStates : ScriptableObject
     public CellStatesData attacked;
     public CellStatesData moved;
     public CellStatesData selected;
+    public CellStatesData none;
 }
 
 [System.Serializable]
 public class CellStatesData
 {
-    public Sprite Value;
-    public float Alpha;
+    [FormerlySerializedAs("Value")] public Sprite value;
+    public Color color = Color.white;
 }

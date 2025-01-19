@@ -190,12 +190,14 @@ public class MatchBootstrap : NetworkBehaviour
                 IsMoving = player1.PlayerId == whitePlayerId,
                 PlayerId = player1.PlayerId,
                 TimeToMove = 10f * 60,
+                IsRotate = player1.IsRotate,
             },
             Player2 = new PlayerData
             {
                 IsMoving = player2.PlayerId == whitePlayerId,
                 PlayerId = player2.PlayerId,
                 TimeToMove = 10f * 60,
+                IsRotate = player2.IsRotate,
             }
         };
     }

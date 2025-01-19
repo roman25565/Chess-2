@@ -30,6 +30,7 @@ public class PlayerData
     public ulong PlayerId;
     public float TimeToMove;
     public bool IsMoving;
+    public bool IsRotate;
 }
 public class MatchCore : NetworkBehaviour
 {
@@ -39,6 +40,8 @@ public class MatchCore : NetworkBehaviour
     private bool _isInitialize;
     private float _lastUpdateTime;
 
+    public bool IsRotated => _matchData.GetPlayerData(_myId).IsRotate;
+    public bool IsMyId(ulong id) => id == _myId;
     private void Awake()
     {
         ProjectContext.Instance.Container.InjectGameObject(gameObject);
