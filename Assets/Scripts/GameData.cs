@@ -7,9 +7,9 @@
 
 public class GameData
 {
-    public Board ActiveBoard;
+    public AbstractBoard ActiveBoard;
     public GameMode Mode;
-    public void SetActiveBoard(Board activeBoard)
+    public void SetActiveBoard(AbstractBoard activeBoard)
     {
         ActiveBoard = activeBoard;
     }

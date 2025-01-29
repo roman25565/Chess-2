@@ -4,7 +4,7 @@ using System.Linq;
 using Setting;
 using Unity.Netcode;
 
-[System.Serializable]
+[Serializable]
 public class ArrangementEntry : INetworkSerializable
 {
     public int row;

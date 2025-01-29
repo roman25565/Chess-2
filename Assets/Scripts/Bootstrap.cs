@@ -1,4 +1,7 @@
-﻿using System.Linq;
+﻿using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Newtonsoft.Json;
 using Setting;
 using Unity.Netcode;
 using UnityEngine;
@@ -20,6 +23,7 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private Button startLocalMatch;
     [SerializeField] private Button startTestMatch;
     [SerializeField] private Button hostLocalMatch;
+    [SerializeField] private Button settingsButton;
     [SerializeField] private ClientMatchmaker clientMatchmaker;
     private void Start()
     {
@@ -63,7 +67,7 @@ public class Bootstrap : MonoBehaviour
 
     private void LoadSettings()
     {
-        var arrangement = Resources.Load<Arrangement>("Settings/Arrangement");
+        var arrangement = LoadArrangement();
         
         var piecesData = Resources.LoadAll<PieceData>("Settings/Pieces");
         
@@ -72,11 +76,30 @@ public class Bootstrap : MonoBehaviour
         _settings.Init(arrangement, piecesData, cellStates);
     }
 
+    private List<ArrangementEntry> LoadArrangement()
+    {
+        var filePath = Application.persistentDataPath + "/game_pieces.json";
+        
+        if (File.Exists(filePath))
+        {
+            string json = File.ReadAllText(filePath);
+            var pieceData = JsonConvert.DeserializeObject<List<ArrangementEntry>>(json);
+            Debug.Log("pieceData.Count: " + pieceData.Count);
+            return pieceData;
+        }
+        else
+        {
+            return Resources.Load<Arrangement>("Settings/Arrangement").arrangements;
+        }
+    }
+
     private void DisableButtons()
     {
+        
         startOnlineMatch.gameObject.SetActive(false);
         startLocalMatch.gameObject.SetActive(false);
         startTestMatch.gameObject.SetActive(false);
         hostLocalMatch.gameObject.SetActive(false);
+        settingsButton.gameObject.SetActive(false);
     }
 }

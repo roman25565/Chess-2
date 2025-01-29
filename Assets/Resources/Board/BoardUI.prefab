@@ -10,7 +10,7 @@ GameObject:
   m_Component:
   - component: {fileID: 5845870509703270864}
   - component: {fileID: 6690693860918708658}
-  - component: {fileID: 8368940800721037588}
+  - component: {fileID: 1585926808670212587}
   m_Layer: 5
   m_Name: BoardUI
   m_TagString: Untagged
@@ -125,7 +125,7 @@ MonoBehaviour:
   m_Spacing: {x: 0, y: 0}
   m_Constraint: 1
   m_ConstraintCount: 8
---- !u!114 &8368940800721037588
+--- !u!114 &1585926808670212587
 MonoBehaviour:
   m_ObjectHideFlags: 0
   m_CorrespondingSourceObject: {fileID: 0}

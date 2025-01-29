@@ -227,8 +227,8 @@ public class MatchBootstrap : NetworkBehaviour
 
     private void ArrangeFigures(PlayerBootstrapData playerBootstrapData)
     {
-        Debug.Log($"ArrangeFigures playerId: {playerBootstrapData.PlayerId}");
         var board = _gameData.ActiveBoard;
+        Debug.Log($"board: {board == null}");
         foreach (var arrangementArrangement in playerBootstrapData.Arrangement)
         {
             var row = arrangementArrangement.column;

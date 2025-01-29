@@ -1,36 +1,38 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Setting
 {
     public class Settings
     {
-        private Dictionary<PieceType, PieceData> _pieces;
-        public Arrangement ArrangementScriptableObject;
+        public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";
+        public Dictionary<PieceType, PieceData> Pieces;
+        public List<ArrangementEntry> ArrangementScriptableObject;
         public CellStates CellStates;
         public List<ArrangementEntry> MyArrangements;
 
-        public void Init(Arrangement arrangement, PieceData[] pieces, CellStates cellStates)
+        public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates)
         {
             ArrangementScriptableObject = arrangement;
             MyArrangements = RepackingArrangement(ArrangementScriptableObject);
             CellStates = cellStates;
             
-            _pieces = new();
+            Pieces = new();
             foreach (var piece in pieces)
             {
-                _pieces.Add(piece.pieceType, piece);
+                Pieces.Add(piece.pieceType, piece);
             }
         }
 
         public Piece CreatePiece(PieceType pieceType)
         {
-            return new Piece(_pieces[pieceType]);
+            return new Piece(Pieces[pieceType]);
         }
 
-        private List<ArrangementEntry> RepackingArrangement(Arrangement arrangement)
+        private List<ArrangementEntry> RepackingArrangement(List<ArrangementEntry> arrangement)
         {
             List<ArrangementEntry> result = new();
-            foreach (var arrangementArrangement in arrangement.arrangements)
+            foreach (var arrangementArrangement in arrangement)
             {
                 result.Add(new ArrangementEntry
                 {
