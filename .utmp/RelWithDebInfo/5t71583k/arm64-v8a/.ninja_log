@@ -1,23 +1,12 @@
 # ninja log v5
-12	2410	7599321129721882	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	1ebba13f393a59d4
-78	471	7599321110287794	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	8b986314741959cf
-472	935	7599321115021438	C:/UnityP/Chess 2/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/5t71583k/obj/arm64-v8a/libswappywrapper.so	550c9ce0b3b45ff5
-57	1798	7599321123559305	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	3c301763417cd645
-34	1982	7599321125440164	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	d359e8e031124f2b
-21	1848	7599321124029714	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	e13a68c0769d6acf
-68	1956	7599321125191626	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	8716601c204cc712
-46	1876	7599321124330838	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	ae2fc0f01ee769a6
-26	2050	7599321126137676	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	24382beab9a0801f
-39	2262	7599321128261558	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	7045fd736de3044d
-2410	2570	7599321131431160	C:/UnityP/Chess 2/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/5t71583k/obj/arm64-v8a/libgame.so	f944f5753463f241
-81	599	7599376326151363	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	8b986314741959cf
-600	1060	7599376330891575	C:/UnityP/Chess 2/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/5t71583k/obj/arm64-v8a/libswappywrapper.so	550c9ce0b3b45ff5
-65	2072	7599376340524688	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	3c301763417cd645
-21	2119	7599376341050300	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	e13a68c0769d6acf
-50	2143	7599376341211222	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	ae2fc0f01ee769a6
-73	2288	7599376342868223	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	8716601c204cc712
-28	2413	7599376344130122	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	24382beab9a0801f
-40	2414	7599376344162500	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	d359e8e031124f2b
-57	2591	7599376346111621	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	7045fd736de3044d
-34	2745	7599376347662259	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	1ebba13f393a59d4
-2746	2888	7599376349173519	C:/UnityP/Chess 2/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/5t71583k/obj/arm64-v8a/libgame.so	f944f5753463f241
+84	677	7600463366234291	FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o	8b986314741959cf
+683	902	7600463368611129	C:/UnityP/Chess 2/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/5t71583k/obj/arm64-v8a/libswappywrapper.so	550c9ce0b3b45ff5
+40	1642	7600463375771895	GameActivity/CMakeFiles/game.dir/UGAInputKeyEvent.cpp.o	3c301763417cd645
+11	1645	7600463375871635	GameActivity/CMakeFiles/game.dir/UGAConfiguration.cpp.o	e13a68c0769d6acf
+58	1671	7600463376185628	GameActivity/CMakeFiles/game.dir/UGAInputMotionEvent.cpp.o	ae2fc0f01ee769a6
+69	1743	7600463376892289	GameActivity/CMakeFiles/game.dir/UGASoftKeyboard.cpp.o	8716601c204cc712
+30	1773	7600463377230803	GameActivity/CMakeFiles/game.dir/UGAEntry.cpp.o	d359e8e031124f2b
+1	1845	7600463377970112	GameActivity/CMakeFiles/game.dir/UGADebug.cpp.o	24382beab9a0801f
+49	2018	7600463379703660	GameActivity/CMakeFiles/game.dir/UGAInput.cpp.o	7045fd736de3044d
+20	2182	7600463381344615	GameActivity/CMakeFiles/game.dir/UGAApplication.cpp.o	1ebba13f393a59d4
+2183	2304	7600463382639300	C:/UnityP/Chess 2/Library/Bee/Android/Prj/IL2CPP/Gradle/unityLibrary/build/intermediates/cxx/RelWithDebInfo/5t71583k/obj/arm64-v8a/libgame.so	f944f5753463f241

@@ -5,14 +5,21 @@ apply from: '../shared/keepUnitySymbols.gradle'
 dependencies {
     implementation fileTree(dir: 'libs', include: ['*.jar'])
 // Android Resolver Dependencies Start
+    implementation 'com.google.android.gms:play-services-base:18.5.0' // Assets/Firebase/Editor/AppDependencies.xml:17
+    implementation 'com.google.firebase:firebase-analytics:22.1.2' // Assets/Firebase/Editor/FirestoreDependencies.xml:15
+    implementation 'com.google.firebase:firebase-app-unity:12.5.0' // Assets/Firebase/Editor/AppDependencies.xml:22
+    implementation 'com.google.firebase:firebase-common:21.0.0' // Assets/Firebase/Editor/AppDependencies.xml:13
+    implementation 'com.google.firebase:firebase-firestore:25.1.1' // Assets/Firebase/Editor/FirestoreDependencies.xml:13
+    implementation 'com.google.firebase:firebase-firestore-unity:12.5.0' // Assets/Firebase/Editor/FirestoreDependencies.xml:20
     implementation 'com.google.android.gms:play-services-auth:16+' // Assets/GoogleSignIn/Editor/GoogleSignInDependencies.xml:10
     implementation 'com.google.signin:google-signin-support:1.0.4' // Assets/GoogleSignIn/Editor/GoogleSignInSupportDependencies.xml:9
 // Android Resolver Dependencies End
-**DEPS**}
+**DEPS**
+}
 
 // Android Resolver Exclusions Start
 android {
-  packaging {
+  packagingOptions {
       exclude ('/lib/armeabi/*' + '*')
       exclude ('/lib/armeabi-v7a/*' + '*')
       exclude ('/lib/mips/*' + '*')
@@ -22,30 +29,31 @@ android {
   }
 }
 // Android Resolver Exclusions End
+
 android {
     namespace "com.unity3d.player"
-    ndkVersion "**NDKVERSION**"
     ndkPath "**NDKPATH**"
+    ndkVersion "**NDKVERSION**"
 
     compileSdk **APIVERSION**
-    buildToolsVersion '**BUILDTOOLS**'
+    buildToolsVersion "**BUILDTOOLS**"
 
     compileOptions {
-        sourceCompatibility JavaVersion.VERSION_11
-        targetCompatibility JavaVersion.VERSION_11
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
     }
 
     defaultConfig {
-**DEFAULT_CONFIG_SETUP**
         minSdk **MINSDK**
         targetSdk **TARGETSDK**
         ndk {
-            debugSymbolLevel **DEBUGSYMBOLLEVEL**
             abiFilters **ABIFILTERS**
+            debugSymbolLevel **DEBUGSYMBOLLEVEL**
         }
         versionCode **VERSIONCODE**
         versionName '**VERSIONNAME**'
         consumerProguardFiles 'proguard-unity.txt'**USER_PROGUARD**
+**DEFAULT_CONFIG_SETUP**
     }
 
     lint {

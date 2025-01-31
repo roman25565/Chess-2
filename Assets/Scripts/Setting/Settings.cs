@@ -10,12 +10,14 @@ namespace Setting
         public List<ArrangementEntry> ArrangementScriptableObject;
         public CellStates CellStates;
         public List<ArrangementEntry> MyArrangements;
+        public FirestoreManager FirestoreManager;
 
-        public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates)
+        public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates,FirestoreManager firestoreManager)
         {
             ArrangementScriptableObject = arrangement;
             MyArrangements = RepackingArrangement(ArrangementScriptableObject);
             CellStates = cellStates;
+            FirestoreManager = firestoreManager;
             
             Pieces = new();
             foreach (var piece in pieces)

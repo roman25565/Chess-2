@@ -65,6 +65,22 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
+    public void GetPlayerData()
+    {
+        FirestoreManager.GetPlayerDataCallBack callBack = result =>
+        {
+            if (result == null)
+            {
+                _settings.FirestoreManager.SingUp(FirebasePlayerData.CreateFirebasePlayerData("001"));
+            }
+            else
+            {
+                Debug.Log(result.Elo);
+            }
+        };
+        _ = _settings.FirestoreManager.GetPlayerData("001",callBack);
+    }
+
     private void LoadSettings()
     {
         var arrangement = LoadArrangement();
@@ -73,7 +89,10 @@ public class Bootstrap : MonoBehaviour
         
         var cellStates = Resources.Load<CellStates>("Settings/CellStates");
         
-        _settings.Init(arrangement, piecesData, cellStates);
+        var firestore = new FirestoreManager();
+        firestore.Init();
+        
+        _settings.Init(arrangement, piecesData, cellStates, firestore);
     }
 
     private List<ArrangementEntry> LoadArrangement()

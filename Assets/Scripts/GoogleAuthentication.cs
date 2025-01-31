@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 using TMPro;
 using UnityEngine.UI;
-using Google;
 using System.Threading.Tasks;
 using UnityEngine.Networking;
+using Google;
 
 public class GoogleAuthentication : MonoBehaviour
 {
@@ -68,9 +68,9 @@ public class GoogleAuthentication : MonoBehaviour
 
     private void UpdateUI(GoogleSignInUser user)
     {
-        Debug.Log("          Welcome: " + user.DisplayName + "!!!!!");
+        Debug.Log("Welcome: " + user.DisplayName + "!!!!!");
 
-        userEmailTxt.text = "asda             dsas                dasdasdas                    d" + user.Email;
+        userEmailTxt.text = user.Email;
         userNameTxt.text = user.DisplayName;
         // Texture2D downloadedTexture = DownloadHandlerTexture.GetContent(request);
         // Rect rect = new Rect(0,0, downloadedTexture.width, downloadedTexture.height);

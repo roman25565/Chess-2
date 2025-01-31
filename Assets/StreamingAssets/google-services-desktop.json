@@ -1,0 +1,46 @@
+{
+  "project_info": {
+    "project_number": "118320481974",
+    "project_id": "chess2-19fc5",
+    "storage_bucket": "chess2-19fc5.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:118320481974:android:f187b43350d21a88548817",
+        "android_client_info": {
+          "package_name": "com.Lukasevych.Chess2"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "118320481974-t1bo9evo0p6ee3evrrn4k7j6t6675u6c.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCiJuelCliFySYpJBAb9NUjTTNiDyEHMkI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "118320481974-t1bo9evo0p6ee3evrrn4k7j6t6675u6c.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "118320481974-1sa5co5htnb8eojm64vborf5phvm5i65.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "Lukasevych.ChessApple"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

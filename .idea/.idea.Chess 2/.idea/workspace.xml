@@ -6,12 +6,12 @@
   <component name="ChangeListManager">
     <list default="true" id="8d369c67-3479-47ca-aa30-f9b18fcbfb3c" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Chess 2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Chess 2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/cache-v2-fa0f7c6a908fc6e89148.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/cmakeFiles-v1-ab28e3ef32a0ee75a4a7.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/codemodel-v2-703d7209472c760b9a0b.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/index-2025-01-28T18-57-32-0059.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/target-game-Debug-1a2ab933cd953e6c5f53.json" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/target-swappywrapper-Debug-e89db60068bed1d6b5c0.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/cache-v2-79d2b617567be0624c00.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/cmakeFiles-v1-5df699bca02a7f098ec6.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/codemodel-v2-e0e0ed9ecbeeebee4acc.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/index-2025-01-30T13-44-58-0206.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/target-game-Debug-635a61bfe7b3faf7d102.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.cmake/api/v1/reply/target-swappywrapper-Debug-2e6b3982072fe9f21059.json" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.ninja_deps" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/.ninja_log" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/arm64-v8a/CMakeCache.txt" afterDir="false" />
@@ -44,22 +44,142 @@
       <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/game-activity/game-activityConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/game-activity/game-activityConfig.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfig.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfigVersion.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/Debug/4t2e3p37/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfigVersion.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/.cmake/api/v1/reply/cache-v2-750b6aae78b2bba226e1.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/.cmake/api/v1/reply/cmakeFiles-v1-16403949d04fdf2b87fe.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/.cmake/api/v1/reply/index-2025-01-30T10-53-51-0639.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/.ninja_deps" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/.ninja_deps" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/.ninja_log" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/.ninja_log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/CMakeCache.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/CMakeCache.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/CMakeFiles/CMakeOutput.log" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/CMakeFiles/CMakeOutput.log" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/FramePacing/CMakeFiles/swappywrapper.dir/UnitySwappyWrapper.cpp.o" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/additional_project_files.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/additional_project_files.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/android_gradle_build.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/android_gradle_build.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/android_gradle_build_mini.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/android_gradle_build_mini.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/build.ninja" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/build.ninja" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/configure_fingerprint.bin" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/configure_fingerprint.bin" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/metadata_generation_command.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/metadata_generation_command.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/prefab_config.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/arm64-v8a/prefab_config.json" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/hash_key.txt" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/hash_key.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/game-activity/game-activityConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/game-activity/game-activityConfig.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfig.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfig.cmake" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfigVersion.cmake" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/RelWithDebInfo/5t71583k/prefab/arm64-v8a/prefab/lib/aarch64-linux-android/cmake/games-frame-pacing/games-frame-pacingConfigVersion.cmake" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.utmp/tools/debug/arm64-v8a/compile_commands.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/tools/debug/arm64-v8a/compile_commands.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.utmp/tools/release/arm64-v8a/compile_commands.json" beforeDir="false" afterPath="$PROJECT_DIR$/.utmp/tools/release/arm64-v8a/compile_commands.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/InputSystem_Actions.inputactions" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/InputSystem_Actions.inputactions" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180/Google.IOSResolver.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180/Google.IOSResolver.dll.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180/Google.JarResolver.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180/Google.JarResolver.dll.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180/Google.PackageManagerResolver.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180/Google.PackageManagerResolver.dll.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180/Google.VersionHandlerImpl.dll" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/1.2.180/Google.VersionHandlerImpl.dll.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/CHANGELOG.md" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/CHANGELOG.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/CHANGELOG.md.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/CHANGELOG.md.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/Google.VersionHandler.dll" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/Google.VersionHandler.dll" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/Google.VersionHandler.dll.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/Google.VersionHandler.dll.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/LICENSE.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/LICENSE.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/README.md" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/README.md" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/README.md.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/README.md.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/external-dependency-manager_version-1.2.180_manifest.txt" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager/Editor/external-dependency-manager_version-1.2.180_manifest.txt.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GeneratedLocalRepo.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.aar" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.aar.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/GoogleSignInDependencies.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/GoogleSignInDependencies.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/GoogleSignInDependencies.xml.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/GoogleSignInDependencies.xml.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/GoogleSignInSupportDependencies.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/GoogleSignInSupportDependencies.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/GoogleSignInSupportDependencies.xml.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/GoogleSignInSupportDependencies.xml.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/google-signin-plugin_v1.0.4.txt" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/google-signin-plugin_v1.0.4.txt" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/google-signin-plugin_v1.0.4.txt.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/google-signin-plugin_v1.0.4.txt.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom.md5.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom.md5.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom.sha1.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.pom.sha1.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.srcaar.md5.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.srcaar.md5.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.srcaar.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.srcaar.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.srcaar.sha1.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.srcaar.sha1.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/maven-metadata.xml" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/maven-metadata.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/maven-metadata.xml.md5.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/maven-metadata.xml.md5.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/maven-metadata.xml.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/maven-metadata.xml.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/maven-metadata.xml.sha1.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/maven-metadata.xml.sha1.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Future.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Future.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Future.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Future.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignIn.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignIn.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignIn.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignIn.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInConfiguration.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInConfiguration.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInConfiguration.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInConfiguration.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInStatusCode.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInStatusCode.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInStatusCode.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInStatusCode.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInUser.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInUser.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInUser.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/GoogleSignInUser.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/BaseObject.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/BaseObject.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/BaseObject.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/BaseObject.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/GoogleSignInImpl.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/GoogleSignInImpl.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/GoogleSignInImpl.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/GoogleSignInImpl.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/NativeFuture.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/NativeFuture.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/NativeFuture.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/NativeFuture.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/SignInHelperObject.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/SignInHelperObject.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/SignInHelperObject.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GoogleSignIn/Impl/SignInHelperObject.cs.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Parse.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Parse.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Parse/LICENSE" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Parse/LICENSE" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Parse/LICENSE.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Parse/LICENSE.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Parse/Plugins.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Parse/Plugins.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Parse/Plugins/Unity.Compat.dll.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Parse/Plugins/Unity.Compat.dll.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Parse/Plugins/Unity.Tasks.dll.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Parse/Plugins/Unity.Tasks.dll.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/gradleTemplate.properties" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/gradleTemplate.properties" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/gradleTemplate.properties.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/gradleTemplate.properties.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.backup" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.backup.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.backup2" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.backup2.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.backup3" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.backup3.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.backup4" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.backup4.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/settingsTemplate.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/settingsTemplate.gradle" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/settingsTemplate.gradle.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/settingsTemplate.gradle.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Plugins/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Zenject/OptionalExtras/ReflectionBaking/Zenject-ReflectionBaking.csproj.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Zenject/OptionalExtras/Signals/Zenject-Signals.csproj.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Plugins/Zenject/Source/Zenject.csproj.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Resources/MainMenu/google.png.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/MainMenu/google.png.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Resources/UnityPlayerAccountSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Resources/UnityPlayerAccountSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/iOS.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn/GoogleSignIn.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn/GoogleSignIn.h.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn/GoogleSignIn.mm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn/GoogleSignIn.mm.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn/GoogleSignInAppController.h" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn/GoogleSignInAppController.h.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn/GoogleSignInAppController.mm" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Plugins/iOS/GoogleSignIn/GoogleSignInAppController.mm.meta" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scenes/Main.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Main.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bootstrap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Services.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GoogleAuthentication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GoogleAuthentication.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Setting/Settings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Setting/Settings.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Settings/UniversalRP.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Settings/UniversalRP.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ProjectSettings/AndroidResolverDependencies.xml" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/AndroidResolverDependencies.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/EditorBuildSettings.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ProjectSettings/GraphicsSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/GraphicsSettings.asset" afterDir="false" />
@@ -67,7 +187,6 @@
       <change beforePath="$PROJECT_DIR$/ProjectSettings/MultiplayerManager.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/MultiplayerManager.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ShaderGraphSettings.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/user.keystore" beforeDir="false" afterPath="$PROJECT_DIR$/user.keystore" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -84,16 +203,12 @@
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Assets/GoogleSignIn/Impl/GoogleSignInImpl.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Bootstrap.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/Assets/Scripts/FirebaseManager.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/GameData.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/MainMenu.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Setting/PieceData.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Setting/Settings.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/EndGamePanel.cs" root0="FORCE_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../Chess 2_clone_0/Assets/Scripts/Board/AbstractBoard.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../Chess 2_clone_0/Assets/Scripts/Matchmaking/Client/ClientMatchmaker.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../Chess 2_clone_0/Library/PackageCache/com.unity.netcode.gameobjects/Runtime/Messaging/Messages/RpcMessages.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$PROJECT_DIR$/../Chess 2_clone_1/Assets/Scripts/NetCode/MatchBootstrap.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://D:/Backups/Scripts/Bootstrap.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
   &quot;customColor&quot;: &quot;&quot;,
@@ -110,21 +225,21 @@
     <option name="openDirectoriesWithSingleClick" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/UnityP/newTest",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "editor.preferences.tabs",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/UnityP/newTest&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.tabs&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Attach to Unity Editor.Attach to Unity Editor">
     <configuration name="Standalone Player" type="RunUnityExe" factoryName="Unity Executable">
       <option name="EXE_PATH" value="$PROJECT_DIR$/../Builds/WinTest\Chess 2.exe" />
@@ -217,6 +332,7 @@
       <workItem from="1738136372263" duration="592000" />
       <workItem from="1738225605411" duration="7188000" />
       <workItem from="1738242987341" duration="8291000" />
+      <workItem from="1738343336293" duration="4544000" />
     </task>
     <servers />
   </component>
