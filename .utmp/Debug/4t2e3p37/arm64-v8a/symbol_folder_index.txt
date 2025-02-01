@@ -1,1 +1,0 @@
-C:\UnityP\Chess 2\Library\Bee\Android\Prj\IL2CPP\Gradle\unityLibrary\build\intermediates\cxx\Debug\4t2e3p37\obj\arm64-v8a
