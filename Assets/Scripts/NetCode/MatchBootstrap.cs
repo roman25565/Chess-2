@@ -1,9 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Setting;
 using Unity.Netcode;
 using Unity.VisualScripting;
+using UnityEditor.Search;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using Zenject;
@@ -27,12 +29,12 @@ public class MatchBootstrap : NetworkBehaviour
 
     private void Start()
     {
-        #if UNITY_EDITOR
+#if UNITY_EDITOR
         if (IsServer)
         {
             Camera.main.backgroundColor = Color.blue;
         }
-        #endif
+#endif
         if (IsOwner && IsLocalPlayer)
         {
             var gameMode = _gameData.Mode;
@@ -50,28 +52,31 @@ public class MatchBootstrap : NetworkBehaviour
             {
                 var id = OwnerClientId;
                 Debug.Log(NetworkManager.Singleton.GetInstanceID());
-                SomeRpc(id, arrangementEntryArray.ArrangementEntry);
+                SomeRpc(id, _settings.FirestoreManager.PlayerData.ID, arrangementEntryArray.ArrangementEntry);
             }
 
             if (gameMode == GameMode.Test)
             {
-                SomeRpc(OwnerClientId, arrangementEntryArray.ArrangementEntry);
-                SomeRpc(OwnerClientId, arrangementEntryArray.ArrangementEntry);
+                SomeRpc(OwnerClientId, _settings.FirestoreManager.PlayerData.ID, arrangementEntryArray.ArrangementEntry);
+                SomeRpc(OwnerClientId, _settings.FirestoreManager.PlayerData.ID, arrangementEntryArray.ArrangementEntry);
             }
         }
     }
 
     [Rpc(SendTo.Server)]
-    private void SomeRpc(ulong playerId, ArrangementEntry[] arrangement, RpcParams rpcParams = default)
+    private void SomeRpc(ulong playerId, string firestoreId, ArrangementEntry[] arrangement, RpcParams rpcParams = default)
     {
+        Debug.Log(firestoreId);
         if (_gameData.Player0.Arrangement == null)
         {
             _gameData.Player0.ID = playerId;
+            _gameData.Player0.FirestoreId = firestoreId;
             _gameData.Player0.Arrangement = new ArrangementEntryArray{ ArrangementEntry = arrangement };
         }
         else if (_gameData.Player1.Arrangement == null)
         {
             _gameData.Player1.ID = playerId;
+            _gameData.Player1.FirestoreId = firestoreId;
             _gameData.Player1.Arrangement = new ArrangementEntryArray{ ArrangementEntry = arrangement };
         }
         
@@ -79,28 +84,31 @@ public class MatchBootstrap : NetworkBehaviour
         {
             var whitePlayerId = GetWhitePlayerId(_gameData.Player0.ID, _gameData.Player1.ID);
             
-            var player1 = CreatePlayerBootstrapData(_gameData.Player0.ID, _gameData.Player0.Arrangement.ArrangementEntry, whitePlayerId);
-            var player2 = CreatePlayerBootstrapData(_gameData.Player1.ID, _gameData.Player1.Arrangement.ArrangementEntry, whitePlayerId);
+            var player1 = CreatePlayerBootstrapData(_gameData.Player0.ID, firestoreId, _gameData.Player0.Arrangement.ArrangementEntry, whitePlayerId);
+            var player2 = CreatePlayerBootstrapData(_gameData.Player1.ID, firestoreId,_gameData.Player1.Arrangement.ArrangementEntry, whitePlayerId);
 
             ArrangeFigures(player1);
             ArrangeFigures(player2);
             
-            
-            
-            StartMatchServer(player1, player2, whitePlayerId);
+             _ = StartMatchServer(player1, player2, whitePlayerId);
             
             MatchBootstrap[] matchBootstraps = FindObjectsByType<MatchBootstrap>((FindObjectsSortMode)FindObjectsInactive.Exclude);
 
             foreach (var matchBootstrap in matchBootstraps)
             {
-                matchBootstrap.ArrangeFiguresOnClientsRpc(_gameData.Player0.ID,
-                    _gameData.Player0.Arrangement.ArrangementEntry, _gameData.Player1.ID,
-                    _gameData.Player1.Arrangement.ArrangementEntry, whitePlayerId);
+                matchBootstrap.SendToClientPlayerBootstrapDataRpc(
+                    _gameData.Player0.ID,
+                    _gameData.Player0.FirestoreId,
+                    _gameData.Player0.Arrangement.ArrangementEntry,
+                    _gameData.Player1.ID,
+                    _gameData.Player1.FirestoreId,
+                    _gameData.Player1.Arrangement.ArrangementEntry,
+                    whitePlayerId);
             }
         }
     }
 
-    private void StartMatchServer(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
+    private async Task StartMatchServer(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
     {
         MatchCore coreServer = Instantiate(matchCore);
         
@@ -113,33 +121,42 @@ public class MatchBootstrap : NetworkBehaviour
         corePlayer2.SetServerCore(coreServer);
         
         coreServer.GetComponent<NetworkObject>().Spawn();
+        
         var matchData = CreateMatchData(player1, player2, whitePlayerId);
+        _settings.FirestoreManager.GetPlayerData(player1.FirestoreId, result =>
+        {
+            matchData.Player1.FirebasePlayer = result;
+            Dispatcher.Enqueue(() => coreServer.UpdateFirebasePlayerData(matchData.Player1.PlayerId));
+        });
+        _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
+        {
+            matchData.Player2.FirebasePlayer = result; 
+            Dispatcher.Enqueue(() => coreServer.UpdateFirebasePlayerData(matchData.Player2.PlayerId));
+        });
         coreServer.Init(matchData);
         coreServer.SetServerCore(coreServer);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    void ArrangeFiguresOnClientsRpc(ulong playerId, ArrangementEntry[] arrangement, 
-        ulong playerId2, ArrangementEntry[] arrangement2, ulong whitePlayerId)
+    private void SendToClientPlayerBootstrapDataRpc(
+        ulong playerId, string firestoreId, ArrangementEntry[] arrangement, 
+        ulong playerId2 , string firestoreId2, ArrangementEntry[] arrangement2, 
+        ulong whitePlayerId)
     {
         if (!IsLocalPlayer)
         {
             return;
         }
-        Debug.Log("ArrangeFiguresOnClientsRpc");
-        var player1 = new PlayerBootstrapData(playerId, arrangement,playerId != whitePlayerId, whitePlayerId == playerId);
-        var player2 = new PlayerBootstrapData(playerId2, arrangement2,playerId2 != whitePlayerId, whitePlayerId == playerId2);
-        Debug.Log($"player1: {player1.PlayerId} player2: {player2.PlayerId}");
+        var player1 = new PlayerBootstrapData(playerId, firestoreId, arrangement,playerId != whitePlayerId, whitePlayerId == playerId);
+        var player2 = new PlayerBootstrapData(playerId2, firestoreId2, arrangement2,playerId2 != whitePlayerId, whitePlayerId == playerId2);
         ArrangeFigures(player1);
         ArrangeFigures(player2);
-
         
-        StartMatchClient(player1, player2, whitePlayerId);
+        _ = StartMatchClient(player1, player2, whitePlayerId);
     }
 
-    private void StartMatchClient(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
+    private async Task StartMatchClient(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
     {
-        var matchData = CreateMatchData(player1, player2, whitePlayerId);
         var board = _gameData.ActiveBoard;
         
         MatchCore[] allMatchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
@@ -148,6 +165,18 @@ public class MatchBootstrap : NetworkBehaviour
         {
             if (matchCore.IsOwner)
             {
+                var matchData = CreateMatchData(player1, player2, whitePlayerId);
+                _settings.FirestoreManager.GetPlayerData(player1.FirestoreId, result =>
+                {
+                    matchData.Player1.FirebasePlayer = result; 
+                    Dispatcher.Enqueue(() => matchCore.UpdateFirebasePlayerData(matchData.Player1.PlayerId));
+                });
+                _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
+                {
+                    matchData.Player2.FirebasePlayer = result; 
+                    Dispatcher.Enqueue(() => matchCore.UpdateFirebasePlayerData(matchData.Player2.PlayerId));
+                });
+                Debug.Log("matchCore.Init(matchData);");
                 matchCore.Init(matchData);
             }
         }
@@ -181,6 +210,7 @@ public class MatchBootstrap : NetworkBehaviour
 
     private MatchData CreateMatchData(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
     {
+        
         Debug.Log($"whitePlayerId: {whitePlayerId}");
         return new MatchData
         {
@@ -202,27 +232,28 @@ public class MatchBootstrap : NetworkBehaviour
         };
     }
 
-
     private class PlayerBootstrapData
     {
         
-        public PlayerBootstrapData(ulong playerId, ArrangementEntry[] arrangement, bool isRotate, bool isWhite)
+        public PlayerBootstrapData(ulong playerId, string firestoreId, ArrangementEntry[] arrangement, bool isRotate, bool isWhite)
         {
             PlayerId = playerId;
+            FirestoreId = firestoreId;
             Arrangement = arrangement;
             IsRotate = isRotate;
             IsWhite = isWhite;
         }
 
-        public ulong PlayerId;
-        public ArrangementEntry[] Arrangement;
-        public bool IsRotate;
-        public bool IsWhite;
+        public readonly ulong PlayerId;
+        public readonly string FirestoreId;
+        public readonly ArrangementEntry[] Arrangement;
+        public readonly bool IsRotate;
+        public readonly bool IsWhite;
     }
 
-    private PlayerBootstrapData CreatePlayerBootstrapData(ulong playerId,  ArrangementEntry[] arrangement, ulong whitePlayerId)
+    private PlayerBootstrapData CreatePlayerBootstrapData(ulong playerId, string firestoreId, ArrangementEntry[] arrangement, ulong whitePlayerId)
     {
-        return new PlayerBootstrapData(playerId, arrangement,whitePlayerId != playerId,whitePlayerId == playerId);
+        return new PlayerBootstrapData(playerId, firestoreId, arrangement,whitePlayerId != playerId,whitePlayerId == playerId);
     }
 
     private void ArrangeFigures(PlayerBootstrapData playerBootstrapData)

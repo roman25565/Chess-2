@@ -72,4 +72,32 @@ crashlytics-build.properties
 
 # Temporary auto-generated Android Assets
 /[Aa]ssets/[Ss]treamingAssets/aa.meta
+
+
+.DS_Store
+
+# Python byte-compiled / optimized / DLL files
+__pycache__/
+*.py[cod]
+*$py.class
+*.pyc
+
+# Unencrypted secret files
+google-services.json
+GoogleService-Info.plist
+uri_prefix.txt
+server_key.txt
+gcs_key_file.json
+# Windows ignore
+vcpkg
+
+# Visual Studio Code
+.vscode/
+
+# Downloaded NDK
+ndk/
+ndk_zip
+
+# Downloaded EDM4U
+unity_jar_resolver/
 /[Aa]ssets/[Ss]treamingAssets/aa/*

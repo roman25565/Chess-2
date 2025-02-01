@@ -47,7 +47,6 @@ public abstract class AbstractBoard : MonoBehaviour
         for (int i = 0; i < lineSize; i++)
         {
             BoardLines[column].Add(cells[column * lineSize + i].Init(i, column, this));
-            Debug.Log(i);
         }
     }
     

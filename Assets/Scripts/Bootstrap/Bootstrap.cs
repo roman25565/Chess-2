@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Google;
 using Newtonsoft.Json;
 using Setting;
 using Unity.Netcode;
@@ -65,20 +66,30 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
-    public void GetPlayerData()
+    public void OnSignIn(GoogleSignInUser user)
     {
-        FirestoreManager.GetPlayerDataCallBack callBack = result =>
+        SignInFireBase(user);
+    }
+    public void OnSignIn(string id)
+    {
+        SignInFireBase(new GoogleSignInUser{UserId = id});
+    }
+
+    private void SignInFireBase(GoogleSignInUser user)
+    {
+        FirestoreManager.GetPlayerDataCallBack callBack = async result =>
         {
             if (result == null)
             {
-                _settings.FirestoreManager.SingUp(FirebasePlayerData.CreateFirebasePlayerData("001"));
+                _settings.FirestoreManager.SingUp(await FirebasePlayerData.CreateFirebasePlayerData(user.UserId, user.ImageUrl, user.Email));
             }
             else
             {
+                _settings.FirestoreManager.PlayerData = result; 
                 Debug.Log(result.Elo);
             }
         };
-        _ = _settings.FirestoreManager.GetPlayerData("001",callBack);
+        _ = _settings.FirestoreManager.GetPlayerData(user.UserId,callBack);
     }
 
     private void LoadSettings()

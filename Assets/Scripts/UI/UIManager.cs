@@ -11,11 +11,18 @@ public class UIManager : MonoBehaviour
     [SerializeField] private EndGamePanel endGamePanel;
     [SerializeField] private PlayerPanel myPlayerPanel;
     [SerializeField] private PlayerPanel enemyPlayerPanel;
-    public static UIManager instance;
+    public static UIManager Instance;
 
     public void EndGame()
     {
         endGamePanel.EndGame();
+    }
+
+    public void SetPlayerUI(FirebasePlayerData playerData, bool isEnemyPlayer)
+    {
+        Debug.Log("SetPlayerUI(FirebasePlayerData playerData, bool");;
+        if (isEnemyPlayer) enemyPlayerPanel.SetPlayerUI(playerData);
+        else myPlayerPanel.SetPlayerUI(playerData);
     }
 
     public void SetTime(float time, bool isEnemyPlayer)
@@ -24,9 +31,9 @@ public class UIManager : MonoBehaviour
         else myPlayerPanel.SetTime(time);
     }
 
-    private void Start()
+    private void Awake()
     {
-        instance = this;
+        Instance = this;
         
         backButton.onClick.AddListener(BackToMenu);
     }

@@ -6,12 +6,16 @@ using UnityEngine;
 using Firebase;
 using Firebase.Extensions;
 using Firebase.Firestore;
+using UnityEngine.Networking;
 
 public class FirestoreManager
 {
     private const string IDKey = "ID";
     private const string NameKey = "Name";
     private const string EloKey = "Elo";
+    private const string IconURLKey = "IconURL";
+    private const string EmailKey = "Email";
+    
     private const string CollectionName = "Players";
     
     private FirebaseFirestore db;
@@ -25,6 +29,9 @@ public class FirestoreManager
             if (dependencyStatus == DependencyStatus.Available)
             {
                 db = FirebaseFirestore.DefaultInstance;
+#if UNITY_EDITOR
+                db.Settings.PersistenceEnabled = false;
+#endif
                 Debug.Log("Firebase initialized successfully.");
                 // Call the method to add or fetch player data
                 // AddOrFetchPlayerData("player123", "JohnDoe", 1200);
@@ -44,27 +51,30 @@ public class FirestoreManager
         }
         catch (Exception e)
         {
+            Debug.LogError("error" + e);
             Console.WriteLine(e);
             throw;
         }
     }
 
     public delegate void GetPlayerDataCallBack(FirebasePlayerData result);
-    public async Task GetPlayerData(string playerId,GetPlayerDataCallBack callback)
+    public async Task<FirebasePlayerData> GetPlayerData(string playerId,GetPlayerDataCallBack callback)
     {
-        var docRef = db.Collection(CollectionName).Document(playerId);
         FirebasePlayerData result = null;
-        
         try
         {
+            var docRef = db.Collection(CollectionName).Document(playerId);
             DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
             if (snapshot.Exists)
             {
                 var existingName = snapshot.GetValue<string>(NameKey);
                 var existingElo = snapshot.GetValue<int>(EloKey);
-                result = new FirebasePlayerData(playerId, existingName, existingElo);
-                PlayerData = result;
+                var imageURL = snapshot.GetValue<string>(IconURLKey);
+                var email = snapshot.GetValue<string>(EmailKey);
+                Debug.Log("Load From DB");
+                var ico = await GlobalTools.LoadSprite(new Uri(imageURL));
+                result = new FirebasePlayerData(playerId, existingName, existingElo, ico, email);
             }
             else
             {
@@ -77,6 +87,7 @@ public class FirestoreManager
         }
 
         callback(result);
+        return result;
     }
 
     public void SingUp(FirebasePlayerData playerData)
@@ -85,7 +96,9 @@ public class FirestoreManager
         {
             { IDKey, playerData.ID },
             { NameKey, playerData.Name },
-            { EloKey, playerData.Elo }
+            { EloKey, playerData.Elo },
+            { IconURLKey, playerData.Icon },
+            { EmailKey, playerData.Email },
         };
         
         DocumentReference docRef = db.Collection(CollectionName).Document(playerData.ID);

@@ -21,5 +21,6 @@ public class GameData
     public class ArrangementEntryArrayWithId
     {
         public ulong ID;
+        public string FirestoreId;
         public ArrangementEntryArray Arrangement;
     }

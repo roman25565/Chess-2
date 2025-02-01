@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Setting;
 using Unity.Netcode;
 using UnityEngine;
@@ -28,6 +30,7 @@ public class MatchData
 public class PlayerData
 {
     public ulong PlayerId;
+    public FirebasePlayerData FirebasePlayer;
     public float TimeToMove;
     public bool IsMoving;
     public bool IsRotate;
@@ -35,6 +38,7 @@ public class PlayerData
 public class MatchCore : NetworkBehaviour
 {
     [Inject] private GameData _gameData;
+    [Inject] private Settings _settings;
     private ulong _myId;
     private MatchData _matchData;
     private bool _isInitialize;
@@ -58,18 +62,35 @@ public class MatchCore : NetworkBehaviour
             if (Mathf.Abs(playerData.TimeToMove - _lastUpdateTime) > 0.01f)
             {
                 _lastUpdateTime = time;
-                UIManager.instance.SetTime(time, playerData.PlayerId != _myId);
+                UIManager.Instance.SetTime(time, playerData.PlayerId != _myId);
             }
         }
     }
 
-    public void Init(MatchData matchData)
+    public void UpdateFirebasePlayerData(ulong playerId)
     {
-        _matchData = matchData;
+        if (playerId == _matchData.Player1.PlayerId)
+        { 
+            Debug.Log("UpdateFirebasePlayerData");
+            UIManager.Instance.SetPlayerUI(_matchData.Player1.FirebasePlayer, _matchData.Player1.PlayerId != _myId);
+        }else if (playerId == _matchData.Player2.PlayerId)
+        {
+            UIManager.Instance.SetPlayerUI(_matchData.Player2.FirebasePlayer, _matchData.Player2.PlayerId != _myId);
+            Debug.Log("UpdateFirebasePlayerDataFinish");
+        }
+    }
+
+    public void Init(MatchData matchData)
+    { 
+        Debug.Log("Application.isMainThread" + Thread.CurrentThread.ManagedThreadId);
+        Debug.Log("MatchCore.Init");
         
+        _matchData = matchData;
         _gameData.ActiveBoard.SetMatchCore(this);
         _myId = OwnerClientId;
+        
         _isInitialize = true;
+        Debug.Log("MatchCore.Inited");
     }
 
     public void TryMove(Vector2Int from, Vector2Int to)
@@ -141,22 +162,6 @@ public class MatchCore : NetworkBehaviour
         SendToPlayersMove(from, to, playerId);
     }
 
-    private void UseMove(Vector2Int from, Vector2Int to, ulong playerId)
-    {
-        var board = _gameData.ActiveBoard;
-        var cell = board.GetCell(to.x, to.y);
-        if (cell.Piece != null)
-        {
-            DeathRattle(cell);
-        }
-        _gameData.ActiveBoard.MovePiece(from, to);
-        _matchData.GetPlayerData(playerId).IsMoving = false;
-        
-        var anotherPlayer = _matchData.Player1.PlayerId == playerId ? _matchData.Player2 : _matchData.Player1;
-        
-        anotherPlayer.IsMoving = true;
-        _matchData.MovingPlayerId = anotherPlayer.PlayerId;
-    }
 
     private void DeathRattle(Cell cell)
     {
@@ -184,17 +189,34 @@ public class MatchCore : NetworkBehaviour
 
     private void LosePlayer(ulong loserId)
     {
+        double scope1 = 0;
+        double scope2 = 0;
+        GetScopes(loserId, ref scope1, ref scope2);
+        var newElo1 = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo, _matchData.Player1.FirebasePlayer.Elo, scope1);
+        var newElo2 = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo, _matchData.Player2.FirebasePlayer.Elo, scope2);
         foreach (var allMatchCore in _allMatchCores)
         {
             allMatchCore.LosePlayerClientRpc(loserId);
         }
     }
-    [Rpc(SendTo.ClientsAndHost)]
-    private void LosePlayerClientRpc(ulong loserId)
+
+    private void GetScopes(ulong loserId,ref double player1Score, ref double player2Score)
     {
-        if (!IsOwner) return;
-        
-        UIManager.instance.EndGame();
+        if (loserId == _matchData.Player1.PlayerId)
+        {
+            player1Score = 0.0;
+            player2Score = 1.0;
+        }
+        else if (loserId == _matchData.Player2.PlayerId)
+        {
+            player1Score = 1.0;
+            player2Score = 0.0;
+        }
+        else
+        {
+            player1Score = 0.5;
+            player2Score = 0.5;
+        }
     }
 
     private void SendToPlayersMove(Vector2Int from, Vector2Int to, ulong playerId)
@@ -205,6 +227,13 @@ public class MatchCore : NetworkBehaviour
         }
     }
     #endregion
+    [Rpc(SendTo.ClientsAndHost)]
+    private void LosePlayerClientRpc(ulong loserId)
+    {
+        if (!IsOwner) return;
+        
+        UIManager.Instance.EndGame();
+    }
 
     [Rpc(SendTo.ClientsAndHost)]
     public void UseMoveCommandRpc(Vector2Int from, Vector2Int to, ulong playerId)
@@ -213,6 +242,22 @@ public class MatchCore : NetworkBehaviour
         {
             UseMove(from, to, playerId);
         }
+    }
+    private void UseMove(Vector2Int from, Vector2Int to, ulong playerId)
+    {
+        var board = _gameData.ActiveBoard;
+        var cell = board.GetCell(to.x, to.y);
+        if ((IsServer || IsHost) && cell.Piece != null)
+        {
+            DeathRattle(cell);
+        }
+        _gameData.ActiveBoard.MovePiece(from, to);
+        _matchData.GetPlayerData(playerId).IsMoving = false;
+        
+        var anotherPlayer = _matchData.Player1.PlayerId == playerId ? _matchData.Player2 : _matchData.Player1;
+        
+        anotherPlayer.IsMoving = true;
+        _matchData.MovingPlayerId = anotherPlayer.PlayerId;
     }
 }
 
