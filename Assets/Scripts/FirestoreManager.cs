@@ -6,6 +6,7 @@ using UnityEngine;
 using Firebase;
 using Firebase.Extensions;
 using Firebase.Firestore;
+using Google;
 using UnityEngine.Networking;
 
 public class FirestoreManager
@@ -90,19 +91,37 @@ public class FirestoreManager
         return result;
     }
 
-    public void SingUp(FirebasePlayerData playerData)
+    public void SingUp(string testId)
     {
         Dictionary<string, object> player = new Dictionary<string, object>
         {
-            { IDKey, playerData.ID },
-            { NameKey, playerData.Name },
-            { EloKey, playerData.Elo },
-            { IconURLKey, playerData.Icon },
-            { EmailKey, playerData.Email },
+            { IDKey, testId },
+            { NameKey, "BUGAGAGA" },
+            { EloKey, 500 },
+            { IconURLKey, "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no" },
+            { EmailKey, "test@gmail.com" },
         };
-        
-        DocumentReference docRef = db.Collection(CollectionName).Document(playerData.ID);
-        docRef.SetAsync(player).ContinueWithOnMainThread(setTask =>
+
+        SingUp(player, testId);
+    }
+
+    public void SingUp(GoogleSignInUser user)
+    {
+        Dictionary<string, object> player = new Dictionary<string, object>
+        {
+            { IDKey, user.UserId },
+            { NameKey, user.DisplayName },
+            { EloKey, 500 },
+            { IconURLKey, user.ImageUrl.ToString() },
+            { EmailKey, user.Email },
+        };
+        SingUp(player, user.UserId);
+    }
+
+    private void SingUp(Dictionary<string, object> playerData, string playerId)
+    {
+        DocumentReference docRef = db.Collection(CollectionName).Document(playerId);
+        docRef.SetAsync(playerData).ContinueWithOnMainThread(async setTask =>
         {
             if (setTask.IsFaulted)
             {
@@ -111,7 +130,33 @@ public class FirestoreManager
             else
             {
                 Debug.Log("Player added successfully.");
-                PlayerData = playerData;
+                var icon = await GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()));
+                PlayerData = new FirebasePlayerData
+                (
+                    id: playerData[IDKey].ToString(), 
+                    name: playerData[NameKey].ToString(),
+                    elo: int.Parse(playerData[EloKey].ToString()),
+                    icon: icon,
+                    email: playerData[EmailKey].ToString()
+                );
+            }
+        });
+    }
+
+    public void SetElo(string playerId, int newElo)
+    {
+        DocumentReference docRef = db.Collection(CollectionName).Document(playerId);
+        
+        Dictionary<string, object> updates = new Dictionary<string, object>
+        {
+            { EloKey, newElo }
+        };
+        
+        docRef.UpdateAsync(updates).ContinueWith(task => {
+            if (task.IsCompleted) {
+                Debug.Log("Document updated successfully.");
+            } else if (task.IsFaulted) {
+                Debug.LogError("Error updating document: " + task.Exception);
             }
         });
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using JetBrains.Annotations;
 using Setting;
 using UnityEngine;
 using Zenject;
@@ -90,6 +91,7 @@ public abstract class AbstractBoard : MonoBehaviour
     
     private Cell _selectedCell;
     private bool _isDragging;
+    private bool _gameEnded;
     private float _draggingTime;
     private RectTransform _draggingRectTransform;
     
@@ -102,8 +104,10 @@ public abstract class AbstractBoard : MonoBehaviour
     {
 #if !UNITY_SERVER
         AddMoveToHistory(from, to);
-        SetSelectedState(_firstSelectedCell, from);
-        SetSelectedState(_secondSelectedCell, to);
+        if (_inHistory){}
+        
+        SetSelectedState(ref _firstSelectedCell, from);
+        SetSelectedState(ref _secondSelectedCell, to);
 #endif
 
         Move(from, to);
@@ -111,6 +115,10 @@ public abstract class AbstractBoard : MonoBehaviour
     
     public void TryMove(Cell cell, bool isTab = true)
     {
+        if (_inHistory)
+        {
+            return;
+        }
         if (isTab && _selectedCell == cell) Deselect();
         else if (_selectedCell != null && IsValidMove(_selectedCell, cell))
         {
@@ -159,6 +167,8 @@ public abstract class AbstractBoard : MonoBehaviour
         
         _draggingRectTransform.anchoredPosition = Vector2.zero;
         _draggingRectTransform = null;
+        
+        if (_inHistory) return;
         
         if (cell == null)
         {
@@ -327,10 +337,10 @@ public abstract class AbstractBoard : MonoBehaviour
         }
     }
 
-    private void SetSelectedState(Cell cell, Cell cell2)
+    private void SetSelectedState([CanBeNull] ref Cell cell, Cell newCell)
     {
         cell?.SetSelectedState(Cell.CellState.None);
-        cell = cell2;
+        cell = newCell;
         cell.SetSelectedState(Cell.CellState.Selected);
     }
     #endregion

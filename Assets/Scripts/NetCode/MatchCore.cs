@@ -194,9 +194,13 @@ public class MatchCore : NetworkBehaviour
         GetScopes(loserId, ref scope1, ref scope2);
         var newElo1 = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo, _matchData.Player1.FirebasePlayer.Elo, scope1);
         var newElo2 = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo, _matchData.Player2.FirebasePlayer.Elo, scope2);
+        
+        _settings.FirestoreManager.SetElo(_matchData.Player1.FirebasePlayer.ID, newElo1);
+        _settings.FirestoreManager.SetElo(_matchData.Player2.FirebasePlayer.ID, newElo2);
+        
         foreach (var allMatchCore in _allMatchCores)
         {
-            allMatchCore.LosePlayerClientRpc(loserId);
+            allMatchCore.LosePlayerClientRpc(loserId, newElo1, newElo2);
         }
     }
 
@@ -228,11 +232,15 @@ public class MatchCore : NetworkBehaviour
     }
     #endregion
     [Rpc(SendTo.ClientsAndHost)]
-    private void LosePlayerClientRpc(ulong loserId)
+    private void LosePlayerClientRpc(ulong loserId, int newElo1, int newElo2)
     {
         if (!IsOwner) return;
+
+        bool isFirstPlayer = _matchData.Player1.PlayerId == _myId;
+        var myElo = isFirstPlayer ? newElo1 : newElo2;
+        var enemyElo = isFirstPlayer ? newElo2 : newElo1;
         
-        UIManager.Instance.EndGame();
+        UIManager.Instance.EndGame(loserId == _myId, myElo, enemyElo);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -247,7 +255,7 @@ public class MatchCore : NetworkBehaviour
     {
         var board = _gameData.ActiveBoard;
         var cell = board.GetCell(to.x, to.y);
-        if ((IsServer || IsHost) && cell.Piece != null)
+        if (cell.Piece != null)
         {
             DeathRattle(cell);
         }

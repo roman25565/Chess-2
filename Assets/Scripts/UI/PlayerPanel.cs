@@ -25,4 +25,9 @@ public class PlayerPanel : MonoBehaviour
         EloText.text = playerData.Elo.ToString();
         IconImage.sprite = playerData.Icon;
     }
+
+    public void EndGame(int newElo)
+    {
+        EloText.text = newElo.ToString();
+    }
 }

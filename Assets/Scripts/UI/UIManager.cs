@@ -13,9 +13,11 @@ public class UIManager : MonoBehaviour
     [SerializeField] private PlayerPanel enemyPlayerPanel;
     public static UIManager Instance;
 
-    public void EndGame()
+    public void EndGame(bool isWin, int myNewElo, int enemyNewElo)
     {
         endGamePanel.EndGame();
+        myPlayerPanel.EndGame(myNewElo);
+        enemyPlayerPanel.EndGame(enemyNewElo);
     }
 
     public void SetPlayerUI(FirebasePlayerData playerData, bool isEnemyPlayer)

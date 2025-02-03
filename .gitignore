@@ -28,7 +28,7 @@
 .idea/
 /.idea/*
 /.utmp/*
-
+/.utmp/
 # Gradle cache directory
 .gradle/
 

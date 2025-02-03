@@ -72,24 +72,32 @@ public class Bootstrap : MonoBehaviour
     }
     public void OnSignIn(string id)
     {
+        Debug.Log("OnSignIn");
         SignInFireBase(new GoogleSignInUser{UserId = id});
     }
 
     private void SignInFireBase(GoogleSignInUser user)
     {
-        FirestoreManager.GetPlayerDataCallBack callBack = async result =>
+        if (user == null)
+        {
+            _settings.FirestoreManager.SingUp("001");
+            return;
+        }
+        _ = _settings.FirestoreManager.GetPlayerData(user.UserId,CallBack);
+        return;
+
+        void CallBack(FirebasePlayerData result)
         {
             if (result == null)
             {
-                _settings.FirestoreManager.SingUp(await FirebasePlayerData.CreateFirebasePlayerData(user.UserId, user.ImageUrl, user.Email));
+                _settings.FirestoreManager.SingUp(user);
             }
             else
             {
-                _settings.FirestoreManager.PlayerData = result; 
+                _settings.FirestoreManager.PlayerData = result;
                 Debug.Log(result.Elo);
             }
-        };
-        _ = _settings.FirestoreManager.GetPlayerData(user.UserId,callBack);
+        }
     }
 
     private void LoadSettings()

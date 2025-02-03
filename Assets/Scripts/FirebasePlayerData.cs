@@ -1,6 +1,4 @@
-﻿
-using System.Threading.Tasks;
-using UnityEngine;
+﻿using UnityEngine;
 
 public class FirebasePlayerData
 {
@@ -17,12 +15,6 @@ public class FirebasePlayerData
         Elo = elo;
         Icon = icon;
         Email = email;
-    }
-
-    public static async Task<FirebasePlayerData> CreateFirebasePlayerData(string id, System.Uri url, string email)
-    {
-        var sprite = await GlobalTools.LoadSprite(url);
-        return new FirebasePlayerData(id, "BUGAGAGA", 500, sprite, email);
     }
 
     // public FirebasePlayerData() { } : INetworkSerializable

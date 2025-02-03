@@ -1,15 +1,8 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using Setting;
 using Unity.Netcode;
-using Unity.VisualScripting;
-using UnityEditor.Search;
 using UnityEngine;
-using UnityEngine.SceneManagement;
 using Zenject;
-using Cache = UnityEngine.Cache;
 using Random = UnityEngine.Random;
 
 public class MatchBootstrap : NetworkBehaviour
@@ -126,12 +119,14 @@ public class MatchBootstrap : NetworkBehaviour
         _settings.FirestoreManager.GetPlayerData(player1.FirestoreId, result =>
         {
             matchData.Player1.FirebasePlayer = result;
-            Dispatcher.Enqueue(() => coreServer.UpdateFirebasePlayerData(matchData.Player1.PlayerId));
+            coreServer.UpdateFirebasePlayerData(matchData.Player1.PlayerId);
+
         });
         _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
         {
             matchData.Player2.FirebasePlayer = result; 
-            Dispatcher.Enqueue(() => coreServer.UpdateFirebasePlayerData(matchData.Player2.PlayerId));
+
+             coreServer.UpdateFirebasePlayerData(matchData.Player2.PlayerId);
         });
         coreServer.Init(matchData);
         coreServer.SetServerCore(coreServer);
@@ -169,12 +164,15 @@ public class MatchBootstrap : NetworkBehaviour
                 _settings.FirestoreManager.GetPlayerData(player1.FirestoreId, result =>
                 {
                     matchData.Player1.FirebasePlayer = result; 
-                    Dispatcher.Enqueue(() => matchCore.UpdateFirebasePlayerData(matchData.Player1.PlayerId));
+
+                    matchCore.UpdateFirebasePlayerData(matchData.Player1.PlayerId);
+
                 });
                 _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
                 {
-                    matchData.Player2.FirebasePlayer = result; 
-                    Dispatcher.Enqueue(() => matchCore.UpdateFirebasePlayerData(matchData.Player2.PlayerId));
+                    matchData.Player2.FirebasePlayer = result;
+                    matchCore.UpdateFirebasePlayerData(matchData.Player2.PlayerId);
+
                 });
                 Debug.Log("matchCore.Init(matchData);");
                 matchCore.Init(matchData);

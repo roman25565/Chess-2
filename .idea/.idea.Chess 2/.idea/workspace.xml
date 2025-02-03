@@ -5,71 +5,26 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8d369c67-3479-47ca-aa30-f9b18fcbfb3c" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap.meta" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GlobalTools.cs" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/Assets/Scripts/GlobalTools.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.gitignore" beforeDir="false" afterPath="$PROJECT_DIR$/.gitignore" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Chess 2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Chess 2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180/Google.IOSResolver.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180/Google.IOSResolver.dll.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180/Google.JarResolver.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180/Google.JarResolver.dll.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180/Google.PackageManagerResolver.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180/Google.PackageManagerResolver.dll.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180/Google.VersionHandlerImpl.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/1.2.180/Google.VersionHandlerImpl.dll.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/CHANGELOG.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/CHANGELOG.md.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/Google.VersionHandler.dll" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/Google.VersionHandler.dll.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/LICENSE.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/README.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/README.md.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/external-dependency-manager_version-1.2.180_manifest.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/ExternalDependencyManager 1/Editor/external-dependency-manager_version-1.2.180_manifest.txt.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.aar.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository/com/google/signin/google-signin-support/1.0.4/google-signin-support-1.0.4.aar.meta" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/InputSystem_Actions.inputactions" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/InputSystem_Actions.inputactions" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/mainTemplate.gradle" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Plugins/Android/settingsTemplate.gradle" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/Android/settingsTemplate.gradle" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Plugins/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Plugins/TextMesh Pro/Resources/Fonts &amp; Materials/LiberationSans SDF - Fallback.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/BiggCell Variant.prefab" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/BiggCell Variant.prefab.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/Board.prefab" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/Board.prefab.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/BoardCanvas.prefab" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/BoardCanvas.prefab.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/MatchBootstrap.prefab" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/MatchBootstrap.prefab.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/MatchCore.prefab" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Prefabs/MatchCore.prefab.meta" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/GameScene.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/GameScene.unity" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Main.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Main.unity" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/PerformanceTestRunInfo.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/PerformanceTestRunInfo.json.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/PerformanceTestRunSettings.json" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Resources/PerformanceTestRunSettings.json.meta" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Board/AbstractBoard.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Board/AbstractBoard.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bootstrap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/Bootstrap.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bootstrap.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/Bootstrap.cs.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/DontDestroyOnLoad.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/DontDestroyOnLoad.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/DontDestroyOnLoad.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/DontDestroyOnLoad.cs.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/DraggableButton.cs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/DraggableButton.cs.meta" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/Bootstrap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/Bootstrap.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/GoogleAuthentication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/GoogleAuthentication.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/FirebasePlayerData.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/FirebasePlayerData.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/FirestoreManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/FirestoreManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GameData.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/GameData.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GoogleAuthentication.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/GoogleAuthentication.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/GoogleAuthentication.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/GoogleAuthentication.cs.meta" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/MonoInstaller.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/MonoInstaller.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/MonoInstaller.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/MonoInstaller.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/NetCode/MatchBootstrap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/NetCode/MatchBootstrap.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/NetCode/MatchCore.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/NetCode/MatchCore.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/UI/PlayerPanel.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/UI/PlayerPanel.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/UI/UIManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/UI/UIManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/BuildAndroid/Chess 2_BurstDebugInformation_DoNotShip/tempburstlibs/arm64-v8a/lib_burst_generated.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/manifest.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/manifest.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Packages/packages-lock.json" beforeDir="false" afterPath="$PROJECT_DIR$/Packages/packages-lock.json" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/AndroidResolverDependencies.xml" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/AndroidResolverDependencies.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/ProjectSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -93,7 +48,7 @@
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/UI/EndGamePanel.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Chess 2_clone_1/Assets/Scripts/Board/AbstractBoard.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Chess 2_clone_1/Assets/Scripts/FirestoreManager.cs" root0="SKIP_HIGHLIGHTING" />
-    <setting file="file://$USER_HOME$/AppData/Local/Temp/Rar$DIa27980.31558.rartemp/GoogleAuthentication.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/../Chess 2_clone_1/Assets/Scripts/NetCode/MatchCore.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://D:/Backups/Scripts/Bootstrap.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
@@ -111,25 +66,25 @@
     <option name="openDirectoriesWithSingleClick" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
-  <component name="PropertiesComponent"><![CDATA[{
-  "keyToString": {
-    "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.git.unshallow": "true",
-    "ShowUsagesActions.previewPropertyKey": "true",
-    "git-widget-placeholder": "master",
-    "last_opened_file_path": "C:/UnityP/newTest",
-    "node.js.detected.package.eslint": "true",
-    "node.js.detected.package.tslint": "true",
-    "node.js.selected.package.eslint": "(autodetect)",
-    "node.js.selected.package.tslint": "(autodetect)",
-    "nodejs_package_manager_path": "npm",
-    "settings.editor.selected.configurable": "editor.preferences.tabs",
-    "vue.rearranger.settings.migration": "true"
+  <component name="PropertiesComponent">{
+  &quot;keyToString&quot;: {
+    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,
+    &quot;RunOnceActivity.git.unshallow&quot;: &quot;true&quot;,
+    &quot;ShowUsagesActions.previewPropertyKey&quot;: &quot;true&quot;,
+    &quot;git-widget-placeholder&quot;: &quot;master&quot;,
+    &quot;last_opened_file_path&quot;: &quot;C:/UnityP/newTest&quot;,
+    &quot;node.js.detected.package.eslint&quot;: &quot;true&quot;,
+    &quot;node.js.detected.package.tslint&quot;: &quot;true&quot;,
+    &quot;node.js.selected.package.eslint&quot;: &quot;(autodetect)&quot;,
+    &quot;node.js.selected.package.tslint&quot;: &quot;(autodetect)&quot;,
+    &quot;nodejs_package_manager_path&quot;: &quot;npm&quot;,
+    &quot;settings.editor.selected.configurable&quot;: &quot;editor.preferences.tabs&quot;,
+    &quot;vue.rearranger.settings.migration&quot;: &quot;true&quot;
   }
-}]]></component>
+}</component>
   <component name="RunManager" selected="Attach to Unity Editor.Attach to Unity Editor">
     <configuration name="Standalone Player" type="RunUnityExe" factoryName="Unity Executable">
-      <option name="EXE_PATH" value="$PROJECT_DIR$/../Builds/WinTest\Chess 2.exe" />
+      <option name="EXE_PATH" value="$PROJECT_DIR$/../Builds/ChessServer/server.x86_64" />
       <option name="PROGRAM_PARAMETERS" value="" />
       <option name="WORKING_DIRECTORY" value="C:\UnityP\Builds\ChessClient" />
       <option name="PASS_PARENT_ENVS" value="1" />
@@ -220,7 +175,11 @@
       <workItem from="1738225605411" duration="7188000" />
       <workItem from="1738242987341" duration="8291000" />
       <workItem from="1738343336293" duration="4544000" />
-      <workItem from="1738397798309" duration="22999000" />
+      <workItem from="1738397798309" duration="30716000" />
+      <workItem from="1738440921563" duration="4036000" />
+      <workItem from="1738485197915" duration="631000" />
+      <workItem from="1738572471620" duration="5835000" />
+      <workItem from="1738590984050" duration="3265000" />
     </task>
     <servers />
   </component>
