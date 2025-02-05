@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using TMPro;
@@ -39,55 +40,84 @@ public class ClientMatchmaker : MonoBehaviour
         string queueName = "test";
         var options = new CreateTicketOptions(queueName, attributes);
 
-        while (!await FindMatch(players, options)) // if we dont find a match, wait a second and try again
-            await Awaitable.WaitForSecondsAsync(1f);
-    }
+        try
+        {
+            // Create a ticket and start polling
+            var ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
+            Debug.Log("Ticket created with ID: " + ticketResponse.Id);
+            statusText.SetText("Ticket created. Searching for match...");
 
-    async Task<bool> FindMatch(List<Player> players, CreateTicketOptions options)
+            bool matchFound = await FindMatch(ticketResponse.Id);
+            if (!matchFound)
+            {
+                Debug.LogError("Failed to find a match.");
+                statusText.SetText("Failed to find a match.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error during matchmaking: " + ex.Message);
+            statusText.SetText("Matchmaking error: " + ex.Message);
+        }
+    }
+    private async Task<bool> FindMatch(string ticketId)
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-        var ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
 
-        while (true)
+        for (int attempt = 0; attempt < (60 * 10); attempt++)
         {
             await Awaitable.WaitForSecondsAsync(1f);
-            Debug.Log("Polling");
-            var ticketStatusResponse = await MatchmakerService.Instance.GetTicketAsync(ticketResponse.Id);
-            if (ticketStatusResponse?.Value is MultiplayAssignment assignment)
+            Debug.Log("Polling attempt: " + (attempt + 1));
+            statusText.SetText("Polling attempt: " + (attempt + 1));
+
+            try
             {
-                Debug.Log("Response " + assignment.Status);
-                statusText.SetText("Response " + assignment.Status);
-                switch (assignment.Status)
+                var ticketStatusResponse = await MatchmakerService.Instance.GetTicketAsync(ticketId);
+                if (ticketStatusResponse?.Value is MultiplayAssignment assignment)
                 {
-                    case MultiplayAssignment.StatusOptions.Found:
-                    {
-                        if (assignment.Port.HasValue)
-                        {
-                            transport.SetConnectionData(assignment.Ip, (ushort) assignment.Port);
-                            bool result = NetworkManager.Singleton.StartClient();
-                            
-                            // Logging and showing on UI
-                            Debug.Log("StartClient " + result);
-                            statusText.SetText("StartClient " + result);
-                            NetworkManager.Singleton.OnConnectionEvent += LogConnectionEvent;
+                    Debug.Log("Response: " + assignment.Status);
+                    statusText.SetText("Match status: " + assignment.Status);
 
-                            return result; // if we fail to connect try again w/ a false result
-                        }
-
-                        Debug.LogError("No port found");
-                        return false;
-                    }
-                    case MultiplayAssignment.StatusOptions.Timeout:
-                    case MultiplayAssignment.StatusOptions.Failed:
+                    switch (assignment.Status)
                     {
-                        Debug.LogError(assignment.ToString());
-                        return false;
+                        case MultiplayAssignment.StatusOptions.Found:
+                            if (assignment.Port.HasValue)
+                            {
+                                transport.SetConnectionData(assignment.Ip, (ushort)assignment.Port);
+                                bool result = NetworkManager.Singleton.StartClient();
+
+                                Debug.Log("StartClient result: " + result);
+                                statusText.SetText("Connecting to server...");
+
+                                NetworkManager.Singleton.OnConnectionEvent += LogConnectionEvent;
+                                return result; // Successfully connected
+                            }
+
+                            Debug.LogError("No port found in assignment.");
+                            statusText.SetText("Error: No port found.");
+                            return false;
+
+                        case MultiplayAssignment.StatusOptions.Timeout:
+                        case MultiplayAssignment.StatusOptions.Failed:
+                            Debug.LogError("Matchmaking failed: " + assignment.Status);
+                            statusText.SetText("Matchmaking failed: " + assignment.Status);
+                            return false;
                     }
                 }
             }
+            catch (Exception ex)
+            {
+                Debug.LogError("Error polling ticket status: " + ex.Message);
+                statusText.SetText("Error: " + ex.Message);
+            }
         }
+
+        Debug.LogError("Max polling attempts reached. No match found.");
+        statusText.SetText("Matchmaking timed out.");
+        return false;
     }
 
+    
     void LogConnectionEvent(NetworkManager manager, ConnectionEventData data)
     {
         switch (data.EventType)

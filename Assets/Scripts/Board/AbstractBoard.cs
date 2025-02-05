@@ -104,7 +104,7 @@ public abstract class AbstractBoard : MonoBehaviour
     {
 #if !UNITY_SERVER
         AddMoveToHistory(from, to);
-        if (_inHistory){}
+        if (_inHistory)HistoryToReal();
         
         SetSelectedState(ref _firstSelectedCell, from);
         SetSelectedState(ref _secondSelectedCell, to);
@@ -115,10 +115,8 @@ public abstract class AbstractBoard : MonoBehaviour
     
     public void TryMove(Cell cell, bool isTab = true)
     {
-        if (_inHistory)
-        {
-            return;
-        }
+        if (_inHistory) return;
+        if (_gameEnded) return;
         if (isTab && _selectedCell == cell) Deselect();
         else if (_selectedCell != null && IsValidMove(_selectedCell, cell))
         {
@@ -169,6 +167,7 @@ public abstract class AbstractBoard : MonoBehaviour
         _draggingRectTransform = null;
         
         if (_inHistory) return;
+        if (_gameEnded) return;
         
         if (cell == null)
         {
@@ -345,12 +344,16 @@ public abstract class AbstractBoard : MonoBehaviour
     }
     #endregion
     
+    private bool _inHistory;
+    public void EndGame()
+    {
+        _gameEnded = true;
+    }
 #if !UNITY_SERVER
     #region MoveHistory
 
     private List<Move> _moveHistory = new List<Move>();
     private int _historyIndex;
-    private bool _inHistory;
 
     public void NextMove()
     {
@@ -365,12 +368,17 @@ public abstract class AbstractBoard : MonoBehaviour
     
     private void AddMoveToHistory(Cell from, Cell to)
     {
-        if (_inHistory) SetHistoryIndex(_moveHistory.Count);
+        HistoryToReal();
         
         _moveHistory.Add(new Move{From = from, To = to, Piece = to.Piece});
         _historyIndex = _moveHistory.Count;
     }
-    
+
+    private void HistoryToReal()
+    {
+        if (_inHistory) SetHistoryIndex(_moveHistory.Count);
+    }
+
     private void SetHistoryIndex(int index)
     {
         if (index < 0) return;

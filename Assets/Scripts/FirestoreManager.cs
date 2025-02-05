@@ -22,7 +22,7 @@ public class FirestoreManager
     private FirebaseFirestore db;
     public FirebasePlayerData PlayerData;
 
-    public async void Init()
+    public async Task Init()
     {
         try
         {

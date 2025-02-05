@@ -43,6 +43,7 @@ public class MatchCore : NetworkBehaviour
     private MatchData _matchData;
     private bool _isInitialize;
     private float _lastUpdateTime;
+    private bool _gameEnded;
 
     public bool IsRotated => _matchData.GetPlayerData(_myId).IsRotate;
     public bool IsMyId(ulong id) => id == _myId;
@@ -53,6 +54,7 @@ public class MatchCore : NetworkBehaviour
 
     private void Update()
     {
+        if (_gameEnded) return;
         if (IsOwner && _isInitialize)
         {
             var playerData = _matchData.GetPlayerData(_matchData.MovingPlayerId);
@@ -67,15 +69,15 @@ public class MatchCore : NetworkBehaviour
         }
     }
 
-    public void UpdateFirebasePlayerData(ulong playerId)
+    public void UpdateFirebasePlayerData(ulong playerId, bool isEnemyPlayer)
     {
         if (playerId == _matchData.Player1.PlayerId)
         { 
             Debug.Log("UpdateFirebasePlayerData");
-            UIManager.Instance.SetPlayerUI(_matchData.Player1.FirebasePlayer, _matchData.Player1.PlayerId != _myId);
+            UIManager.Instance.SetPlayerUI(_matchData.Player1.FirebasePlayer, isEnemyPlayer);
         }else if (playerId == _matchData.Player2.PlayerId)
         {
-            UIManager.Instance.SetPlayerUI(_matchData.Player2.FirebasePlayer, _matchData.Player2.PlayerId != _myId);
+            UIManager.Instance.SetPlayerUI(_matchData.Player2.FirebasePlayer, isEnemyPlayer);
             Debug.Log("UpdateFirebasePlayerDataFinish");
         }
     }
@@ -123,6 +125,7 @@ public class MatchCore : NetworkBehaviour
         if (serverCore == this)
         {
             _allMatchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
+            Debug.Log(_allMatchCores.Length);
         }
         
     }
@@ -158,13 +161,14 @@ public class MatchCore : NetworkBehaviour
             Debug.LogError("move is not valid");
         }
 
-        UseMove(from, to, playerId);
+        // UseMove(from, to, playerId);
         SendToPlayersMove(from, to, playerId);
     }
 
 
     private void DeathRattle(Cell cell)
     {
+        Debug.Log("DeathRattle");
         switch (cell.Piece.PieceType)
         {
             case PieceType.Empty:
@@ -189,18 +193,10 @@ public class MatchCore : NetworkBehaviour
 
     private void LosePlayer(ulong loserId)
     {
-        double scope1 = 0;
-        double scope2 = 0;
-        GetScopes(loserId, ref scope1, ref scope2);
-        var newElo1 = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo, _matchData.Player1.FirebasePlayer.Elo, scope1);
-        var newElo2 = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo, _matchData.Player2.FirebasePlayer.Elo, scope2);
-        
-        _settings.FirestoreManager.SetElo(_matchData.Player1.FirebasePlayer.ID, newElo1);
-        _settings.FirestoreManager.SetElo(_matchData.Player2.FirebasePlayer.ID, newElo2);
         
         foreach (var allMatchCore in _allMatchCores)
         {
-            allMatchCore.LosePlayerClientRpc(loserId, newElo1, newElo2);
+            allMatchCore.LosePlayerClientRpc(loserId);
         }
     }
 
@@ -231,19 +227,34 @@ public class MatchCore : NetworkBehaviour
         }
     }
     #endregion
+
     [Rpc(SendTo.ClientsAndHost)]
-    private void LosePlayerClientRpc(ulong loserId, int newElo1, int newElo2)
+    private void LosePlayerClientRpc(ulong loserId)
     {
         if (!IsOwner) return;
 
+        _gameEnded = true;
+        _gameData.ActiveBoard.EndGame();
         bool isFirstPlayer = _matchData.Player1.PlayerId == _myId;
+
+        double scope1 = 0;
+        double scope2 = 0;
+        GetScopes(loserId, ref scope1, ref scope2);
+
+        var newElo1 = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo,
+            _matchData.Player1.FirebasePlayer.Elo, scope1);
+        var newElo2 = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo,
+            _matchData.Player2.FirebasePlayer.Elo, scope2);
+
         var myElo = isFirstPlayer ? newElo1 : newElo2;
         var enemyElo = isFirstPlayer ? newElo2 : newElo1;
+        
+        _settings.FirestoreManager.SetElo(_matchData.GetPlayerData(_myId).FirebasePlayer.ID, myElo);
         
         UIManager.Instance.EndGame(loserId == _myId, myElo, enemyElo);
     }
 
-    [Rpc(SendTo.ClientsAndHost)]
+    [Rpc(SendTo.Everyone)]
     public void UseMoveCommandRpc(Vector2Int from, Vector2Int to, ulong playerId)
     {
         if (IsOwner)

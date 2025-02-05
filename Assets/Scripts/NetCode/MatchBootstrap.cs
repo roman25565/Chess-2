@@ -116,18 +116,7 @@ public class MatchBootstrap : NetworkBehaviour
         coreServer.GetComponent<NetworkObject>().Spawn();
         
         var matchData = CreateMatchData(player1, player2, whitePlayerId);
-        _settings.FirestoreManager.GetPlayerData(player1.FirestoreId, result =>
-        {
-            matchData.Player1.FirebasePlayer = result;
-            coreServer.UpdateFirebasePlayerData(matchData.Player1.PlayerId);
-
-        });
-        _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
-        {
-            matchData.Player2.FirebasePlayer = result; 
-
-             coreServer.UpdateFirebasePlayerData(matchData.Player2.PlayerId);
-        });
+        
         coreServer.Init(matchData);
         coreServer.SetServerCore(coreServer);
     }
@@ -165,13 +154,13 @@ public class MatchBootstrap : NetworkBehaviour
                 {
                     matchData.Player1.FirebasePlayer = result; 
 
-                    matchCore.UpdateFirebasePlayerData(matchData.Player1.PlayerId);
+                    matchCore.UpdateFirebasePlayerData(matchData.Player1.PlayerId, matchData.Player1.PlayerId == OwnerClientId);
 
                 });
                 _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
                 {
                     matchData.Player2.FirebasePlayer = result;
-                    matchCore.UpdateFirebasePlayerData(matchData.Player2.PlayerId);
+                    matchCore.UpdateFirebasePlayerData(matchData.Player2.PlayerId, matchData.Player2.PlayerId == OwnerClientId);
 
                 });
                 Debug.Log("matchCore.Init(matchData);");

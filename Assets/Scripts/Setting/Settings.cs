@@ -14,6 +14,7 @@ namespace Setting
 
         public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates,FirestoreManager firestoreManager)
         {
+            Debug.Log("setting Init");
             ArrangementScriptableObject = arrangement;
             MyArrangements = RepackingArrangement(ArrangementScriptableObject);
             CellStates = cellStates;

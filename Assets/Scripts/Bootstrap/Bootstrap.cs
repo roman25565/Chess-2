@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Google;
 using Newtonsoft.Json;
 using Setting;
@@ -26,10 +27,10 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private Button hostLocalMatch;
     [SerializeField] private Button settingsButton;
     [SerializeField] private ClientMatchmaker clientMatchmaker;
-    private void Start()
+    private async void Start()
     {
-        LoadSettings();
         bool isServer = System.Environment.GetCommandLineArgs().Any(arg => arg == "-port");
+        await LoadSettings(!isServer);
         if (isServer)
         {
             Debug.Log("Starting server");
@@ -100,7 +101,7 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
-    private void LoadSettings()
+    private async Task LoadSettings(bool isClient)
     {
         var arrangement = LoadArrangement();
         
@@ -109,8 +110,12 @@ public class Bootstrap : MonoBehaviour
         var cellStates = Resources.Load<CellStates>("Settings/CellStates");
         
         var firestore = new FirestoreManager();
-        firestore.Init();
+        if (isClient)
+        {
+            await firestore.Init();
+        }
         
+
         _settings.Init(arrangement, piecesData, cellStates, firestore);
     }
 
