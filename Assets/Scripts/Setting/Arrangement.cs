@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Board;
+using Board.Piece;
 using UnityEngine;
 using UnityEngine.Serialization;
 

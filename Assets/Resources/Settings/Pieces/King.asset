@@ -12,7 +12,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52df025dba4c454997f0cfabc3ea3fa5, type: 3}
   m_Name: King
   m_EditorClassIdentifier: 
-  pieceType: 3
+  pieceType: 6
   skins:
   - {fileID: 1731329003, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
   - {fileID: 611990123, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
@@ -26,3 +26,5 @@ MonoBehaviour:
   - directions: 0200000001000000
   - directions: 0300000000000000
   - directions: 0300000001000000
+  arrangementMin: 1
+  arrangementMax: 1

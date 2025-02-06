@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Board;
+using Board.Piece;
 using Setting;
 using Unity.Netcode;
 

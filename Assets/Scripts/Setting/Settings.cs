@@ -1,4 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using Board;
+using Board.Piece;
 using UnityEngine;
 
 namespace Setting
@@ -7,7 +10,6 @@ namespace Setting
     {
         public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";
         public Dictionary<PieceType, PieceData> Pieces;
-        public List<ArrangementEntry> ArrangementScriptableObject;
         public CellStates CellStates;
         public List<ArrangementEntry> MyArrangements;
         public FirestoreManager FirestoreManager;
@@ -15,8 +17,7 @@ namespace Setting
         public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates,FirestoreManager firestoreManager)
         {
             Debug.Log("setting Init");
-            ArrangementScriptableObject = arrangement;
-            MyArrangements = RepackingArrangement(ArrangementScriptableObject);
+            MyArrangements = RepackingArrangement(arrangement);
             CellStates = cellStates;
             FirestoreManager = firestoreManager;
             
@@ -27,9 +28,33 @@ namespace Setting
             }
         }
 
-        public Piece CreatePiece(PieceType pieceType)
+        public AbstractPiece CreatePiece(PieceType pieceType)
         {
-            return new Piece(Pieces[pieceType]);
+            AbstractPiece result = null;
+            switch (pieceType)
+            {
+                case PieceType.Pawns:
+                    result = new Pawn(Pieces[pieceType]);
+                    break;
+                case PieceType.Rooks:
+                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
+                    break;
+                case PieceType.Knights:
+                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
+                    break;
+                case PieceType.Bishops:
+                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
+                    break;
+                case PieceType.Queens:
+                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
+                    break;
+                case PieceType.Kings:
+                    result = new King(Pieces[pieceType]);
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
+            }
+            return result;
         }
 
         private List<ArrangementEntry> RepackingArrangement(List<ArrangementEntry> arrangement)

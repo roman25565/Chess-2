@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Board;
+using Board.Piece;
 using JetBrains.Annotations;
 using Setting;
 using UnityEngine;
@@ -118,7 +120,7 @@ public abstract class AbstractBoard : MonoBehaviour
         if (_inHistory) return;
         if (_gameEnded) return;
         if (isTab && _selectedCell == cell) Deselect();
-        else if (_selectedCell != null && IsValidMove(_selectedCell, cell))
+        else if (_selectedCell != null && _selectedCell.Piece.IsValidMove(_selectedCell, cell))
         {
             OnCanMove(_selectedCell, cell);
             Deselect();
@@ -133,7 +135,7 @@ public abstract class AbstractBoard : MonoBehaviour
 
         void SelectMyPiece(Cell cell1)
         {
-            Select(cell1);
+            SelectCell(cell1);
             
             _thirdSelectedCell?.SetSelectedState(Cell.CellState.None);
             _thirdSelectedCell = cell1;
@@ -210,82 +212,6 @@ public abstract class AbstractBoard : MonoBehaviour
         
         return GetCell(cellRow, cellColumn);
     }
-
-    private bool IsValidMove(Cell from, Cell to)
-    {
-        if (from.Piece == null) return false;
-        
-        var result = false;
-        var points = GetLastPoints(from);
-        points = ValidationPoints(points);
-
-        foreach (var point in points)
-        {
-            if (point.x == to.Row && point.y == to.Column)
-            {
-                result = true;
-            }
-        }
-        Debug.Log("IsValidMove: " + result);
-        return result;
-    }
-    
-    protected virtual List<Vector2Int> GetLastPoints(Cell cell)
-    {
-        var result = new List<Vector2Int>();
-        var steps = cell.Piece.Steps;
-        var direction = new Vector2Int(1, 1);
-        if (cell.Piece.IsRotated)
-        {
-            direction.y = -1;
-        } 
-        foreach (var step in steps)
-        {
-            var point = new Vector2Int(cell.Row, cell.Column);
-            foreach (var stepDirection in step.directions)
-            {
-                switch (stepDirection)
-                {
-                    case Directions.Down:
-                        point.y += 1 * direction.y;
-                        break;
-                    case Directions.Up:
-                        point.y -= 1 * direction.y;
-                        break;
-                    case Directions.Left:
-                        point.x -= 1 * direction.x;
-                        break;
-                    case Directions.Right:
-                        point.x += 1 * direction.x;
-                        break;
-                }
-            }
-            result.Add(point);
-        }
-
-        if (result.Count == 0)
-        {
-            Debug.LogError("No points found: Board GetLastPoints()");
-        }
-        return result;
-        
-    }
-    
-    private List<Vector2Int> ValidationPoints(List<Vector2Int> points)
-    {
-        foreach (var point in points.ToList())
-        {
-            if (point.x < 0 || point.y < 0)
-            {
-                points.Remove(point);
-            }
-            if (point.x > 7 || point.y > 7)
-            {
-                points.Remove(point);
-            }
-        }
-        return points;
-    }
     
     #endregion
 
@@ -311,22 +237,28 @@ public abstract class AbstractBoard : MonoBehaviour
         }
     }
 
-    private void Select(Cell cell)
+    private void SelectCell(Cell cell)
     {
         Deselect();
         _selectedCell = cell;
-        _points = GetLastPoints(cell);
-        _points = ValidationPoints(_points);
+        var piece = _selectedCell.Piece;
+       
+        if (piece == null) return;
+
+        _points = GetPoints(cell, piece);
         SettCellState(_points, Cell.CellState.Moved);
     }
 
-
+    protected virtual List<Vector2Int> GetPoints(Cell cell, AbstractPiece piece)
+    {
+        return piece.GetLastPoints(cell);
+    }
+    
     public bool IsValidMove(Vector2Int from, Vector2Int to)
     {
-        return IsValidMove(GetCell(from.x, from.y), GetCell(to.x, to.y));
+        var fromCell = GetCell(from.x, from.y);
+        return fromCell.Piece.IsValidMove(GetCell(from.x, from.y), GetCell(to.x, to.y));
     }
-
-
     
     private void SettCellState(List<Vector2Int> points, Cell.CellState state)
     {
@@ -370,7 +302,7 @@ public abstract class AbstractBoard : MonoBehaviour
     {
         HistoryToReal();
         
-        _moveHistory.Add(new Move{From = from, To = to, Piece = to.Piece});
+        _moveHistory.Add(new Move{From = from, To = to, AbstractPiece = to.Piece});
         _historyIndex = _moveHistory.Count;
     }
 
@@ -402,7 +334,7 @@ public abstract class AbstractBoard : MonoBehaviour
         {
             var move = _moveHistory[_historyIndex - 1]; 
             Move(move.To, move.From);
-            move.To.SetPiece(move.Piece);
+            move.To.SetPiece(move.AbstractPiece);
             
             _historyIndex--;
             recursionCount++;

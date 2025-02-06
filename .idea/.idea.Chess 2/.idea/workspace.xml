@@ -5,17 +5,25 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="8d369c67-3479-47ca-aa30-f9b18fcbfb3c" name="Changes" comment="">
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Piece.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Piece/AbstractPiece.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Piece/King.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Piece/King.cs.meta" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Piece/Pawn.cs" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Piece/Pawn.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/.idea.Chess 2/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/.idea.Chess 2/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scenes/Server.unity" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scenes/Server.unity" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Board/AbstractBoard.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Board/AbstractBoard.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/Bootstrap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Bootstrap/Bootstrap.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/FirestoreManager.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/FirestoreManager.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Matchmaking/Client/ClientMatchmaker.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Matchmaking/Client/ClientMatchmaker.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Board/ArrangementBoard.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Board/ArrangementBoard.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Board/Cell.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Cell.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Board/Move.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Move.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Board/Piece.cs" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Board/Piece.cs.meta" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Board/Piece/AbstractPiece.cs.meta" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/NetCode/MatchBootstrap.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/NetCode/MatchBootstrap.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/NetCode/MatchCore.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/NetCode/MatchCore.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Setting/Arrangement.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Setting/Arrangement.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Setting/ArrangementEntry.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Setting/ArrangementEntry.cs" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/Assets/Scripts/Setting/PieceData.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Setting/PieceData.cs" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/Assets/Scripts/Setting/Settings.cs" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/Scripts/Setting/Settings.cs" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/Assets/UniversalRenderPipelineGlobalSettings.asset" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectSettings/Packages/com.unity.dedicated-server/MultiplayerRolesSettings.asset" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectSettings/Packages/com.unity.dedicated-server/MultiplayerRolesSettings.asset" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -31,6 +39,7 @@
   </component>
   <component name="HighlightingSettingsPerFile">
     <setting file="file://$PROJECT_DIR$/Assets/GoogleSignIn/Impl/GoogleSignInImpl.cs" root0="FORCE_HIGHLIGHTING" />
+    <setting file="file://$PROJECT_DIR$/Assets/Scripts/Board/Piece/AbstractPiece.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/Bootstrap/Bootstrap.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/GameData.cs" root0="FORCE_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/Assets/Scripts/MainMenu.cs" root0="FORCE_HIGHLIGHTING" />
@@ -41,6 +50,8 @@
     <setting file="file://$PROJECT_DIR$/../Chess 2_clone_1/Assets/Scripts/Board/AbstractBoard.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Chess 2_clone_1/Assets/Scripts/FirestoreManager.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://$PROJECT_DIR$/../Chess 2_clone_1/Assets/Scripts/NetCode/MatchCore.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Temp/Rar$DIa19892.340.rartemp/Settings.cs" root0="SKIP_HIGHLIGHTING" />
+    <setting file="file://$USER_HOME$/AppData/Local/Temp/Rar$DIa19892.49262.rartemp/GameData.cs" root0="SKIP_HIGHLIGHTING" />
     <setting file="file://D:/Backups/Scripts/Bootstrap.cs" root0="SKIP_HIGHLIGHTING" />
   </component>
   <component name="ProjectColorInfo">{
@@ -177,6 +188,8 @@
       <workItem from="1738675083945" duration="2814000" />
       <workItem from="1738744987862" duration="9416000" />
       <workItem from="1738767616588" duration="3649000" />
+      <workItem from="1738776780521" duration="833000" />
+      <workItem from="1738830500226" duration="11413000" />
     </task>
     <servers />
   </component>

@@ -21,3 +21,5 @@ MonoBehaviour:
   - directions: 02000000
   - directions: 0000000002000000
   - directions: 0100000002000000
+  arrangementMin: 0
+  arrangementMax: 94

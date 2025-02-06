@@ -1,6 +1,8 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Board;
+using Board.Piece;
 using Newtonsoft.Json;
 using NUnit.Framework;
 using Setting;
@@ -55,18 +57,21 @@ public class ArrangementBoard : AbstractBoard
 
     protected override void OnEnable()
     {
-        foreach (var vector2Int in BoardLines.Values)
-        {
-            foreach (var cell in vector2Int)
-            {
-                Debug.Log("x " + cell.Row + " y " + cell.Column);
-            }
-
-        }
         base.OnEnable();
+        SetUpPieceCount();
         LoadArrangement();
         LoadExtraLine();
         saveButton.onClick.AddListener(SaveArrangement);
+
+    }
+
+    private void SetUpPieceCount()
+    {
+        _piecesCount = new Dictionary<PieceType, int>();
+        for (int i = 0; i < Settings.Pieces.Count; i++) {
+            var item = Settings.Pieces.ElementAt(i);
+            _piecesCount.Add(item.Key, 0);
+        }
     }
 
     private void LoadArrangement()
@@ -75,7 +80,10 @@ public class ArrangementBoard : AbstractBoard
         {
             var row = arrangement.row;
             var column = arrangement.column;
-            GetCell(row, column).SetPiece(Settings.CreatePiece(arrangement.pieceType));
+            var pieceType = arrangement.pieceType;
+            GetCell(row, column).SetPiece(Settings.CreatePiece(pieceType));
+            
+            _piecesCount[pieceType]++;
         }
     }
 
@@ -132,7 +140,9 @@ public class ArrangementBoard : AbstractBoard
 
     #region Move
 
-    protected override List<Vector2Int> GetLastPoints(Cell cell)
+    private Dictionary<PieceType, int> _piecesCount;
+
+    protected override List<Vector2Int> GetPoints(Cell cell, AbstractPiece piece)
     {
         return _allPoints;
     }
@@ -144,7 +154,13 @@ public class ArrangementBoard : AbstractBoard
 
     protected override void MoveToOutScreen(Cell from)
     {
-        if (from.Row != 8) from.SetPiece(null);
+        if (from.Row != 8)
+        {
+            var picetype = from.Piece.PieceType;
+            var min = Settings.Pieces[picetype].arrangementMin;
+            _piecesCount[picetype] -= 1;
+            from.SetPiece(null);
+        }
     }
 
     protected override void OnDraggingStop(Cell from, Cell to)
@@ -154,6 +170,13 @@ public class ArrangementBoard : AbstractBoard
 
     protected override void Move(Cell from, Cell to)
     {
+        var picetype = from.Piece.PieceType;
+        var max = Settings.Pieces[picetype].arrangementMax;
+        if (_piecesCount[picetype] + 1 > max)
+        {
+            return;
+        }
+        _piecesCount[from.Piece.PieceType] += 1;
         to.SetPiece(from.Piece);
     }
     

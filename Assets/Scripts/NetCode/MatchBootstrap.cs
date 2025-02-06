@@ -1,4 +1,6 @@
 ﻿using System.Threading.Tasks;
+using Board;
+using Board.Piece;
 using Setting;
 using Unity.Netcode;
 using UnityEngine;

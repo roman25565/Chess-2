@@ -1,4 +1,6 @@
 ﻿using System;
+using Board;
+using Board.Piece;
 using Setting;
 using Unity.Netcode;
 using UnityEngine;
@@ -19,7 +21,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     
     public int Column { get; set; }
     public int Row { get; private set; }
-    public Piece Piece { get; private set; }
+    public AbstractPiece Piece { get; private set; }
     public AbstractBoard Board { get; set; }
 
     [SerializeField] private Image pieceImage;
@@ -65,10 +67,10 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     }
 
     
-    public void SetPiece(Piece piece)
+    public void SetPiece(AbstractPiece abstractPiece)
     {
-        Piece = piece;
-        if (piece == null)
+        Piece = abstractPiece;
+        if (abstractPiece == null)
         {
             pieceImage.sprite = null;
             SetAlpha(pieceImage, 0);
@@ -76,7 +78,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         }
         SetAlpha(pieceImage, 1);
         var skinIndex = Piece.Color == PieceColor.Black ? Piece.SelectedSkinIndex + 1 : Piece.SelectedSkinIndex;
-        pieceImage.sprite = piece.Skins[skinIndex];
+        pieceImage.sprite = abstractPiece.Skins[skinIndex];
 
         void SetAlpha(Image image,float alpha)
         {
@@ -86,12 +88,12 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         }
     }
 
-    public Cell Init(int row, int column, AbstractBoard board, Piece piece = null)
+    public Cell Init(int row, int column, AbstractBoard board, AbstractPiece abstractPiece = null)
     {
-        SetPiece(piece);
+        SetPiece(abstractPiece);
         Row = row;
         Column = column;
-        Piece = piece;
+        Piece = abstractPiece;
         Board = board;
         return this;
     }

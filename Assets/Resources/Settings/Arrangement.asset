@@ -51,7 +51,7 @@ MonoBehaviour:
     pieceType: 1
   - row: 4
     column: 7
-    pieceType: 3
+    pieceType: 6
   - row: 5
     column: 7
     pieceType: 1

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using Board;
+using Board.Piece;
 using UnityEngine;
 using UnityEngine.Serialization;
 
@@ -18,5 +20,17 @@ namespace Setting
         }
 
         public List<DirectionList> steps = new List<DirectionList>();
+
+        public int arrangementMin;
+        public int arrangementMax;
+        
+    
+        private void OnValidate()
+        {
+            arrangementMin = Mathf.Min(arrangementMin, arrangementMax);
+            arrangementMin = Mathf.Max(0, arrangementMin);
+            arrangementMax = Mathf.Max(arrangementMin, arrangementMax);
+            arrangementMax = Mathf.Max(0, arrangementMax);
+        }
     }
 }
