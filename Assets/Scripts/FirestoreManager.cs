@@ -17,10 +17,11 @@ public class FirestoreManager
     private const string IconURLKey = "IconURL";
     private const string EmailKey = "Email";
     
-    private const string CollectionName = "Players";
-    
     private FirebaseFirestore db;
     public FirebasePlayerData PlayerData;
+
+    #region PlayersData
+    private const string PlayersDataCollectionName = "Players";
 
     public async Task Init()
     {
@@ -64,7 +65,7 @@ public class FirestoreManager
         FirebasePlayerData result = null;
         try
         {
-            var docRef = db.Collection(CollectionName).Document(playerId);
+            var docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
             DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
 
             if (snapshot.Exists)
@@ -120,7 +121,7 @@ public class FirestoreManager
 
     private void SingUp(Dictionary<string, object> playerData, string playerId)
     {
-        DocumentReference docRef = db.Collection(CollectionName).Document(playerId);
+        DocumentReference docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
         docRef.SetAsync(playerData).ContinueWithOnMainThread(async setTask =>
         {
             if (setTask.IsFaulted)
@@ -143,9 +144,9 @@ public class FirestoreManager
         });
     }
 
-    public void SetElo(string playerId, int newElo)
+    public void BdSetElo(string playerId, int newElo)
     {
-        DocumentReference docRef = db.Collection(CollectionName).Document(playerId);
+        DocumentReference docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
         
         Dictionary<string, object> updates = new Dictionary<string, object>
         {
@@ -160,4 +161,96 @@ public class FirestoreManager
             }
         });
     }
+    
+    #endregion
+    #region MatchData
+
+    private const string MatchesDataCollectionName = "Matches";
+    
+    private const string WinnerID = "WinnerID";
+    private const string Date = "Date";
+    private const string Player1ID = "Player1ID";
+    private const string Player2ID = "Player2ID";
+    private const string ArrangementList1 = "ArrangementList1";
+    private const string ArrangementList2 = "ArrangementList2";
+    private const string MoveHistory = "MoveHistory";
+    
+    private const string Row = "Row";
+    private const string Column = "Column";
+    private const string PieceType = "PieceType";
+
+    public async Task SaveMatchHistory(string winnerID,
+        string player1ID, ArrangementEntry[] arrangement1,
+        string player2ID, ArrangementEntry[] arrangement2,
+        List<Move> moveHistory)
+    {
+        var collectionRef = db.Collection(MatchesDataCollectionName);
+
+        var arrangementList1 = ConvertArrangement(arrangement1);
+        var arrangementList2 = ConvertArrangement(arrangement2);
+        var history = ConvertMoveList(moveHistory);
+        var matchData = new Dictionary<string, object>
+        {
+            { WinnerID, winnerID },
+            { Date, DateTime.UtcNow },
+            { Player1ID, player1ID },
+            { ArrangementList1, arrangementList1 },
+            { Player2ID, player2ID },
+            { ArrangementList2, arrangementList2 },
+            { MoveHistory, history }
+        };
+        Debug.Log(matchData);
+        await collectionRef.AddAsync(matchData);
+        Debug.Log("Match saved");
+    }
+
+    private List<Dictionary<string, object>> ConvertMoveList(List<Move> moveHistory)
+    {
+        var result = new List<Dictionary<string, object>>();
+
+        foreach (var move in moveHistory)
+        {
+            var dict = new Dictionary<string, object>
+            {
+                { "From", new Dictionary<string, object>
+                    {
+                        { Row, move.From.Row },
+                        { Column, move.From.Column }
+                    }
+                },
+                { "To", new Dictionary<string, object>
+                    {
+                        { Row, move.To.Row },
+                        { Column, move.To.Column }
+                    }
+                }
+            };
+            result.Add(dict);
+        }
+
+        return result;
+    }
+
+    private Dictionary<string, object> ConvertArrangement(ArrangementEntry[] arrangement)
+    {
+        var result = new Dictionary<string, object>();
+
+        for (int i = 0; i < arrangement.Length; i++)
+        {
+            var entry = arrangement[i];
+            var dict = new Dictionary<string, object>
+            {
+                { Row, entry.row },
+                { Column, entry.column },
+                { PieceType, entry.pieceType.ToString() }
+            };
+
+            // Add the entry to the result dictionary with a key like "0", "1", "2", etc.
+            result[i.ToString()] = dict;
+        }
+
+        return result;
+    }
+
+    #endregion
 }

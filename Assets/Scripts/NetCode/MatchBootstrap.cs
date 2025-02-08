@@ -1,11 +1,17 @@
 ﻿using System.Threading.Tasks;
-using Board;
 using Board.Piece;
 using Setting;
 using Unity.Netcode;
 using UnityEngine;
 using Zenject;
 using Random = UnityEngine.Random;
+
+public class ArrangementEntryArrayWithId
+{
+    public ulong ID;
+    public string FirestoreId;
+    public ArrangementEntryArray Arrangement;
+}
 
 public class MatchBootstrap : NetworkBehaviour
 {
@@ -17,6 +23,9 @@ public class MatchBootstrap : NetworkBehaviour
     
     [SerializeField] private MatchCore matchCore;
 
+    private static ArrangementEntryArrayWithId _player0;
+    private static ArrangementEntryArrayWithId _player1;
+    
     private void Awake()
     {
         ProjectContext.Instance.Container.InjectGameObject(gameObject);
@@ -35,8 +44,10 @@ public class MatchBootstrap : NetworkBehaviour
             var gameMode = _gameData.Mode;
             var myArrangements = _settings.MyArrangements;
 
-            var arrangementEntryArray = new ArrangementEntryArray();
-            arrangementEntryArray.ArrangementEntry = new ArrangementEntry[myArrangements.Count];
+            var arrangementEntryArray = new ArrangementEntryArray
+            {
+                ArrangementEntry = new ArrangementEntry[myArrangements.Count]
+            };
 
             for (var index = 0; index < myArrangements.ToArray().Length; index++)
             {
@@ -62,25 +73,33 @@ public class MatchBootstrap : NetworkBehaviour
     private void SomeRpc(ulong playerId, string firestoreId, ArrangementEntry[] arrangement, RpcParams rpcParams = default)
     {
         Debug.Log(firestoreId);
-        if (_gameData.Player0.Arrangement == null)
+        if (_player0 == null)
         {
-            _gameData.Player0.ID = playerId;
-            _gameData.Player0.FirestoreId = firestoreId;
-            _gameData.Player0.Arrangement = new ArrangementEntryArray{ ArrangementEntry = arrangement };
+            Debug.Log("player0");
+            _player0 = new ArrangementEntryArrayWithId
+            {
+                ID = playerId,
+                FirestoreId = firestoreId,
+                Arrangement = new ArrangementEntryArray{ ArrangementEntry = arrangement }
+            };
         }
-        else if (_gameData.Player1.Arrangement == null)
+        else if (_player1 == null)
         {
-            _gameData.Player1.ID = playerId;
-            _gameData.Player1.FirestoreId = firestoreId;
-            _gameData.Player1.Arrangement = new ArrangementEntryArray{ ArrangementEntry = arrangement };
+            Debug.Log("player1");
+            _player1 = new ArrangementEntryArrayWithId
+            {
+                ID = playerId,
+                FirestoreId = firestoreId,
+                Arrangement = new ArrangementEntryArray{ ArrangementEntry = arrangement }
+            };
         }
         
-        if (_gameData.Player1.Arrangement != null && _gameData.Player0.Arrangement != null)
+        if (_player1 != null && _player0 != null)
         {
-            var whitePlayerId = GetWhitePlayerId(_gameData.Player0.ID, _gameData.Player1.ID);
+            var whitePlayerId = GetWhitePlayerId(_player0.ID, _player1.ID);
             
-            var player1 = CreatePlayerBootstrapData(_gameData.Player0.ID, firestoreId, _gameData.Player0.Arrangement.ArrangementEntry, whitePlayerId);
-            var player2 = CreatePlayerBootstrapData(_gameData.Player1.ID, firestoreId,_gameData.Player1.Arrangement.ArrangementEntry, whitePlayerId);
+            var player1 = CreatePlayerBootstrapData(_player0.ID, firestoreId, _player0.Arrangement.ArrangementEntry, whitePlayerId);
+            var player2 = CreatePlayerBootstrapData(_player1.ID, firestoreId,_player1.Arrangement.ArrangementEntry, whitePlayerId);
 
             ArrangeFigures(player1);
             ArrangeFigures(player2);
@@ -92,18 +111,18 @@ public class MatchBootstrap : NetworkBehaviour
             foreach (var matchBootstrap in matchBootstraps)
             {
                 matchBootstrap.SendToClientPlayerBootstrapDataRpc(
-                    _gameData.Player0.ID,
-                    _gameData.Player0.FirestoreId,
-                    _gameData.Player0.Arrangement.ArrangementEntry,
-                    _gameData.Player1.ID,
-                    _gameData.Player1.FirestoreId,
-                    _gameData.Player1.Arrangement.ArrangementEntry,
+                    _player0.ID,
+                    _player0.FirestoreId,
+                    _player0.Arrangement.ArrangementEntry,
+                    _player1.ID,
+                    _player1.FirestoreId,
+                    _player1.Arrangement.ArrangementEntry,
                     whitePlayerId);
             }
         }
     }
 
-    private async Task StartMatchServer(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
+    private Task StartMatchServer(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
     {
         MatchCore coreServer = Instantiate(matchCore);
         
@@ -121,6 +140,7 @@ public class MatchBootstrap : NetworkBehaviour
         
         coreServer.Init(matchData);
         coreServer.SetServerCore(coreServer);
+        return Task.CompletedTask;
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -140,34 +160,32 @@ public class MatchBootstrap : NetworkBehaviour
         
         _ = StartMatchClient(player1, player2, whitePlayerId);
     }
-
-    private async Task StartMatchClient(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
+    private Task StartMatchClient(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId)
     {
         var board = _gameData.ActiveBoard;
         
-        MatchCore[] allMatchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
+        var allMatchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
         
-        foreach (MatchCore matchCore in allMatchCores)
+        foreach (var core in allMatchCores)
         {
-            if (matchCore.IsOwner)
+            if (!core.IsOwner) continue;
+            
+            var matchData = CreateMatchData(player1, player2, whitePlayerId);
+            _ = _settings.FirestoreManager.GetPlayerData(player1.FirestoreId, result =>
             {
-                var matchData = CreateMatchData(player1, player2, whitePlayerId);
-                _settings.FirestoreManager.GetPlayerData(player1.FirestoreId, result =>
-                {
-                    matchData.Player1.FirebasePlayer = result; 
+                matchData.Player1.FirebasePlayer = result; 
 
-                    matchCore.UpdateFirebasePlayerData(matchData.Player1.PlayerId, matchData.Player1.PlayerId == OwnerClientId);
+                core.UpdateFirebasePlayerData(matchData.Player1.PlayerId, matchData.Player1.PlayerId == OwnerClientId);
 
-                });
-                _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
-                {
-                    matchData.Player2.FirebasePlayer = result;
-                    matchCore.UpdateFirebasePlayerData(matchData.Player2.PlayerId, matchData.Player2.PlayerId == OwnerClientId);
+            });
+            _ = _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
+            {
+                matchData.Player2.FirebasePlayer = result;
+                core.UpdateFirebasePlayerData(matchData.Player2.PlayerId, matchData.Player2.PlayerId == OwnerClientId);
 
-                });
-                Debug.Log("matchCore.Init(matchData);");
-                matchCore.Init(matchData);
-            }
+            });
+            Debug.Log("matchCore.Init(matchData);");
+            core.Init(matchData);
         }
 
         var ownerData = FindOwnerData();
@@ -180,7 +198,7 @@ public class MatchBootstrap : NetworkBehaviour
             board.RotateBoard();
         }
 
-        return;
+        return Task.CompletedTask;
 
         PlayerBootstrapData FindOwnerData()
         {
@@ -206,17 +224,21 @@ public class MatchBootstrap : NetworkBehaviour
             MovingPlayerId = whitePlayerId,
             Player1 = new PlayerData
             {
-                IsMoving = player1.PlayerId == whitePlayerId,
                 PlayerId = player1.PlayerId,
-                TimeToMove = 10f * 60,
+                IsMoving = player1.PlayerId == whitePlayerId,
                 IsRotate = player1.IsRotate,
+                IsWhite = player1.IsWhite,
+                Arrangement = player1.Arrangement,
+                TimeToMove = 10f * 60,
             },
             Player2 = new PlayerData
             {
-                IsMoving = player2.PlayerId == whitePlayerId,
                 PlayerId = player2.PlayerId,
-                TimeToMove = 10f * 60,
+                IsMoving = player2.PlayerId == whitePlayerId,
                 IsRotate = player2.IsRotate,
+                IsWhite = player2.IsWhite,
+                Arrangement = player2.Arrangement,
+                TimeToMove = 10f * 60,
             }
         };
     }

@@ -30,30 +30,16 @@ namespace Setting
 
         public AbstractPiece CreatePiece(PieceType pieceType)
         {
-            AbstractPiece result = null;
-            switch (pieceType)
+            AbstractPiece result = pieceType switch
             {
-                case PieceType.Pawns:
-                    result = new Pawn(Pieces[pieceType]);
-                    break;
-                case PieceType.Rooks:
-                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
-                    break;
-                case PieceType.Knights:
-                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
-                    break;
-                case PieceType.Bishops:
-                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
-                    break;
-                case PieceType.Queens:
-                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
-                    break;
-                case PieceType.Kings:
-                    result = new King(Pieces[pieceType]);
-                    break;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null);
-            }
+                PieceType.Pawns => new Pawn(Pieces[pieceType]),
+                PieceType.Rooks => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null),
+                PieceType.Knights => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null),
+                PieceType.Bishops => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null),
+                PieceType.Queens => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null),
+                PieceType.Kings => new King(Pieces[pieceType]),
+                _ => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null)
+            };
             return result;
         }
 

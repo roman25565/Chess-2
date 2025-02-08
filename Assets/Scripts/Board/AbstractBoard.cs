@@ -1,7 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using Board;
 using Board.Piece;
 using JetBrains.Annotations;
 using Setting;
@@ -93,7 +91,6 @@ public abstract class AbstractBoard : MonoBehaviour
     
     private Cell _selectedCell;
     private bool _isDragging;
-    private bool _gameEnded;
     private float _draggingTime;
     private RectTransform _draggingRectTransform;
     
@@ -106,7 +103,6 @@ public abstract class AbstractBoard : MonoBehaviour
     {
 #if !UNITY_SERVER
         AddMoveToHistory(from, to);
-        if (_inHistory)HistoryToReal();
         
         SetSelectedState(ref _firstSelectedCell, from);
         SetSelectedState(ref _secondSelectedCell, to);
@@ -114,11 +110,15 @@ public abstract class AbstractBoard : MonoBehaviour
 
         Move(from, to);
     }
-    
+
+    protected virtual void AddMoveToHistory(Cell from, Cell to)
+    {
+        throw new NotImplementedException();
+    }
+
     public void TryMove(Cell cell, bool isTab = true)
     {
-        if (_inHistory) return;
-        if (_gameEnded) return;
+        if (!CanTryMove()) return;
         if (isTab && _selectedCell == cell) Deselect();
         else if (_selectedCell != null && _selectedCell.Piece.IsValidMove(_selectedCell, cell))
         {
@@ -147,6 +147,12 @@ public abstract class AbstractBoard : MonoBehaviour
 
         }
     }
+
+    protected virtual bool CanTryMove()
+    {
+        return true;
+    }
+
     protected abstract void OnCanMove(Cell from, Cell to);
 
 
@@ -167,9 +173,6 @@ public abstract class AbstractBoard : MonoBehaviour
         
         _draggingRectTransform.anchoredPosition = Vector2.zero;
         _draggingRectTransform = null;
-        
-        if (_inHistory) return;
-        if (_gameEnded) return;
         
         if (cell == null)
         {
@@ -276,86 +279,13 @@ public abstract class AbstractBoard : MonoBehaviour
     }
     #endregion
     
-    private bool _inHistory;
-    public void EndGame()
+    public virtual void EndGame()
     {
-        _gameEnded = true;
-    }
-#if !UNITY_SERVER
-    #region MoveHistory
-
-    private List<Move> _moveHistory = new List<Move>();
-    private int _historyIndex;
-
-    public void NextMove()
-    {
-        if (!_inHistory) return;
-        SetHistoryIndex(_historyIndex + 1);
+        throw new NotImplementedException();
     }
 
-    public void UndoMove()
+    public virtual List<Move> GetHistory()
     {
-        SetHistoryIndex(_historyIndex - 1);
+        throw new NotImplementedException();
     }
-    
-    private void AddMoveToHistory(Cell from, Cell to)
-    {
-        HistoryToReal();
-        
-        _moveHistory.Add(new Move{From = from, To = to, AbstractPiece = to.Piece});
-        _historyIndex = _moveHistory.Count;
-    }
-
-    private void HistoryToReal()
-    {
-        if (_inHistory) SetHistoryIndex(_moveHistory.Count);
-    }
-
-    private void SetHistoryIndex(int index)
-    {
-        if (index < 0) return;
-        if (index > _moveHistory.Count) return;
-        if (index == _moveHistory.Count)
-        {
-            if (_inHistory) _inHistory = false;
-        }
-        else if (index < _moveHistory.Count)
-        {
-            _inHistory = true;
-        }
-
-        var movesCount = index - _historyIndex;
-        HistoryMove(movesCount);
-    }
-
-    private void HistoryMove(int recursionCount)
-    {
-        if (recursionCount < 0)//DOWN
-        {
-            var move = _moveHistory[_historyIndex - 1]; 
-            Move(move.To, move.From);
-            move.To.SetPiece(move.AbstractPiece);
-            
-            _historyIndex--;
-            recursionCount++;
-            HistoryMove(recursionCount);
-        }
-        else if (recursionCount > 0)//UP
-        {
-            var move = _moveHistory[_historyIndex]; 
-            Move(move.From, move.To);
-            
-            _historyIndex++;
-            recursionCount--;
-            HistoryMove(recursionCount);
-        }
-        else if (recursionCount == 0)//STOP
-        {
-
-        }
-    }
-
-
-    #endregion
-    #endif
 }

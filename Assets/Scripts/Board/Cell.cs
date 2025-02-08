@@ -22,13 +22,13 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public int Column { get; set; }
     public int Row { get; private set; }
     public AbstractPiece Piece { get; private set; }
-    public AbstractBoard Board { get; set; }
+    private AbstractBoard Board { get; set; }
 
     [SerializeField] private Image pieceImage;
     [SerializeField] private Image movedImage;
     [SerializeField] private Image selectedImage;
     
-    [Inject] Settings _setting;
+    [Inject] private Settings _setting;
     
     public void SetMovedState(CellState state)
     {

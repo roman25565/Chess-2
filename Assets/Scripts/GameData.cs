@@ -14,13 +14,5 @@ public class GameData
         ActiveBoard = activeBoard;
     }
 
-    public ArrangementEntryArrayWithId Player0 = new();
-    public ArrangementEntryArrayWithId Player1 = new();
     
 }
-    public class ArrangementEntryArrayWithId
-    {
-        public ulong ID;
-        public string FirestoreId;
-        public ArrangementEntryArray Arrangement;
-    }
