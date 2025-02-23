@@ -71,7 +71,7 @@ public class MatchCore : NetworkBehaviour
             if (Mathf.Abs(playerData.TimeToMove - _lastUpdateTime) > 0.01f)
             {
                 _lastUpdateTime = time;
-                UIManager.Instance.SetTime(time, playerData.PlayerId != _myId);
+                MatchUIManager.Instance.SetTime(time, playerData.PlayerId != _myId);
             }
         }
     }
@@ -81,10 +81,10 @@ public class MatchCore : NetworkBehaviour
         if (playerId == _matchData.Player1.PlayerId)
         { 
             Debug.Log("UpdateFirebasePlayerData");
-            UIManager.Instance.SetPlayerUI(_matchData.Player1.FirebasePlayer, isEnemyPlayer);
+            MatchUIManager.Instance.SetPlayerUI(_matchData.Player1.FirebasePlayer, isEnemyPlayer);
         }else if (playerId == _matchData.Player2.PlayerId)
         {
-            UIManager.Instance.SetPlayerUI(_matchData.Player2.FirebasePlayer, isEnemyPlayer);
+            MatchUIManager.Instance.SetPlayerUI(_matchData.Player2.FirebasePlayer, isEnemyPlayer);
             Debug.Log("UpdateFirebasePlayerDataFinish");
         }
     }
@@ -157,16 +157,19 @@ public class MatchCore : NetworkBehaviour
         if (!playerData.IsMoving)
         {
             Debug.LogError("isNotValidMoving");
+            return;
         }
 
         if (playerData.TimeToMove < 0)
         {
             Debug.LogError("TimeToMove is negative");
+            return;
         }
 
         if (!_gameData.ActiveBoard.IsValidMove(from, to))
         {
             Debug.LogError("move is not valid");
+            return;
         }
 
         // UseMove(from, to, playerId);
@@ -245,38 +248,36 @@ public class MatchCore : NetworkBehaviour
         _gameEnded = true;
         _gameData.ActiveBoard.EndGame();
 
-        CalculateNewEloRatings(winnerId, out var myElo, out var enemyElo);
-        UIManager.Instance.EndGame(winnerId == _myId, myElo, enemyElo);
-        
-        if (!IsWhite) return;
-        
-        _settings.FirestoreManager.BdSetElo(_matchData.GetPlayerData(_myId).FirebasePlayer.ID, myElo);
-        _settings.FirestoreManager.BdSetElo(_matchData.GetPlayerData(_enemyId).FirebasePlayer.ID, enemyElo);
+        CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
+        bool isFirstPlayer = _matchData.Player1.PlayerId == _myId;
+        MatchUIManager.Instance.EndGame(winnerId == _myId, isFirstPlayer ? player1Elo : player2Elo,
+            isFirstPlayer ? player2Elo : player1Elo);
 
-        _ = _settings.FirestoreManager.SaveMatchHistory(
+        if (!IsWhite) return;
+
+        _settings.FirestoreManager.BdSetElo(_matchData.Player1.FirebasePlayer.ID, player1Elo);
+        _settings.FirestoreManager.BdSetElo(_matchData.Player2.FirebasePlayer.ID, player2Elo);
+
+        var player1 = _matchData.Player1;
+        var player2 = _matchData.Player2;
+        _settings.FirestoreManager.SaveMatchHistory(
             _matchData.GetPlayerData(winnerId).FirebasePlayer.ID,
-            _matchData.Player1.FirebasePlayer.ID,
-            _matchData.Player1.Arrangement,
-            _matchData.Player2.FirebasePlayer.ID + 1,
-            _matchData.Player1.Arrangement,
+            player1.FirebasePlayer.ID, player1Elo, player1.Arrangement,
+            player2.FirebasePlayer.ID + 1, player1Elo, player2.Arrangement,
             _gameData.ActiveBoard.GetHistory()
         );
     }
 
-    private void CalculateNewEloRatings(ulong winnerId, out int myElo, out int enemyElo)
+    private void CalculateNewEloRatings(ulong winnerId, out int player1Elo, out int player2Elo)
     {
         double scope1 = 0;
         double scope2 = 0;
         GetScopes(winnerId, ref scope1, ref scope2);
 
-        var newElo1 = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo,
+        player1Elo = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo,
             _matchData.Player1.FirebasePlayer.Elo, scope1);
-        var newElo2 = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo,
+        player2Elo = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo,
             _matchData.Player2.FirebasePlayer.Elo, scope2);
-
-        bool isFirstPlayer = _matchData.Player1.PlayerId == _myId;
-        myElo = isFirstPlayer ? newElo1 : newElo2;
-        enemyElo = isFirstPlayer ? newElo2 : newElo1;
     }
 
     [Rpc(SendTo.Everyone)]

@@ -67,6 +67,23 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
+    private async Task LoadSettings(bool isClient)
+    {
+        var arrangement = LoadArrangement();
+        
+        var piecesData = Resources.LoadAll<PieceData>("Settings/Pieces");
+        
+        var cellStates = Resources.Load<CellStates>("Settings/CellStates");
+        
+        var firestore = new FirestoreManager();
+        if (isClient)
+        {
+            await firestore.Init();
+        }
+
+        _settings.Init(arrangement, piecesData, cellStates, firestore);
+        Debug.Log("Settings init");
+    }
     public void OnSignIn(GoogleSignInUser user)
     {
         SignInFireBase(user);
@@ -101,23 +118,6 @@ public class Bootstrap : MonoBehaviour
         }
     }
 
-    private async Task LoadSettings(bool isClient)
-    {
-        var arrangement = LoadArrangement();
-        
-        var piecesData = Resources.LoadAll<PieceData>("Settings/Pieces");
-        
-        var cellStates = Resources.Load<CellStates>("Settings/CellStates");
-        
-        var firestore = new FirestoreManager();
-        if (isClient)
-        {
-            await firestore.Init();
-        }
-        
-
-        _settings.Init(arrangement, piecesData, cellStates, firestore);
-    }
 
     private List<ArrangementEntry> LoadArrangement()
     {

@@ -15,17 +15,11 @@ public class GameBoard : AbstractBoard
         TryMove(to, false);
     }
 
-    protected override bool CanTryMove()
-    {
-        return !_inHistory || !_gameEnded;
-    }
     protected override void Move(Cell from, Cell to)
     {
         to.SetPiece(from.Piece);
         from.SetPiece(null);
     }
-    
-    
 #if !UNITY_SERVER
     #region MoveHistory
 
@@ -105,9 +99,10 @@ public class GameBoard : AbstractBoard
         }
     }
 
-
-    #endregion
-#endif
+    protected override bool CanTryMove()
+    {
+        return !_inHistory || !_gameEnded;
+    }
 
     public override void EndGame()
     {
@@ -118,4 +113,6 @@ public class GameBoard : AbstractBoard
     {
         return _history;
     }
+    #endregion
+#endif
 }

@@ -123,16 +123,7 @@ public class GoogleAuthentication : MonoBehaviour
 
     public void OnSignInDebug()
     {
-        try
-        {
             signInPanel.SetActive(false);
             bootstrap.OnSignIn("001");
-
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e);
-            throw;
-        }
     }
 }

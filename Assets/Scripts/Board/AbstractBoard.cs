@@ -8,7 +8,7 @@ using Zenject;
 
 public abstract class AbstractBoard : MonoBehaviour
 {
-    #region Init
+    #region InitBoard
     [Inject] private GameData _gameData;
     protected Dictionary<int, List<Cell>> BoardLines;
 
@@ -79,6 +79,11 @@ public abstract class AbstractBoard : MonoBehaviour
         MatchCore = matchCore;
     }
     #endregion
+    
+    public virtual void StartGame()
+    {
+        
+    }
     
     [Inject] protected Settings Settings;
     protected MatchCore MatchCore;
@@ -279,13 +284,6 @@ public abstract class AbstractBoard : MonoBehaviour
     }
     #endregion
     
-    public virtual void EndGame()
-    {
-        throw new NotImplementedException();
-    }
-
-    public virtual List<Move> GetHistory()
-    {
-        throw new NotImplementedException();
-    }
+    public virtual void EndGame() => throw new NotImplementedException();
+    public virtual List<Move> GetHistory() => throw new NotImplementedException();
 }
