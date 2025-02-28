@@ -1,21 +1,20 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
+using Board;
 using Board.Piece;
-using UnityEngine;
 using Firebase;
 using Firebase.Extensions;
 using Firebase.Firestore;
 using Google;
 using Unity.Mathematics;
-using UnityEngine.Networking;
+using UnityEngine;
 
 public class FirestoreManager
 {
     private FirebaseFirestore db;
     public FirebasePlayerData PlayerData;
+
     public async Task Init()
     {
         try
@@ -25,13 +24,13 @@ public class FirestoreManager
             {
                 db = FirebaseFirestore.DefaultInstance;
 #if UNITY_EDITOR
-                db.Settings.PersistenceEnabled = false;
+                if (db.Settings.PersistenceEnabled) db.Settings.PersistenceEnabled = false;
 #endif
                 Debug.Log("Firebase initialized successfully.");
             }
             else
             {
-                Debug.LogError("Could not resolve all Firebase dependencies: " + dependencyStatus.ToString());
+                Debug.LogError("Could not resolve all Firebase dependencies: " + dependencyStatus);
             }
         }
         catch (Exception e)
@@ -43,25 +42,25 @@ public class FirestoreManager
     }
 
     #region PlayersData
-    
+
     private const string PlayersDataCollectionName = "Players";
-    
+
     private const string IDKey = "ID";
     private const string NameKey = "Name";
     private const string EloKey = "Elo";
     private const string IconURLKey = "IconURL";
     private const string EmailKey = "Email";
     private const string HistoryIDs = "HistoryIDs";
-    
+
     public delegate void GetPlayerDataCallBack(FirebasePlayerData result);
-    public async Task<FirebasePlayerData> GetPlayerData(string playerId,GetPlayerDataCallBack callback)
+
+    public async Task<FirebasePlayerData> GetPlayerData(string playerId, GetPlayerDataCallBack callback)
     {
         FirebasePlayerData result = null;
         try
         {
-
             var docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
-            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
+            var snapshot = await docRef.GetSnapshotAsync();
 
             if (snapshot.Exists)
             {
@@ -80,11 +79,35 @@ public class FirestoreManager
         }
         catch (Exception e)
         {
-            Console.WriteLine(e);
+            Debug.LogError(e);
             throw;
         }
 
         return result;
+    }
+
+    public async void GetIcon(string playerId, Action<Sprite> action)
+    {
+        Sprite result = null;
+        try
+        {
+            var docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
+            var snapshot = await docRef.GetSnapshotAsync();
+
+            if (snapshot.Exists)
+            {
+                var imageURL = snapshot.GetValue<string>(IconURLKey);
+                result = await GlobalTools.LoadSprite(new Uri(imageURL));
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            Console.WriteLine(e);
+            throw;
+        }
+
+        action.Invoke(result);
     }
 
     private async Task<string> GetPlayerName(string playerId)
@@ -93,11 +116,8 @@ public class FirestoreManager
         try
         {
             var docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
-            DocumentSnapshot snapshot = await docRef.GetSnapshotAsync();
-            if (snapshot.Exists)
-            {
-                result = snapshot.GetValue<string>(NameKey);
-            }
+            var snapshot = await docRef.GetSnapshotAsync();
+            if (snapshot.Exists) result = snapshot.GetValue<string>(NameKey);
         }
         catch (Exception ex)
         {
@@ -109,102 +129,97 @@ public class FirestoreManager
 
     public void SingUp(string testId)
     {
-        Dictionary<string, object> player = new Dictionary<string, object>
+        var player = new Dictionary<string, object>
         {
             { IDKey, testId },
             { NameKey, "BUGAGAGA" },
             { EloKey, 500 },
-            { IconURLKey, "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no" },
-            { EmailKey, "test@gmail.com" },
+            {
+                IconURLKey,
+                "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no"
+            },
+            { EmailKey, "test@gmail.com" }
         };
 
         SingUp(player, testId);
     }
-    
 
 
     public void SingUp(GoogleSignInUser user)
     {
-        Dictionary<string, object> player = new Dictionary<string, object>
+        var player = new Dictionary<string, object>
         {
             { IDKey, user.UserId },
             { NameKey, user.DisplayName },
             { EloKey, 500 },
             { IconURLKey, user.ImageUrl.ToString() },
-            { EmailKey, user.Email },
+            { EmailKey, user.Email }
         };
         SingUp(player, user.UserId);
     }
 
     private void SingUp(Dictionary<string, object> playerData, string playerId)
     {
-        
-            DocumentReference docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
-            docRef.SetAsync(playerData).ContinueWithOnMainThread(async setTask =>
+        var docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
+        docRef.SetAsync(playerData).ContinueWithOnMainThread(async setTask =>
+        {
+            if (setTask.IsFaulted)
             {
-                if (setTask.IsFaulted)
-                {
-                    Debug.LogError("Failed to add player: " + setTask.Exception);
-                }
-                else
-                {
-                    Debug.Log("Player added successfully.");
-                    var icon = await GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()));
-                    PlayerData = new FirebasePlayerData
-                    (
-                        id: playerData[IDKey].ToString(),
-                        name: playerData[NameKey].ToString(),
-                        elo: int.Parse(playerData[EloKey].ToString()),
-                        icon: icon,
-                        email: playerData[EmailKey].ToString(),
-                        historyIDs: new List<string>()
-                    );
-                    
-                }
-            });
-       
+                Debug.LogError("Failed to add player: " + setTask.Exception);
+            }
+            else
+            {
+                Debug.Log("Player added successfully.");
+                var icon = await GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()));
+                PlayerData = new FirebasePlayerData
+                (
+                    playerData[IDKey].ToString(),
+                    playerData[NameKey].ToString(),
+                    int.Parse(playerData[EloKey].ToString()),
+                    icon,
+                    playerData[EmailKey].ToString(),
+                    new List<string>()
+                );
+            }
+        });
     }
 
     public void BdSetElo(string playerId, int newElo)
     {
-        DocumentReference docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
-        
-        Dictionary<string, object> updates = new Dictionary<string, object>
+        var docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
+
+        var updates = new Dictionary<string, object>
         {
             { EloKey, newElo }
         };
-        
-        docRef.UpdateAsync(updates).ContinueWithOnMainThread(task => {
-            if (task.IsCompleted) {
+
+        docRef.UpdateAsync(updates).ContinueWithOnMainThread(task =>
+        {
+            if (task.IsCompleted)
                 Debug.Log("Document updated successfully.");
-            } else if (task.IsFaulted) {
-                Debug.LogError("Error updating document: " + task.Exception);
-            }
+            else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
         });
     }
 
     private void BdAddHistoryId(string playerId, string historyId)
     {
-        DocumentReference docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
+        var docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
 
         docRef.UpdateAsync(HistoryIDs, FieldValue.ArrayUnion(historyId))
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted)
-                {
                     Debug.Log("HistoryIDs updated successfully.");
-                }
-                else if (task.IsFaulted)
-                {
-                    Debug.LogError("Error updating document: " + task.Exception);
-                }
+                else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
             });
     }
+
     #endregion
+
     #region MatchData
 
     private const string MatchesDataCollectionName = "Matches";
-    
+
     private const string WinnerID = "WinnerID";
     private const string Date = "Date";
     private const string Player1ID = "Player1ID";
@@ -214,7 +229,7 @@ public class FirestoreManager
     private const string ArrangementList1 = "ArrangementList1";
     private const string ArrangementList2 = "ArrangementList2";
     private const string MoveHistory = "MoveHistory";
-    
+
     private const string Row = "Row";
     private const string Column = "Column";
     private const string PieceType = "PieceType";
@@ -267,13 +282,15 @@ public class FirestoreManager
         {
             var dict = new Dictionary<string, object>
             {
-                { "From", new Dictionary<string, object>
+                {
+                    "From", new Dictionary<string, object>
                     {
                         { Row, move.From.Row },
                         { Column, move.From.Column }
                     }
                 },
-                { "To", new Dictionary<string, object>
+                {
+                    "To", new Dictionary<string, object>
                     {
                         { Row, move.To.Row },
                         { Column, move.To.Column }
@@ -290,7 +307,7 @@ public class FirestoreManager
     {
         var result = new Dictionary<string, object>();
 
-        for (int i = 0; i < arrangement.Length; i++)
+        for (var i = 0; i < arrangement.Length; i++)
         {
             var entry = arrangement[i];
             var dict = new Dictionary<string, object>
@@ -309,7 +326,6 @@ public class FirestoreManager
 
     public void GetHistory(string historyID, Action<HistoryMatchData> action)
     {
-
         var docRef = db.Collection(MatchesDataCollectionName).Document(historyID);
         docRef.GetSnapshotAsync().ContinueWithOnMainThread(async task =>
         {
@@ -317,19 +333,19 @@ public class FirestoreManager
             {
                 if (task.IsCompleted)
                 {
-                    DocumentSnapshot snapshot = task.Result;
+                    var snapshot = task.Result;
 
                     if (snapshot.Exists)
                     {
                         // Парсинг даних із документа
-                        string winnerID = snapshot.GetValue<string>(WinnerID);
-                        DateTime date = snapshot.GetValue<DateTime>(Date);
-                        string player1ID = snapshot.GetValue<string>(Player1ID);
-                        int player1Elo = snapshot.GetValue<int>(Player1Elo);
+                        var winnerID = snapshot.GetValue<string>(WinnerID);
+                        var date = snapshot.GetValue<DateTime>(Date);
+                        var player1ID = snapshot.GetValue<string>(Player1ID);
+                        var player1Elo = snapshot.GetValue<int>(Player1Elo);
                         var arrangementList1 =
                             ParseArrangement(snapshot.GetValue<Dictionary<string, object>>(ArrangementList1));
-                        string player2ID = snapshot.GetValue<string>(Player2ID);
-                        int player2Elo = snapshot.GetValue<int>(Player2Elo);
+                        var player2ID = snapshot.GetValue<string>(Player2ID);
+                        var player2Elo = snapshot.GetValue<int>(Player2Elo);
                         var arrangementList2 =
                             ParseArrangement(snapshot.GetValue<Dictionary<string, object>>(ArrangementList2));
 
@@ -370,8 +386,8 @@ public class FirestoreManager
                 Debug.LogError("ArgumentNullException: " + ex.Message);
             }
         });
-
     }
+
 
     private ArrangementEntry[] ParseArrangement(Dictionary<string, object> arrangementData)
     {
@@ -402,7 +418,7 @@ public class FirestoreManager
         Debug.Log("GetHFinish");
         return result.ToArray();
     }
-    
+
     private List<int4> ParseMoveList(List<Dictionary<string, object>> moveData)
     {
         var result = new List<int4>();
@@ -419,7 +435,7 @@ public class FirestoreManager
                     x = Convert.ToInt32(fromData[Row]),
                     y = Convert.ToInt32(fromData[Column]),
                     z = Convert.ToInt32(toData[Row]),
-                    w = Convert.ToInt32(toData[Column]),
+                    w = Convert.ToInt32(toData[Column])
                 };
 
                 result.Add(move);
@@ -434,5 +450,4 @@ public class FirestoreManager
     }
 
     #endregion
-
 }

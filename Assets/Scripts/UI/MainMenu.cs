@@ -7,6 +7,7 @@ namespace UI
         [SerializeField] private GameObject historyPanel;
         [SerializeField] private GameObject settingsPanel;
         [SerializeField] private GameObject arrangementPanel;
+        [SerializeField] private GameObject editBoard;
         [SerializeField] private GameObject mainMenuPanel;
         [SerializeField] private GameObject statisticPanel;
         
@@ -19,6 +20,7 @@ namespace UI
             if (arrangementPanel != null) arrangementPanel.SetActive(false);
             if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
             if (statisticPanel != null) statisticPanel.SetActive(false);
+            if (editBoard != null) editBoard.SetActive(false);
             
             if (defaultUI != null) defaultUI.SetActive(true);
         }
@@ -55,6 +57,12 @@ namespace UI
         {
             DisableAllPanels();
             if (statisticPanel != null) statisticPanel.SetActive(true);
+        }
+        
+        public void ShowEditBoard()
+        {
+            DisableAllPanels();
+            if (editBoard != null) editBoard.SetActive(true);
         }
 
     }

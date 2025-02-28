@@ -1,23 +1,19 @@
 using System;
-using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using TMPro;
-using UnityEngine.UI;
 using System.Threading.Tasks;
-using UnityEngine.Networking;
-using Google;
-using System.Collections.Concurrent;
 using Firebase.Extensions;
+using Google;
+using TMPro;
+using UnityEngine;
 
 public class GoogleAuthentication : MonoBehaviour
 {
-    public TextMeshProUGUI userNameTxt, userEmailTxt;
-    private GoogleSignInConfiguration configuration;
     private const string webClientId = "492940055939-57m8n1fr0eu5cgis5kn94p1kj310cm4f.apps.googleusercontent.com";
-    public Bootstrap bootstrap;
+    public TextMeshProUGUI userNameTxt, userEmailTxt;
+    public Bootstrap.Bootstrap bootstrap;
     public GameObject signInPanel;
-    void Awake()
+    private GoogleSignInConfiguration configuration;
+
+    private void Awake()
     {
         configuration = new GoogleSignInConfiguration
         {
@@ -30,32 +26,30 @@ public class GoogleAuthentication : MonoBehaviour
     public void OnSignIn()
     {
         GoogleSignIn.Configuration = configuration;
-         GoogleSignIn.DefaultInstance.SignIn().ContinueWithOnMainThread(
+        GoogleSignIn.DefaultInstance.SignIn().ContinueWithOnMainThread(
             OnAuthenticationFinished);
     }
 
     internal void OnAuthenticationFinished(Task<GoogleSignInUser> task)
     {
         if (task.IsFaulted)
-        {
-            using (IEnumerator<System.Exception> enumerator =
+            using (var enumerator =
                    task.Exception.InnerExceptions.GetEnumerator())
             {
                 if (enumerator.MoveNext())
                 {
-                    GoogleSignIn.SignInException error =
+                    var error =
                         (GoogleSignIn.SignInException)enumerator.Current;
                     Debug.LogError("Got Error: " + error.Status + " " + error.Message);
                 }
-                else Debug.LogError("Got unexpected exception?!?" + task.Exception);
+                else
+                {
+                    Debug.LogError("Got unexpected exception?!?" + task.Exception);
+                }
             }
-        }
         else if (task.IsCanceled)
-        {
             Debug.LogError("Cancelled");
-        }
         else
-        {
             try
             {
                 UpdateUI(task.Result);
@@ -67,17 +61,14 @@ public class GoogleAuthentication : MonoBehaviour
                 Debug.LogError(e);
                 throw;
             }
-        }
 
         Debug.Log("OnAuthenticationFinished?");
     }
 
     private void UpdateUI(GoogleSignInUser user)
     {
-
         try
         {
-
             Debug.Log("Welcome: " + user.DisplayName + "!!!!!");
 
             userEmailTxt.text = user.Email;
@@ -103,16 +94,15 @@ public class GoogleAuthentication : MonoBehaviour
     {
         try
         {
+            signInPanel.SetActive(true);
+            userNameTxt.text = "";
+            userEmailTxt.text = "";
 
-        signInPanel.SetActive(true);
-        userNameTxt.text = "";
-        userEmailTxt.text = "";
-    
-        // imageURL = "";
-        // loginPanel.SetActive(true);
-        // profilePanel.SetActive(false);
-        Debug.Log("Calling SignOut");
-        GoogleSignIn.DefaultInstance.SignOut();
+            // imageURL = "";
+            // loginPanel.SetActive(true);
+            // profilePanel.SetActive(false);
+            Debug.Log("Calling SignOut");
+            GoogleSignIn.DefaultInstance.SignOut();
         }
         catch (Exception e)
         {
@@ -123,7 +113,7 @@ public class GoogleAuthentication : MonoBehaviour
 
     public void OnSignInDebug()
     {
-            signInPanel.SetActive(false);
-            bootstrap.OnSignIn("001");
+        signInPanel.SetActive(false);
+        bootstrap.OnSignIn("001");
     }
 }

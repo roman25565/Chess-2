@@ -9,19 +9,20 @@ using Unity.Services.Core;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
+using Random = UnityEngine.Random;
 
 public class ClientMatchmaker : MonoBehaviour
 {
-    static bool initialized;
+    private static bool initialized;
 
     [SerializeField] private TextMeshProUGUI statusText;
-    
+
     public async void SearchMatch()
     {
         if (!initialized)
         {
             await UnityServices.InitializeAsync();
-            AuthenticationService.Instance.SwitchProfile(UnityEngine.Random.Range(0, 1000000).ToString());
+            AuthenticationService.Instance.SwitchProfile(Random.Range(0, 1000000).ToString());
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
             initialized = true;
         }
@@ -29,7 +30,7 @@ public class ClientMatchmaker : MonoBehaviour
         await StartSearch();
     }
 
-    async Task StartSearch()
+    private async Task StartSearch()
     {
         var players = new List<Player>
         {
@@ -37,7 +38,7 @@ public class ClientMatchmaker : MonoBehaviour
         };
 
         var attributes = new Dictionary<string, object>();
-        string queueName = "test";
+        var queueName = "test";
         var options = new CreateTicketOptions(queueName, attributes);
 
         try
@@ -47,7 +48,7 @@ public class ClientMatchmaker : MonoBehaviour
             Debug.Log("Ticket created with ID: " + ticketResponse.Id);
             statusText.SetText("Ticket created. Searching for match...");
 
-            bool matchFound = await FindMatch(ticketResponse.Id);
+            var matchFound = await FindMatch(ticketResponse.Id);
             if (!matchFound)
             {
                 Debug.LogError("Failed to find a match.");
@@ -60,11 +61,12 @@ public class ClientMatchmaker : MonoBehaviour
             statusText.SetText("Matchmaking error: " + ex.Message);
         }
     }
+
     private async Task<bool> FindMatch(string ticketId)
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
 
-        for (int attempt = 0; attempt < (60 * 10); attempt++)
+        for (var attempt = 0; attempt < 60 * 10; attempt++)
         {
             await Awaitable.WaitForSecondsAsync(1f);
             Debug.Log("Polling attempt: " + (attempt + 1));
@@ -84,7 +86,7 @@ public class ClientMatchmaker : MonoBehaviour
                             if (assignment.Port.HasValue)
                             {
                                 transport.SetConnectionData(assignment.Ip, (ushort)assignment.Port);
-                                bool result = NetworkManager.Singleton.StartClient();
+                                var result = NetworkManager.Singleton.StartClient();
 
                                 Debug.Log("StartClient result: " + result);
                                 statusText.SetText("Connecting to server...");
@@ -117,21 +119,21 @@ public class ClientMatchmaker : MonoBehaviour
         return false;
     }
 
-    
-    void LogConnectionEvent(NetworkManager manager, ConnectionEventData data)
+
+    private void LogConnectionEvent(NetworkManager manager, ConnectionEventData data)
     {
         switch (data.EventType)
         {
             case ConnectionEvent.ClientConnected:
                 statusText.SetText("Client connected " + data.ClientId +
-                                                          " Count:" +
-                                                          NetworkManager.Singleton.ConnectedClientsIds.Count + " Port:" + 
-                                                          (manager.NetworkConfig.NetworkTransport as UnityTransport)?.ConnectionData.Port);
+                                   " Count:" +
+                                   NetworkManager.Singleton.ConnectedClientsIds.Count + " Port:" +
+                                   (manager.NetworkConfig.NetworkTransport as UnityTransport)?.ConnectionData.Port);
                 break;
             case ConnectionEvent.ClientDisconnected:
                 statusText
                     .SetText("Client disconnected " + data.ClientId + " Count:" +
-                             NetworkManager.Singleton.ConnectedClientsIds.Count + " Port:" + 
+                             NetworkManager.Singleton.ConnectedClientsIds.Count + " Port:" +
                              (manager.NetworkConfig.NetworkTransport as UnityTransport)?.ConnectionData.Port);
                 break;
         }

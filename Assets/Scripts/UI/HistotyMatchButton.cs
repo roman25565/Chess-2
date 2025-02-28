@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using Setting;
 using TMPro;
+using UI;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -8,6 +10,7 @@ using Zenject;
 public class HistotyMatchButton : MonoBehaviour
 {
     [Inject] private Settings _settings;
+    [Inject] private GameData _gameData;
     
     [SerializeField] private Button button;
     
@@ -26,7 +29,7 @@ public class HistotyMatchButton : MonoBehaviour
         ProjectContext.Instance.Container.InjectGameObject(gameObject);
     }
     
-    public void SetButton(HistoryMatchData historyMatchData)
+    public void SetButton(HistoryMatchData historyMatchData, MainMenu mainMenu)
     {
         try
         {
@@ -40,11 +43,16 @@ public class HistotyMatchButton : MonoBehaviour
             Console.WriteLine(e);
             throw;
         }
+        button.onClick.AddListener(() =>
+        {
+            mainMenu.ShowEditBoard();
+            _gameData.ActiveBoard.StartGame(historyMatchData);
+            //ShowEditBoardAndStartGame(historyMatchData, mainMenu);
+        });
     }
 
     private void SetScope(HistoryMatchData historyMatchData, bool iFirstPlayer)
     {
-        Debug.Log("asdasd");
         if (historyMatchData.WinnerID == null)
         {
             Draw();
@@ -54,7 +62,6 @@ public class HistotyMatchButton : MonoBehaviour
 
         if (winFirstPlayer == iFirstPlayer) Win();
         else Lose();
-        Debug.Log("ffff");
         return;
         
         void Win()
@@ -73,12 +80,10 @@ public class HistotyMatchButton : MonoBehaviour
 
     private void SetPlayers(HistoryMatchData historyMatchData)
     {
-        Debug.Log("kkk");
         player1Name.text = historyMatchData.Player1Name;
         player1Elo.text = $"({historyMatchData.Player1Elo.ToString()})";
         
         player2Name.text = historyMatchData.Player2Name;
         player2Elo.text = $"({historyMatchData.Player2Elo.ToString()})";
-        Debug.Log("ttt");
     }
 }

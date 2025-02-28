@@ -1,4 +1,6 @@
-﻿public enum GameMode
+﻿using Board;
+
+public enum GameMode
 {
     Online,
     Offline,
@@ -9,10 +11,9 @@ public class GameData
 {
     public AbstractBoard ActiveBoard;
     public GameMode Mode;
+
     public void SetActiveBoard(AbstractBoard activeBoard)
     {
         ActiveBoard = activeBoard;
     }
-
-    
 }

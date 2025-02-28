@@ -1,15 +1,15 @@
 namespace Zenject.Tests.Installers.ScriptableObjectInstallers
 {
-    public class Foo
-    {
-    }
+public class Foo
+{
+}
 
-    //[CreateAssetMenu(fileName = "FooInstaller", menuName = "Installers/FooInstaller")]
-    public class FooInstaller : ScriptableObjectInstaller<FooInstaller>
+//[CreateAssetMenu(fileName = "FooInstaller", menuName = "Installers/FooInstaller")]
+public class FooInstaller : ScriptableObjectInstaller<FooInstaller>
+{
+    public override void InstallBindings()
     {
-        public override void InstallBindings()
-        {
-            Container.Bind<Foo>().AsSingle().NonLazy();
-        }
+        Container.Bind<Foo>().AsSingle().NonLazy();
     }
+}
 }

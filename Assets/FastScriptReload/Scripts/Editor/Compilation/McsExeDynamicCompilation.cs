@@ -1,12 +1,8 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using UnityEngine;
-
 #if FastScriptReload_CompileViaMCS
 public class McsExeDynamicCompilation : DynamicCompilationBase
 {
-    private const int ReferenceLenghtCountWarningThreshold = 32767 - 2000; //windows can accept up to 32767 chars as args, then it starts thorowing exceptions. MCS.exe is adding references via command /r:<full path>
+    private const int ReferenceLenghtCountWarningThreshold =
+ 32767 - 2000; //windows can accept up to 32767 chars as args, then it starts thorowing exceptions. MCS.exe is adding references via command /r:<full path>
     
     private static CompileResult Compile(List<string> filePathsWithSourceCode)
     {
@@ -45,7 +41,8 @@ public class McsExeDynamicCompilation : DynamicCompilationBase
             string.Join(";", ActiveScriptCompilationDefines));
         
         var sourceCodeCombined = CreateSourceCodeCombinedContents(fileSourceCode);
-        var result = provider.CompileAssemblyFromSource(param, sourceCodeCombined, DynamicallyCreatedAssemblyAttributeSourceCode);
+        var result =
+ provider.CompileAssemblyFromSource(param, sourceCodeCombined, DynamicallyCreatedAssemblyAttributeSourceCode);
         var errors = new List<string>();
         foreach (var error in result.Errors)
         {

@@ -2,11 +2,11 @@
 
 namespace Zenject.Tests.TestDestructionOrder
 {
-    public class FooMonoBehaviourUnderSceneContext1 : MonoBehaviour
+public class FooMonoBehaviourUnderSceneContext1 : MonoBehaviour
+{
+    public void OnDestroy()
     {
-        public void OnDestroy()
-        {
-            Debug.Log("Destroyed FooMonoBehaviourUnderSceneContext1");
-        }
+        Debug.Log("Destroyed FooMonoBehaviourUnderSceneContext1");
     }
+}
 }

@@ -5,21 +5,21 @@ using Unity.Mathematics;
 
 public class HistoryMatchData
 {
-    [NotNull] public readonly string MatchId;
-    [NotNull] public readonly string WinnerID;
     [NotNull] public readonly DateTime Date;
-    
-    [NotNull] public readonly string Player1Id;
-    [NotNull] public readonly int Player1Elo;
-    [NotNull] public readonly string Player1Name;
-    [NotNull] public readonly ArrangementEntry[] Player1Arrangement;
-    
-    [NotNull] public readonly string Player2Id;
-    [NotNull] public readonly int Player2Elo;
-    [NotNull] public readonly string Player2Name;
-    [NotNull] public readonly ArrangementEntry[] Player2Arrangement;
-    
+    [NotNull] public readonly string MatchId;
     [NotNull] public readonly List<int4> MoveHistory;
+    [NotNull] public readonly ArrangementEntry[] Player1Arrangement;
+    [NotNull] public readonly int Player1Elo;
+
+    [NotNull] public readonly string Player1Id;
+    [NotNull] public readonly string Player1Name;
+    [NotNull] public readonly ArrangementEntry[] Player2Arrangement;
+    [NotNull] public readonly int Player2Elo;
+
+    [NotNull] public readonly string Player2Id;
+    [NotNull] public readonly string Player2Name;
+    [NotNull] public readonly string WinnerID;
+
 
     public HistoryMatchData(string matchId, string winnerID, DateTime date,
         string player1Id, int player1Elo, string player1Name, ArrangementEntry[] player1Arrangement,
@@ -61,6 +61,4 @@ public class HistoryMatchData
         Date = date;
         MoveHistory = moveHistory;
     }
-
-
 }

@@ -19,8 +19,6 @@ public class PlayerPanel : MonoBehaviour
     
     public void SetPlayerUI(FirebasePlayerData playerData)
     {
-        Debug.LogWarning("SetPlayerUI");
-        Debug.Log(playerData.Name);
         NameText.text = playerData.Name;
         EloText.text = playerData.Elo.ToString();
         IconImage.sprite = playerData.Icon;

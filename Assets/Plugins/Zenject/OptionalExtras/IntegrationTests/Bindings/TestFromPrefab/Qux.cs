@@ -5,15 +5,14 @@ using UnityEngine;
 
 namespace Zenject.Tests.Bindings.FromPrefab
 {
-    public class Qux : MonoBehaviour
-    {
-        [Inject]
-        int _arg;
+public class Qux : MonoBehaviour
+{
+    [Inject] private int _arg;
 
-        [Inject]
-        public void Initialize()
-        {
-            Log.Trace("Received arg '{0}' in Qux", _arg);
-        }
+    [Inject]
+    public void Initialize()
+    {
+        Log.Trace("Received arg '{0}' in Qux", _arg);
     }
+}
 }

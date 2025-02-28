@@ -1,19 +1,19 @@
 namespace Zenject.Tests.Installers.ScriptableObjectInstallers
 {
-    //[CreateAssetMenu(fileName = "BarInstaller", menuName = "Installers/BarInstaller")]
-    public class BarInstaller : ScriptableObjectInstaller<string, BarInstaller>
+//[CreateAssetMenu(fileName = "BarInstaller", menuName = "Installers/BarInstaller")]
+public class BarInstaller : ScriptableObjectInstaller<string, BarInstaller>
+{
+    private string _value;
+
+    [Inject]
+    public void Construct(string value)
     {
-        string _value;
-
-        [Inject]
-        public void Construct(string value)
-        {
-            _value = value;
-        }
-
-        public override void InstallBindings()
-        {
-            Container.BindInstance(_value);
-        }
+        _value = value;
     }
+
+    public override void InstallBindings()
+    {
+        Container.BindInstance(_value);
+    }
+}
 }

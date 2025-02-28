@@ -1,15 +1,15 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Board;
 using Board.Piece;
 using Newtonsoft.Json;
-using NUnit.Framework;
 using Setting;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 
+namespace Board
+{
 public class ArrangementBoard : AbstractBoard
 {
     [SerializeField] private Cell extraCellPrefab;
@@ -45,12 +45,7 @@ public class ArrangementBoard : AbstractBoard
 
     private void OnDisable()
     {
-        ForEachCell(cell =>
-        {
-            cell.SetPiece(null);
-            cell.SetMovedState(Cell.CellState.None);
-            cell.SetSelectedState(Cell.CellState.None);
-        });
+        ClearBoard();
         saveButton.onClick.RemoveListener(SaveArrangement);
     }
 
@@ -181,4 +176,5 @@ public class ArrangementBoard : AbstractBoard
     }
     
     #endregion
+}
 }

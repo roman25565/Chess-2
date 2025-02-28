@@ -4,63 +4,52 @@ using ModestTree;
 
 namespace Zenject
 {
-    [NoReflectionBaking]
-    public class MethodProviderUntyped : IProvider
+[NoReflectionBaking]
+public class MethodProviderUntyped : IProvider
+{
+    private readonly DiContainer _container;
+    private readonly Func<InjectContext, object> _method;
+
+    public MethodProviderUntyped(
+        Func<InjectContext, object> method,
+        DiContainer container)
     {
-        readonly DiContainer _container;
-        readonly Func<InjectContext, object> _method;
+        _container = container;
+        _method = method;
+    }
 
-        public MethodProviderUntyped(
-            Func<InjectContext, object> method,
-            DiContainer container)
+    public bool IsCached => false;
+
+    public bool TypeVariesBasedOnMemberType => false;
+
+    public Type GetInstanceType(InjectContext context)
+    {
+        return context.MemberType;
+    }
+
+    public void GetAllInstancesWithInjectSplit(
+        InjectContext context, List<TypeValuePair> args, out Action injectAction, List<object> buffer)
+    {
+        Assert.IsEmpty(args);
+        Assert.IsNotNull(context);
+
+        injectAction = null;
+        if (_container.IsValidating && !TypeAnalyzer.ShouldAllowDuringValidation(context.MemberType))
         {
-            _container = container;
-            _method = method;
+            buffer.Add(new ValidationMarker(context.MemberType));
         }
-
-        public bool IsCached
+        else
         {
-            get { return false; }
-        }
+            var result = _method(context);
 
-        public bool TypeVariesBasedOnMemberType
-        {
-            get { return false; }
-        }
-
-        public Type GetInstanceType(InjectContext context)
-        {
-            return context.MemberType;
-        }
-
-        public void GetAllInstancesWithInjectSplit(
-            InjectContext context, List<TypeValuePair> args, out Action injectAction, List<object> buffer)
-        {
-            Assert.IsEmpty(args);
-            Assert.IsNotNull(context);
-
-            injectAction = null;
-            if (_container.IsValidating && !TypeAnalyzer.ShouldAllowDuringValidation(context.MemberType))
-            {
-                buffer.Add(new ValidationMarker(context.MemberType));
-            }
+            if (result == null)
+                Assert.That(!context.MemberType.IsPrimitive(),
+                    "Invalid value returned from FromMethod.  Expected non-null.");
             else
-            {
-                var result = _method(context);
+                Assert.That(result.GetType().DerivesFromOrEqual(context.MemberType));
 
-                if (result == null)
-                {
-                    Assert.That(!context.MemberType.IsPrimitive(),
-                        "Invalid value returned from FromMethod.  Expected non-null.");
-                }
-                else
-                {
-                    Assert.That(result.GetType().DerivesFromOrEqual(context.MemberType));
-                }
-
-                buffer.Add(result);
-            }
+            buffer.Add(result);
         }
     }
 }
-
+}

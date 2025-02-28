@@ -1,27 +1,24 @@
-using System;
-using ModestTree;
-using UnityEngine;
 using UnityEditor;
-using Zenject;
+using UnityEngine;
 
 namespace Zenject.MemoryPoolMonitor
 {
-    public class MpmWindow : ZenjectEditorWindow
+public class MpmWindow : ZenjectEditorWindow
+{
+    [MenuItem("Window/Zenject Pool Monitor")]
+    public static MpmWindow GetOrCreateWindow()
     {
-        [MenuItem("Window/Zenject Pool Monitor")]
-        public static MpmWindow GetOrCreateWindow()
-        {
-            var window = EditorWindow.GetWindow<MpmWindow>();
-            window.titleContent = new GUIContent("Pool Monitor");
-            return window;
-        }
-
-        public override void InstallBindings()
-        {
-            MpmSettingsInstaller.InstallFromResource(Container);
-
-            Container.BindInstance(this);
-            Container.BindInterfacesTo<MpmView>().AsSingle();
-        }
+        var window = GetWindow<MpmWindow>();
+        window.titleContent = new GUIContent("Pool Monitor");
+        return window;
     }
+
+    public override void InstallBindings()
+    {
+        MpmSettingsInstaller.InstallFromResource(Container);
+
+        Container.BindInstance(this);
+        Container.BindInterfacesTo<MpmView>().AsSingle();
+    }
+}
 }

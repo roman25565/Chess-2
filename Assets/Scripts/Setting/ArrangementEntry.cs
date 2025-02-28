@@ -1,9 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Board;
 using Board.Piece;
-using Setting;
 using Unity.Netcode;
 
 [Serializable]
@@ -12,18 +8,19 @@ public class ArrangementEntry : INetworkSerializable
     public int row;
     public int column;
     public PieceType pieceType;
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         serializer.SerializeValue(ref row);
         serializer.SerializeValue(ref column);
         serializer.SerializeValue(ref pieceType);
-        
     }
 }
 
 public class ArrangementEntryArray : INetworkSerializable
 {
     public ArrangementEntry[] ArrangementEntry;
+
     public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
     {
         var length = 0;

@@ -2,7 +2,7 @@ using UnityEngine;
 
 public class DontDestroyOnLoad : MonoBehaviour
 {
-    void Start()
+    private void Start()
     {
         DontDestroyOnLoad(this);
     }

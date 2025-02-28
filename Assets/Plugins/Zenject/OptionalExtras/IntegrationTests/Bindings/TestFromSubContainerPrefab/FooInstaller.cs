@@ -4,15 +4,14 @@
 
 namespace Zenject.Tests.Bindings.FromSubContainerPrefab
 {
-    public class FooInstaller : MonoInstaller
-    {
-        [SerializeField]
-        Bar _bar;
+public class FooInstaller : MonoInstaller
+{
+    [SerializeField] private Bar _bar;
 
-        public override void InstallBindings()
-        {
-            Container.BindInstance(_bar);
-            Container.Bind<Gorp>().WithId("gorp").AsSingle();
-        }
+    public override void InstallBindings()
+    {
+        Container.BindInstance(_bar);
+        Container.Bind<Gorp>().WithId("gorp").AsSingle();
     }
+}
 }

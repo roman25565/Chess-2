@@ -1,14 +1,13 @@
 ﻿using System;
-using Board;
 using Board.Piece;
 using Setting;
-using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.EventSystems;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Zenject;
 
+namespace Board
+{
 public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {
     public enum CellState
@@ -22,7 +21,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public int Column { get; set; }
     public int Row { get; private set; }
     public AbstractPiece Piece { get; private set; }
-    private AbstractBoard Board { get; set; }
+    public AbstractBoard Board { get; private set; }
 
     [SerializeField] private Image pieceImage;
     [SerializeField] private Image movedImage;
@@ -34,14 +33,14 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         switch (state)
         {
-           case CellState.Moved:
-               SetImage(movedImage, _setting.CellStates.moved);
-               break;
-           case CellState.None:
-               SetImage(movedImage, _setting.CellStates.none);
-               break;
-           default:
-               throw new ArgumentOutOfRangeException(nameof(state), state, null);
+            case CellState.Moved:
+                SetImage(movedImage, _setting.CellStates.moved);
+                break;
+            case CellState.None:
+                SetImage(movedImage, _setting.CellStates.none);
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(state), state, null);
         }
     }
 
@@ -117,7 +116,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 
     public void OnPointerUp(PointerEventData eventData)
     {
-        Debug.Log("Board.IsSelectedCell(this)" + Board.IsSelectedCell(this));
         Board.StopDragging();
     }
+}
 }

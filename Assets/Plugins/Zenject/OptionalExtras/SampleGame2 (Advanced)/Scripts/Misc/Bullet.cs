@@ -2,90 +2,77 @@
 
 namespace Zenject.SpaceFighter
 {
-    public enum BulletTypes
+public enum BulletTypes
+{
+    FromEnemy,
+    FromPlayer
+}
+
+public class Bullet : MonoBehaviour, IPoolable<float, float, BulletTypes, IMemoryPool>
+{
+    [SerializeField] private MeshRenderer _renderer;
+
+    [SerializeField] private Material _playerMaterial;
+
+    [SerializeField] private Material _enemyMaterial;
+
+    private float _lifeTime;
+
+    private IMemoryPool _pool;
+    private float _speed;
+    private float _startTime;
+
+    public BulletTypes Type { get; private set; }
+
+    public Vector3 MoveDirection => transform.right;
+
+    public void Update()
     {
-        FromEnemy,
-        FromPlayer
+        transform.position -= transform.right * _speed * Time.deltaTime;
+
+        if (Time.realtimeSinceStartup - _startTime > _lifeTime) _pool.Despawn(this);
     }
 
-    public class Bullet : MonoBehaviour, IPoolable<float, float, BulletTypes, IMemoryPool>
+    public void OnTriggerEnter(Collider other)
     {
-        float _startTime;
-        BulletTypes _type;
-        float _speed;
-        float _lifeTime;
+        var enemyView = other.GetComponent<EnemyView>();
 
-        [SerializeField]
-        MeshRenderer _renderer = null;
-
-        [SerializeField]
-        Material _playerMaterial = null;
-
-        [SerializeField]
-        Material _enemyMaterial = null;
-
-        IMemoryPool _pool;
-
-        public BulletTypes Type
+        if (enemyView != null && Type == BulletTypes.FromPlayer)
         {
-            get { return _type; }
+            enemyView.Facade.Die();
+            _pool.Despawn(this);
         }
-
-        public Vector3 MoveDirection
+        else
         {
-            get { return transform.right; }
-        }
+            var player = other.GetComponent<PlayerFacade>();
 
-        public void OnTriggerEnter(Collider other)
-        {
-            var enemyView = other.GetComponent<EnemyView>();
-
-            if (enemyView != null && _type == BulletTypes.FromPlayer)
+            if (player != null && Type == BulletTypes.FromEnemy)
             {
-                enemyView.Facade.Die();
-                _pool.Despawn(this);
-            }
-            else
-            {
-                var player = other.GetComponent<PlayerFacade>();
-
-                if (player != null && _type == BulletTypes.FromEnemy)
-                {
-                    player.TakeDamage(MoveDirection);
-                    _pool.Despawn(this);
-                }
-            }
-        }
-
-        public void Update()
-        {
-            transform.position -= transform.right * _speed * Time.deltaTime;
-
-            if (Time.realtimeSinceStartup - _startTime > _lifeTime)
-            {
+                player.TakeDamage(MoveDirection);
                 _pool.Despawn(this);
             }
         }
-
-        public void OnSpawned(float speed, float lifeTime, BulletTypes type, IMemoryPool pool)
-        {
-            _pool = pool;
-            _type = type;
-            _speed = speed;
-            _lifeTime = lifeTime;
-
-            _renderer.material = type == BulletTypes.FromEnemy ? _enemyMaterial : _playerMaterial;
-
-            _startTime = Time.realtimeSinceStartup;
-        }
-
-        public void OnDespawned()
-        {
-            _pool = null;
-        }
-
-        public class Factory : PlaceholderFactory<float, float, BulletTypes, Bullet>
-        {
-        }
     }
+
+    public void OnSpawned(float speed, float lifeTime, BulletTypes type, IMemoryPool pool)
+    {
+        _pool = pool;
+        Type = type;
+        _speed = speed;
+        _lifeTime = lifeTime;
+
+        _renderer.material = type == BulletTypes.FromEnemy ? _enemyMaterial : _playerMaterial;
+
+        _startTime = Time.realtimeSinceStartup;
+    }
+
+    public void OnDespawned()
+    {
+        _pool = null;
+    }
+
+    public class Factory : PlaceholderFactory<float, float, BulletTypes, Bullet>
+    {
+    }
+}
 }

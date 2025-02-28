@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -8,28 +9,29 @@ using Setting;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Zenject;
 
+namespace Bootstrap
+{
 public class Bootstrap : MonoBehaviour
 {
     private const string Server = "Server";
-    
-    [Inject]
-    private Settings _settings;
-    [Inject]
-    private GameData _gameData;
-    
+
     [SerializeField] private Button startOnlineMatch;
     [SerializeField] private Button startLocalMatch;
     [SerializeField] private Button startTestMatch;
     [SerializeField] private Button hostLocalMatch;
     [SerializeField] private Button settingsButton;
     [SerializeField] private ClientMatchmaker clientMatchmaker;
+
+    [Inject] private GameData _gameData;
+
+    [Inject] private Settings _settings;
+
     private async void Start()
     {
-        bool isServer = System.Environment.GetCommandLineArgs().Any(arg => arg == "-port");
+        var isServer = Environment.GetCommandLineArgs().Any(arg => arg == "-port");
         await LoadSettings(!isServer);
         if (isServer)
         {
@@ -53,7 +55,7 @@ public class Bootstrap : MonoBehaviour
             startTestMatch.onClick.AddListener(() =>
             {
                 DisableButtons();
-                
+
                 _gameData.Mode = GameMode.Test;
                 SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
                 SceneManager.sceneLoaded += (scene, loadSceneMode) => NetworkManager.Singleton.StartHost();
@@ -70,28 +72,27 @@ public class Bootstrap : MonoBehaviour
     private async Task LoadSettings(bool isClient)
     {
         var arrangement = LoadArrangement();
-        
+
         var piecesData = Resources.LoadAll<PieceData>("Settings/Pieces");
-        
+
         var cellStates = Resources.Load<CellStates>("Settings/CellStates");
-        
+
         var firestore = new FirestoreManager();
-        if (isClient)
-        {
-            await firestore.Init();
-        }
+        if (isClient) await firestore.Init();
 
         _settings.Init(arrangement, piecesData, cellStates, firestore);
         Debug.Log("Settings init");
     }
+
     public void OnSignIn(GoogleSignInUser user)
     {
         SignInFireBase(user);
     }
+
     public void OnSignIn(string id)
     {
         Debug.Log("OnSignIn");
-        SignInFireBase(new GoogleSignInUser{UserId = id});
+        SignInFireBase(new GoogleSignInUser { UserId = id });
     }
 
     private void SignInFireBase(GoogleSignInUser user)
@@ -101,7 +102,8 @@ public class Bootstrap : MonoBehaviour
             _settings.FirestoreManager.SingUp("001");
             return;
         }
-        _ = _settings.FirestoreManager.GetPlayerData(user.UserId,CallBack);
+
+        _ = _settings.FirestoreManager.GetPlayerData(user.UserId, CallBack);
         return;
 
         void CallBack(FirebasePlayerData result)
@@ -122,30 +124,27 @@ public class Bootstrap : MonoBehaviour
     private List<ArrangementEntry> LoadArrangement()
     {
         var filePath = Application.persistentDataPath + "/game_pieces.json";
-        
+
         if (File.Exists(filePath))
         {
-            string json = File.ReadAllText(filePath);
+            var json = File.ReadAllText(filePath);
             var pieceData = JsonConvert.DeserializeObject<List<ArrangementEntry>>(json);
             Debug.Log("pieceData.Count: " + pieceData.Count);
             return pieceData;
         }
-        else
-        {
-            return Resources.Load<Arrangement>("Settings/Arrangement").arrangements;
-        }
+
+        return Resources.Load<Arrangement>("Settings/Arrangement").arrangements;
     }
 
     private void DisableButtons()
     {
-        
         startOnlineMatch.gameObject.SetActive(false);
         startLocalMatch.gameObject.SetActive(false);
         startTestMatch.gameObject.SetActive(false);
         hostLocalMatch.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
     }
-    
+
     // void InitializePlayGamesLogin()
     // {
     //     var config = new PlayGamesClientConfiguration.Builder()
@@ -177,4 +176,5 @@ public class Bootstrap : MonoBehaviour
     //         Debug.Log("Unsuccessful login");
     //     }
     // }
+}
 }

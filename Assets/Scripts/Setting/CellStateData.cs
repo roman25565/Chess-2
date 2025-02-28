@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using UnityEngine.Serialization;
 
 [CreateAssetMenu(fileName = "CellStates", menuName = "Settings/CellStates")]
@@ -10,7 +11,7 @@ public class CellStates : ScriptableObject
     public CellStatesData none;
 }
 
-[System.Serializable]
+[Serializable]
 public class CellStatesData
 {
     [FormerlySerializedAs("Value")] public Sprite value;

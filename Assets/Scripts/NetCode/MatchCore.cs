@@ -1,7 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
-using System.Threading.Tasks;
 using Board;
 using Board.Piece;
 using Setting;
@@ -17,14 +15,9 @@ public class MatchData
 
     public PlayerData GetPlayerData(ulong id)
     {
-        if (Player1.PlayerId == id)
-        {
-            return Player1;
-        }
-        else if (Player2.PlayerId == id)
-        {
-            return Player2;
-        }
+        if (Player1.PlayerId == id) return Player1;
+
+        if (Player2.PlayerId == id) return Player2;
         Debug.LogError("Player id not found");
         return null;
     }
@@ -32,28 +25,29 @@ public class MatchData
 
 public class PlayerData
 {
-    public ulong PlayerId;
+    public ArrangementEntry[] Arrangement;
     public FirebasePlayerData FirebasePlayer;
-    public float TimeToMove;
     public bool IsMoving;
     public bool IsRotate;
-    public ArrangementEntry[] Arrangement;
     public bool IsWhite;
+    public ulong PlayerId;
+    public float TimeToMove;
 }
+
 public class MatchCore : NetworkBehaviour
 {
-    [Inject] private GameData _gameData;
-    [Inject] private Settings _settings;
-    private ulong _myId;
     private ulong _enemyId;
-    private MatchData _matchData;
+    [Inject] private GameData _gameData;
+    private bool _gameEnded;
     private bool _isInitialize;
     private float _lastUpdateTime;
-    private bool _gameEnded;
+    private MatchData _matchData;
+    private ulong _myId;
+    [Inject] private Settings _settings;
 
     public bool IsRotated => _matchData.GetPlayerData(_myId).IsRotate;
     public bool IsWhite => _matchData.GetPlayerData(_myId).IsWhite;
-    public bool IsMyId(ulong id) => id == _myId;
+
     private void Awake()
     {
         ProjectContext.Instance.Container.InjectGameObject(gameObject);
@@ -67,7 +61,7 @@ public class MatchCore : NetworkBehaviour
             var playerData = _matchData.GetPlayerData(_matchData.MovingPlayerId);
             playerData.TimeToMove -= Time.deltaTime;
             var time = playerData.TimeToMove;
-            
+
             if (Mathf.Abs(playerData.TimeToMove - _lastUpdateTime) > 0.01f)
             {
                 _lastUpdateTime = time;
@@ -76,13 +70,19 @@ public class MatchCore : NetworkBehaviour
         }
     }
 
+    public bool IsMyId(ulong id)
+    {
+        return id == _myId;
+    }
+
     public void UpdateFirebasePlayerData(ulong playerId, bool isEnemyPlayer)
     {
         if (playerId == _matchData.Player1.PlayerId)
-        { 
+        {
             Debug.Log("UpdateFirebasePlayerData");
             MatchUIManager.Instance.SetPlayerUI(_matchData.Player1.FirebasePlayer, isEnemyPlayer);
-        }else if (playerId == _matchData.Player2.PlayerId)
+        }
+        else if (playerId == _matchData.Player2.PlayerId)
         {
             MatchUIManager.Instance.SetPlayerUI(_matchData.Player2.FirebasePlayer, isEnemyPlayer);
             Debug.Log("UpdateFirebasePlayerDataFinish");
@@ -90,15 +90,15 @@ public class MatchCore : NetworkBehaviour
     }
 
     public void Init(MatchData matchData)
-    { 
+    {
         Debug.Log("Application.isMainThread" + Thread.CurrentThread.ManagedThreadId);
         Debug.Log("MatchCore.Init");
-        
+
         _matchData = matchData;
         _gameData.ActiveBoard.SetMatchCore(this);
         _myId = OwnerClientId;
         _enemyId = _myId == matchData.Player2.PlayerId ? matchData.Player1.PlayerId : matchData.Player2.PlayerId;
-        
+
         _isInitialize = true;
         Debug.Log("MatchCore.Inited");
     }
@@ -114,19 +114,78 @@ public class MatchCore : NetworkBehaviour
         var myData = _matchData.GetPlayerData(_myId);
 
         if (myData.IsMoving || myData.TimeToMove <= 0)
-        {
             TryMoveRpc(from, to);
-        }
         else
-        {
             Debug.LogError("Error player cont move");
-            return;
-        }
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    private void LosePlayerClientRpc(ulong winnerId)
+    {
+        if (!IsOwner) return;
+
+        _gameEnded = true;
+        _gameData.ActiveBoard.EndGame();
+
+        CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
+        var isFirstPlayer = _matchData.Player1.PlayerId == _myId;
+        MatchUIManager.Instance.EndGame(winnerId == _myId, isFirstPlayer ? player1Elo : player2Elo,
+            isFirstPlayer ? player2Elo : player1Elo);
+
+        if (!IsWhite) return;
+
+        _settings.FirestoreManager.BdSetElo(_matchData.Player1.FirebasePlayer.ID, player1Elo);
+        _settings.FirestoreManager.BdSetElo(_matchData.Player2.FirebasePlayer.ID, player2Elo);
+
+        var player1 = _matchData.GetPlayerData(_myId); //player1 always White
+        var player2 = _matchData.GetPlayerData(_enemyId);
+        _settings.FirestoreManager.SaveMatchHistory(
+            _matchData.GetPlayerData(winnerId).FirebasePlayer.ID,
+            player1.FirebasePlayer.ID, player1Elo, player1.Arrangement,
+            player2.FirebasePlayer.ID + 1, player1Elo, player2.Arrangement,
+            _gameData.ActiveBoard.GetHistory()
+        );
+    }
+
+    private void CalculateNewEloRatings(ulong winnerId, out int player1Elo, out int player2Elo)
+    {
+        double scope1 = 0;
+        double scope2 = 0;
+        GetScopes(winnerId, ref scope1, ref scope2);
+
+        player1Elo = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo,
+            _matchData.Player1.FirebasePlayer.Elo, scope1);
+        player2Elo = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo,
+            _matchData.Player2.FirebasePlayer.Elo, scope2);
+    }
+
+    [Rpc(SendTo.Everyone)]
+    public void UseMoveCommandRpc(Vector2Int from, Vector2Int to, ulong playerId)
+    {
+        if (IsOwner) UseMove(from, to, playerId);
+    }
+
+    private void UseMove(Vector2Int from, Vector2Int to, ulong playerId)
+    {
+        var board = _gameData.ActiveBoard;
+        var cell = board.GetCell(to.x, to.y);
+        if (cell.Piece != null)
+            DeathRattle(cell);
+
+        _gameData.ActiveBoard.MovePiece(from, to);
+        _matchData.GetPlayerData(playerId).IsMoving = false;
+
+        var anotherPlayer = _matchData.Player1.PlayerId == playerId ? _matchData.Player2 : _matchData.Player1;
+
+        anotherPlayer.IsMoving = true;
+        _matchData.MovingPlayerId = anotherPlayer.PlayerId;
     }
 
     #region Server
+
     private MatchCore _serverCore;
     private MatchCore[] _allMatchCores;
+
     public void SetServerCore(MatchCore serverCore)
     {
         _serverCore = serverCore;
@@ -135,8 +194,8 @@ public class MatchCore : NetworkBehaviour
             _allMatchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
             Debug.Log(_allMatchCores.Length);
         }
-        
     }
+
     [Rpc(SendTo.Server)]
     private void TryMoveRpc(Vector2Int from, Vector2Int to, RpcParams rpcParams = default)
     {
@@ -195,7 +254,10 @@ public class MatchCore : NetworkBehaviour
             case PieceType.Queens:
                 break;
             case PieceType.Kings:
-                if (IsServer || IsHost) LosePlayer(cell.Piece.OwnerId == _matchData.Player1.PlayerId ? _matchData.Player1.PlayerId : _matchData.Player2.PlayerId);
+                if (IsServer || IsHost)
+                    LosePlayer(cell.Piece.OwnerId == _matchData.Player1.PlayerId
+                        ? _matchData.Player1.PlayerId
+                        : _matchData.Player2.PlayerId);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -205,14 +267,11 @@ public class MatchCore : NetworkBehaviour
     private void LosePlayer(ulong loserId)
     {
         Debug.Log("LosePlayer");
-        Debug.Log(((IsHost.ToString()) + IsServer));
-        foreach (var allMatchCore in _allMatchCores)
-        {
-            allMatchCore.LosePlayerClientRpc(loserId);
-        }
+        Debug.Log(IsHost.ToString() + IsServer);
+        foreach (var allMatchCore in _allMatchCores) allMatchCore.LosePlayerClientRpc(loserId);
     }
 
-    private void GetScopes(ulong winnerId,ref double player1Score, ref double player2Score)
+    private void GetScopes(ulong winnerId, ref double player1Score, ref double player2Score)
     {
         if (winnerId == _matchData.Player1.PlayerId)
         {
@@ -233,76 +292,8 @@ public class MatchCore : NetworkBehaviour
 
     private void SendToPlayersMove(Vector2Int from, Vector2Int to, ulong playerId)
     {
-        foreach (var allMatchCore in _allMatchCores)
-        {
-            allMatchCore.UseMoveCommandRpc(from, to, playerId);
-        }
+        foreach (var allMatchCore in _allMatchCores) allMatchCore.UseMoveCommandRpc(from, to, playerId);
     }
+
     #endregion
-
-    [Rpc(SendTo.ClientsAndHost)]
-    private void LosePlayerClientRpc(ulong winnerId)
-    {
-        if (!IsOwner) return;
-
-        _gameEnded = true;
-        _gameData.ActiveBoard.EndGame();
-
-        CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
-        bool isFirstPlayer = _matchData.Player1.PlayerId == _myId;
-        MatchUIManager.Instance.EndGame(winnerId == _myId, isFirstPlayer ? player1Elo : player2Elo,
-            isFirstPlayer ? player2Elo : player1Elo);
-
-        if (!IsWhite) return;
-
-        _settings.FirestoreManager.BdSetElo(_matchData.Player1.FirebasePlayer.ID, player1Elo);
-        _settings.FirestoreManager.BdSetElo(_matchData.Player2.FirebasePlayer.ID, player2Elo);
-
-        var player1 = _matchData.Player1;
-        var player2 = _matchData.Player2;
-        _settings.FirestoreManager.SaveMatchHistory(
-            _matchData.GetPlayerData(winnerId).FirebasePlayer.ID,
-            player1.FirebasePlayer.ID, player1Elo, player1.Arrangement,
-            player2.FirebasePlayer.ID + 1, player1Elo, player2.Arrangement,
-            _gameData.ActiveBoard.GetHistory()
-        );
-    }
-
-    private void CalculateNewEloRatings(ulong winnerId, out int player1Elo, out int player2Elo)
-    {
-        double scope1 = 0;
-        double scope2 = 0;
-        GetScopes(winnerId, ref scope1, ref scope2);
-
-        player1Elo = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo,
-            _matchData.Player1.FirebasePlayer.Elo, scope1);
-        player2Elo = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo,
-            _matchData.Player2.FirebasePlayer.Elo, scope2);
-    }
-
-    [Rpc(SendTo.Everyone)]
-    public void UseMoveCommandRpc(Vector2Int from, Vector2Int to, ulong playerId)
-    {
-        if (IsOwner)
-        {
-            UseMove(from, to, playerId);
-        }
-    }
-    private void UseMove(Vector2Int from, Vector2Int to, ulong playerId)
-    {
-        var board = _gameData.ActiveBoard;
-        var cell = board.GetCell(to.x, to.y);
-        if (cell.Piece != null)
-        {
-            DeathRattle(cell);
-        }
-        _gameData.ActiveBoard.MovePiece(from, to);
-        _matchData.GetPlayerData(playerId).IsMoving = false;
-        
-        var anotherPlayer = _matchData.Player1.PlayerId == playerId ? _matchData.Player2 : _matchData.Player1;
-        
-        anotherPlayer.IsMoving = true;
-        _matchData.MovingPlayerId = anotherPlayer.PlayerId;
-    }
 }
-

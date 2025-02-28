@@ -10,12 +10,12 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: 52df025dba4c454997f0cfabc3ea3fa5, type: 3}
-  m_Name: Pawns
+  m_Name: Rook
   m_EditorClassIdentifier: 
-  pieceType: 1
+  pieceType: 2
   skins:
-  - {fileID: 926101752, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
-  - {fileID: 949997841, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
+  - {fileID: -742665431, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
+  - {fileID: -115298540, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
   selectedSkinIndex: 0
   steps:
   - directions: 02000000
@@ -23,3 +23,4 @@ MonoBehaviour:
   - directions: 0100000002000000
   arrangementMin: 0
   arrangementMax: 94
+  arrangementCost: 6

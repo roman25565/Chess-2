@@ -3,11 +3,11 @@ using UnityEngine;
 
 namespace Zenject.Tests.TestDestructionOrder
 {
-    public class FooDisposable3 : IDisposable
+public class FooDisposable3 : IDisposable
+{
+    public void Dispose()
     {
-        public void Dispose()
-        {
-            Debug.Log("Destroyed FooDisposable3");
-        }
+        Debug.Log("Destroyed FooDisposable3");
     }
+}
 }
