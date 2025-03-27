@@ -122,8 +122,11 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     private void LosePlayerClientRpc(ulong winnerId)
     {
+        
+#if !UNITY_SERVER
         if (!IsOwner) return;
 
+        Debug.Log("LosePlayerClientRpc");
         _gameEnded = true;
         _gameData.ActiveBoard.EndGame();
 
@@ -142,9 +145,10 @@ public class MatchCore : NetworkBehaviour
         _settings.FirestoreManager.SaveMatchHistory(
             _matchData.GetPlayerData(winnerId).FirebasePlayer.ID,
             player1.FirebasePlayer.ID, player1Elo, player1.Arrangement,
-            player2.FirebasePlayer.ID + 1, player1Elo, player2.Arrangement,
+            player2.FirebasePlayer.ID, player1Elo, player2.Arrangement,
             _gameData.ActiveBoard.GetHistory()
         );
+#endif
     }
 
     private void CalculateNewEloRatings(ulong winnerId, out int player1Elo, out int player2Elo)

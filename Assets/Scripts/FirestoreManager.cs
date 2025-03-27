@@ -79,10 +79,9 @@ public class FirestoreManager
         }
         catch (Exception e)
         {
-            Debug.LogError(e);
+            Debug.LogError(playerId + e);
             throw;
         }
-
         return result;
     }
 
@@ -153,7 +152,8 @@ public class FirestoreManager
             { NameKey, user.DisplayName },
             { EloKey, 500 },
             { IconURLKey, user.ImageUrl.ToString() },
-            { EmailKey, user.Email }
+            { EmailKey, user.Email },
+            {HistoryIDs, new object[]{} }
         };
         SingUp(player, user.UserId);
     }
@@ -201,10 +201,11 @@ public class FirestoreManager
         });
     }
 
-    private void BdAddHistoryId(string playerId, string historyId)
+    private void BdAddHistoryId(string playerId, string historyId)//TODO NOTWORK 
     {
+        Debug.Log("playerId: " + playerId);
         var docRef = db.Collection(PlayersDataCollectionName).Document(playerId);
-
+        
         docRef.UpdateAsync(HistoryIDs, FieldValue.ArrayUnion(historyId))
             .ContinueWithOnMainThread(task =>
             {
@@ -261,10 +262,10 @@ public class FirestoreManager
         {
             if (task.IsCompleted)
             {
-                Debug.Log("matchData Added successfully.");
                 var docRef = task.Result;
-                BdAddHistoryId(Player1ID, docRef.Id);
-                BdAddHistoryId(Player2ID, docRef.Id);
+                Debug.Log("matchData Added successfully. " + docRef.Id );
+                BdAddHistoryId(player1ID, docRef.Id);
+                BdAddHistoryId(player2ID, docRef.Id);
             }
             else if (task.IsFaulted)
             {

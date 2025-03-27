@@ -18,19 +18,25 @@ public class Bootstrap : MonoBehaviour
 {
     private const string Server = "Server";
 
+    [Inject] private GameData _gameData;
+    [Inject] private Settings _settings;
+    
+    [SerializeField] private ClientMatchmaker clientMatchmaker;
+    [SerializeField] private SignIn signIn;
+    
     [SerializeField] private Button startOnlineMatch;
     [SerializeField] private Button startLocalMatch;
     [SerializeField] private Button startTestMatch;
     [SerializeField] private Button hostLocalMatch;
     [SerializeField] private Button settingsButton;
-    [SerializeField] private ClientMatchmaker clientMatchmaker;
-
-    [Inject] private GameData _gameData;
-
-    [Inject] private Settings _settings;
-
+    
     private async void Start()
     {
+        if (_settings.IsSignIn)
+        {
+            signIn.Init();
+            return;
+        }
         var isServer = Environment.GetCommandLineArgs().Any(arg => arg == "-port");
         await LoadSettings(!isServer);
         if (isServer)
@@ -40,8 +46,10 @@ public class Bootstrap : MonoBehaviour
         }
         else
         {
+            signIn.Init();
             startOnlineMatch.onClick.AddListener(() =>
             {
+                Debug.Log("startOnlineMatch");
                 DisableButtons();
                 _gameData.Mode = GameMode.Online;
                 clientMatchmaker.SearchMatch();
@@ -58,7 +66,14 @@ public class Bootstrap : MonoBehaviour
 
                 _gameData.Mode = GameMode.Test;
                 SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-                SceneManager.sceneLoaded += (scene, loadSceneMode) => NetworkManager.Singleton.StartHost();
+
+                SceneManager.sceneLoaded += OnSceneLoaded;
+                void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
+                {
+                    NetworkManager.Singleton.StartHost();
+
+                    SceneManager.sceneLoaded -= OnSceneLoaded;
+                }
             });
             hostLocalMatch.onClick.AddListener(() =>
             {
@@ -76,7 +91,7 @@ public class Bootstrap : MonoBehaviour
         var piecesData = Resources.LoadAll<PieceData>("Settings/Pieces");
 
         var cellStates = Resources.Load<CellStates>("Settings/CellStates");
-
+        
         var firestore = new FirestoreManager();
         if (isClient) await firestore.Init();
 
@@ -89,7 +104,7 @@ public class Bootstrap : MonoBehaviour
         SignInFireBase(user);
     }
 
-    public void OnSignIn(string id)
+    public void OnSignInDebug(string id)
     {
         Debug.Log("OnSignIn");
         SignInFireBase(new GoogleSignInUser { UserId = id });
@@ -108,6 +123,7 @@ public class Bootstrap : MonoBehaviour
 
         void CallBack(FirebasePlayerData result)
         {
+            _settings.IsSignIn = true;
             if (result == null)
             {
                 _settings.FirestoreManager.SingUp(user);
@@ -144,37 +160,5 @@ public class Bootstrap : MonoBehaviour
         hostLocalMatch.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
     }
-
-    // void InitializePlayGamesLogin()
-    // {
-    //     var config = new PlayGamesClientConfiguration.Builder()
-    //         // Requests an ID token be generated.  
-    //         // This OAuth token can be used to
-    //         // identify the player to other services such as Firebase.
-    //         .RequestIdToken()
-    //         .Build();
-    //
-    //     PlayGamesPlatform.InitializeInstance(config);
-    //     PlayGamesPlatform.DebugLogEnabled = true;
-    //     PlayGamesPlatform.Activate();
-    // }
-    //
-    // void LoginGoogle()
-    // {
-    //     Social.localUser.Authenticate(OnGoogleLogin);
-    // }
-    //
-    // void OnGoogleLogin(bool success)
-    // {
-    //     if (success)
-    //     {
-    //         // Call Unity Authentication SDK to sign in or link with Google.
-    //         Debug.Log("Login with Google done. IdToken: " + ((PlayGamesLocalUser)Social.localUser).GetIdToken());
-    //     }
-    //     else
-    //     {
-    //         Debug.Log("Unsuccessful login");
-    //     }
-    // }
 }
 }

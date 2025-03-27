@@ -173,7 +173,7 @@ public abstract class AbstractBoard : MonoBehaviour
         {
             Deselect();
         }
-        else if (_selectedCell != null && _selectedCell.Piece.IsValidMove(_selectedCell, cell))
+        else if (_selectedCell != null && IsValidMove(_selectedCell, cell))
         {
             OnCanMove(_selectedCell, cell);
             Deselect();
@@ -277,7 +277,7 @@ public abstract class AbstractBoard : MonoBehaviour
     private Cell _secondSelectedCell;
     private Cell _thirdSelectedCell;
 
-    private void Deselect()
+    protected void Deselect()
     {
         if (_selectedCell != null)
         {
@@ -312,7 +312,13 @@ public abstract class AbstractBoard : MonoBehaviour
     public bool IsValidMove(Vector2Int from, Vector2Int to)
     {
         var fromCell = GetCell(from.x, from.y);
+        var toCell = GetCell(to.x, to.y);
+        return IsValidMove(fromCell, toCell);
         return fromCell.Piece.IsValidMove(GetCell(from.x, from.y), GetCell(to.x, to.y));
+    }
+    protected virtual bool IsValidMove(Cell from, Cell to)
+    {
+        return from.Piece.IsValidMove(from, to);
     }
 
     private void SettCellState(List<Vector2Int> points, Cell.CellState state)

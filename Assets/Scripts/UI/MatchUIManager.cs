@@ -43,6 +43,7 @@ public class MatchUIManager : MonoBehaviour
     private void BackToMenu()
     {
         NetworkManager.Singleton.Shutdown();
+        
         SceneManager.LoadScene("Main", LoadSceneMode.Single);
     }
 }

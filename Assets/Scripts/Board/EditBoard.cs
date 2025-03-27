@@ -23,7 +23,9 @@ namespace Board
         private MoveHistory _selectedHistory;
         public override void StartGame(HistoryMatchData historyMatchData)
         {
+#if !UNITY_SERVER
             ClearBoard();
+#endif
             _isHistoryMatch = historyMatchData != null;
             if (_isHistoryMatch)
             {
@@ -140,7 +142,7 @@ namespace Board
         {
             TryMove(to, false);
         }
-        
+#if !UNITY_SERVER
         public override void NextMove()
         {
             if (!_selectedHistory.InHistory) return;
@@ -158,5 +160,6 @@ namespace Board
                 _selectedHistory = MoveHistory;
             }
         }
+#endif
     }
 }

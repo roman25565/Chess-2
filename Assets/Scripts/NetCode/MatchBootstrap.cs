@@ -60,7 +60,7 @@ public class MatchBootstrap : NetworkBehaviour
             {
                 SomeRpc(OwnerClientId, _settings.FirestoreManager.PlayerData.ID,
                     arrangementEntryArray.ArrangementEntry);
-                SomeRpc(OwnerClientId, _settings.FirestoreManager.PlayerData.ID,
+                SomeRpc(2, "002",
                     arrangementEntryArray.ArrangementEntry);
             }
         }
@@ -171,12 +171,12 @@ public class MatchBootstrap : NetworkBehaviour
             {
                 matchData.Player1.FirebasePlayer = result;
 
-                core.UpdateFirebasePlayerData(matchData.Player1.PlayerId, matchData.Player1.PlayerId == OwnerClientId);
+                core.UpdateFirebasePlayerData(matchData.Player1.PlayerId, matchData.Player1.PlayerId != OwnerClientId);
             });
             _ = _settings.FirestoreManager.GetPlayerData(player2.FirestoreId, result =>
             {
                 matchData.Player2.FirebasePlayer = result;
-                core.UpdateFirebasePlayerData(matchData.Player2.PlayerId, matchData.Player2.PlayerId == OwnerClientId);
+                core.UpdateFirebasePlayerData(matchData.Player2.PlayerId, matchData.Player2.PlayerId != OwnerClientId);
             });
             Debug.Log("matchCore.Init(matchData);");
             core.Init(matchData);
@@ -263,4 +263,4 @@ public class MatchBootstrap : NetworkBehaviour
             IsWhite = isWhite;
         }
     }
-}
+}   

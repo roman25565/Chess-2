@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Board.Piece;
+using Bootstrap;
 using UnityEngine;
 
 namespace Setting
@@ -12,6 +13,8 @@ public class Settings
     public FirestoreManager FirestoreManager;
     public List<ArrangementEntry> MyArrangements;
     public Dictionary<PieceType, PieceData> Pieces;
+
+    public bool IsSignIn;
 
     public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates,
         FirestoreManager firestoreManager)
@@ -31,9 +34,9 @@ public class Settings
         {
             PieceType.Pawns => new Pawn(Pieces[pieceType]),
             PieceType.Rooks => new Rook(Pieces[pieceType]),
-            PieceType.Knights => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null),
+            PieceType.Knights => new Knight(Pieces[pieceType]),
             PieceType.Bishops => new Bishop(Pieces[pieceType]),
-            PieceType.Queens => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null),
+            PieceType.Queens => new Queen(Pieces[pieceType]),
             PieceType.Kings => new King(Pieces[pieceType]),
             _ => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null)
         };

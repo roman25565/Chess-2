@@ -21,7 +21,11 @@ namespace UI
         private void OnEnable()
         {
             DestroyButtons();
-            var historyIDs = _settings.FirestoreManager.PlayerData.HistoryIDs;
+            var historyIDs = _settings.FirestoreManager.PlayerData?.HistoryIDs;
+            if (historyIDs == null)
+            {
+                return;
+            }
             foreach (var historyID in historyIDs)
             {
                 _settings.FirestoreManager.GetHistory(historyID, AddButton);

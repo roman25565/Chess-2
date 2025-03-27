@@ -14,15 +14,12 @@ public class Pawn : AbstractPiece
     {
         var points = new List<Vector2Int>();
         var directionY = IsRotated ? 1 : -1;
-    
         var moveForward = new Vector2Int(cell.Row, cell.Column + directionY);
         var takeLeft = new Vector2Int(cell.Row - 1, cell.Column + directionY);
         var takeRight = new Vector2Int(cell.Row + 1, cell.Column + directionY);
         points.Add(moveForward);
         points.Add(takeLeft);
         points.Add(takeRight);
-    
-        
         
         if (IsFirstMove && cell.Board.GetCell(cell.Row, cell.Column + 1 * directionY).Piece == null)
         {

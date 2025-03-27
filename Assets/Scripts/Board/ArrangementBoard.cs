@@ -4,7 +4,9 @@ using System.Linq;
 using Board.Piece;
 using Newtonsoft.Json;
 using Setting;
+using TMPro;
 using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Zenject;
 
@@ -42,14 +44,14 @@ public class ArrangementBoard : AbstractBoard
         
         return result;
     }
-
+#if !UNITY_SERVER
     private void OnDisable()
     {
         ClearBoard();
         saveButton.onClick.RemoveListener(SaveArrangement);
     }
 
-
+#endif
     protected override void OnEnable()
     {
         base.OnEnable();
@@ -79,6 +81,7 @@ public class ArrangementBoard : AbstractBoard
             GetCell(row, column).SetPiece(Settings.CreatePiece(pieceType));
             
             _piecesCount[pieceType]++;
+            SetPieceCount(pieceType, _piecesCount[pieceType] + 1);
         }
     }
 
@@ -142,6 +145,12 @@ public class ArrangementBoard : AbstractBoard
         return _allPoints;
     }
 
+    protected override bool IsValidMove(Cell from, Cell to)
+    {
+        Debug.Log(to.Column);
+        return to.Column > 4 && to.Column < 8;
+    }
+
     protected override void OnCanMove(Cell from, Cell to)
     {
         MovePiece(from, to);
@@ -149,32 +158,70 @@ public class ArrangementBoard : AbstractBoard
 
     protected override void MoveToOutScreen(Cell from)
     {
+        Debug.Log(from.Row);
         if (from.Row != 8)
         {
-            var picetype = from.Piece.PieceType;
-            var min = Settings.Pieces[picetype].arrangementMin;
-            _piecesCount[picetype] -= 1;
+            var pieceType = from.Piece.PieceType;
+            var min = Settings.Pieces[pieceType].arrangementMin;
+            var a = SetPieceCount(pieceType, _piecesCount[pieceType] - 1);
+            Debug.Log(a);
             from.SetPiece(null);
+            Deselect();
         }
     }
 
     protected override void OnDraggingStop(Cell from, Cell to)
     {
+        if (from == to)
+        {
+            return;
+        }
         MovePiece(from, to);
     }
 
     protected override void Move(Cell from, Cell to)
     {
+        if (to.Piece != null)
+        {
+            MoveToOutScreen(to);
+        }
         var picetype = from.Piece.PieceType;
         var max = Settings.Pieces[picetype].arrangementMax;
         if (_piecesCount[picetype] + 1 > max)
         {
             return;
         }
-        _piecesCount[from.Piece.PieceType] += 1;
-        to.SetPiece(from.Piece);
+
+        if (SetPieceCount(from.Piece.PieceType, _piecesCount[picetype] + 1))
+        {
+            to.SetPiece(from.Piece);
+            Deselect();
+        }
+        
     }
     
     #endregion
+
+    [SerializeField] private TextMeshProUGUI piecesCostText;
+    private bool SetPieceCount(PieceType pieceType, int count)
+    {
+        var piecesCost = 0;
+        foreach (var pieceCount in _piecesCount)
+        {
+            if (pieceCount.Key != pieceType)
+            {
+                var pieceCost = Settings.Pieces[pieceCount.Key].arrangementCost;
+                piecesCost += pieceCost * pieceCount.Value; 
+            }
+        }
+        piecesCost += Settings.Pieces[pieceType].arrangementCost * count;
+
+        if (piecesCost < 50)
+        {
+            _piecesCount[pieceType] = count;
+            piecesCostText.text = piecesCost.ToString() + "/50";
+        }
+        return piecesCost < 50;
+    }
 }
 }
