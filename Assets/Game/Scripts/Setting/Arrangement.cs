@@ -1,0 +1,21 @@
+﻿using System.Collections.Generic;
+using Board.Piece;
+using UnityEngine;
+
+namespace Setting
+{
+[CreateAssetMenu(fileName = "Arrangement", menuName = "Global/Arrangement")]
+public class Arrangement : ScriptableObject
+{
+    public List<ArrangementEntry> arrangements;
+
+    public PieceType GetPieceType(int row, int column)
+    {
+        foreach (var entry in arrangements)
+            if (entry.column == row && entry.row == column)
+                return entry.pieceType;
+
+        return PieceType.Empty;
+    }
+}
+}

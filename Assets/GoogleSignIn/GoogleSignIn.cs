@@ -59,7 +59,7 @@ namespace Google {
     private static GoogleSignInConfiguration theConfiguration = null;
     private ISignInImpl impl;
 
-    ///<summary> The configuration settings for Google Sign-in.</summary>
+    ///<summary> The configuration _global for Google Sign-in.</summary>
     ///<remarks> The configuration should be set before calling the sign-in
     /// methods.  Once the configuration is set it cannot be changed.
     ///</remarks>
