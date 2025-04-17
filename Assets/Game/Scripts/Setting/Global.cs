@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Board.Piece;
+using Firebase.RealtimeDatabase;
 using UnityEngine;
 
 namespace Setting
@@ -10,7 +11,6 @@ public class Global
     public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";
     public CellStates CellStates;
     public FirestoreManager FirestoreManager;
-    public FirestoreStatistic FirestoreStatistic;
     public List<ArrangementEntry> MyArrangements;
     public Dictionary<PieceType, PieceData> Pieces;
 
@@ -19,12 +19,9 @@ public class Global
     public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates,
         FirestoreManager firestoreManager)
     {
-        Debug.Log("setting Init");
         MyArrangements = RepackingArrangement(arrangement);
         CellStates = cellStates;
         FirestoreManager = firestoreManager;
-        FirestoreManager.Statistic.CreatePlayerStatistics("001");
-
         Pieces = new Dictionary<PieceType, PieceData>();
         foreach (var piece in pieces) Pieces.Add(piece.pieceType, piece);
     }

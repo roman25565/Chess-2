@@ -22,7 +22,7 @@ dependencyResolutionManagement {
             url (unityProjectPath + "/Assets/GeneratedLocalRepo/GoogleSignIn/Editor/m2repository")
         }
         maven {
-            url (unityProjectPath + "/Assets/GeneratedLocalRepo/Firebase/m2repository")
+            url (unityProjectPath + "/Assets/GeneratedLocalRepo/Firebase/m2repository") // Assets/Firebase/Editor/AppDependencies.xml:22, Assets/Firebase/Editor/AuthDependencies.xml:20, Assets/Firebase/Editor/DatabaseDependencies.xml:22, Assets/Firebase/Editor/FirestoreDependencies.xml:20, Assets/Firebase/Editor/RemoteConfigDependencies.xml:20
         }
         mavenLocal()
 // Android Resolver Repos End

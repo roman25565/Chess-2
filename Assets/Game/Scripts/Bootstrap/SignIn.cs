@@ -143,7 +143,6 @@ public class SignIn : MonoBehaviour
         }
 
         type = loadedSignType;
-        Debug.LogError("type: " + type);
         return loadedSignType;
     }
 }

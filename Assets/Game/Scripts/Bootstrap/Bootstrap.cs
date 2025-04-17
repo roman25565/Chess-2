@@ -103,7 +103,6 @@ public class Bootstrap : MonoBehaviour
         }
 
         _global.Init(arrangement, piecesData, cellStates, firestore);
-        Debug.Log("Global init");
     }
 
     public void OnSignIn(GoogleSignInUser user)
@@ -113,7 +112,6 @@ public class Bootstrap : MonoBehaviour
 
     public void OnSignInDebug(string id)
     {
-        Debug.Log("OnSignIn");
         SignInFireBase(new GoogleSignInUser { UserId = id });
     }
 
@@ -138,7 +136,7 @@ public class Bootstrap : MonoBehaviour
             }
             else
             {
-                _global.FirestoreManager.PlayerData = result;
+                _global.FirestoreManager.SetPlayerData(result);
                 var historyIDs = result.HistoryMatchIDs;
                 _global.FirestoreManager.GetAllHistory(historyIDs, list =>
                 {
@@ -157,7 +155,6 @@ public class Bootstrap : MonoBehaviour
         {
             var json = File.ReadAllText(filePath);
             var pieceData = JsonConvert.DeserializeObject<List<ArrangementEntry>>(json);
-            Debug.Log("pieceData.Count: " + pieceData.Count);
             return pieceData;
         }
 

@@ -6,6 +6,7 @@ using Board.Piece;
 using Firebase;
 using Firebase.Extensions;
 using Firebase.Firestore;
+using Firebase.RealtimeDatabase;
 using Google;
 using Unity.Mathematics;
 using UnityEngine;
@@ -15,6 +16,7 @@ public class FirestoreManager
     private FirebaseFirestore _db;
     public FirebasePlayerData PlayerData;
     public FirestoreStatistic Statistic;
+    public RealtimeDatabase RealtimeDatabase;
     public async Task Init()
     {
         try
@@ -56,6 +58,12 @@ public class FirestoreManager
 
     public delegate void GetPlayerDataCallBack(FirebasePlayerData result);
 
+    public void SetPlayerData(FirebasePlayerData playerData)
+    {
+        PlayerData = playerData;
+        RealtimeDatabase = new RealtimeDatabase(playerData.ID);
+    }
+    
     public async Task<FirebasePlayerData> GetPlayerData(string playerId, GetPlayerDataCallBack callback)
     {
         FirebasePlayerData result = null;
@@ -126,7 +134,6 @@ public class FirestoreManager
             Debug.LogError($"Failed to fetch document for playerId '{playerId}': {ex.Message}");
         }
 
-        Debug.Log($"playerId {playerId} + result {result}");
         return result;
     }
 
@@ -175,7 +182,7 @@ public class FirestoreManager
             {
                 Debug.Log("Player added successfully.");
                 var icon = await GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()));
-                PlayerData = new FirebasePlayerData
+                var firebasePlayerData = new FirebasePlayerData
                 (
                     playerData[IDKey].ToString(),
                     playerData[NameKey].ToString(),
@@ -184,6 +191,7 @@ public class FirestoreManager
                     playerData[EmailKey].ToString(),
                     new List<string>()
                 );
+                SetPlayerData(firebasePlayerData);
             }
         });
     }
@@ -423,7 +431,6 @@ public class FirestoreManager
 
     private ArrangementEntry[] ParseArrangement(Dictionary<string, object> arrangementData)
     {
-        Debug.Log("GetHisto123ry");
         var result = new List<ArrangementEntry>();
 
         foreach (var item in arrangementData)
@@ -447,7 +454,6 @@ public class FirestoreManager
             }
         }
 
-        Debug.Log("GetHFinish");
         return result.ToArray();
     }
 
