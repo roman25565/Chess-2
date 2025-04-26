@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      free-icon-notification-3239952_0: 7914017880431425973
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

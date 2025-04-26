@@ -10,13 +10,23 @@ using Firebase.RealtimeDatabase;
 using Google;
 using Unity.Mathematics;
 using UnityEngine;
+using UnityEngine.Events;
 
 public class FirestoreManager
 {
     private FirebaseFirestore _db;
+    private ClientMatchmaker _clientMatchmaker;
+    
     public FirebasePlayerData PlayerData;
     public FirestoreStatistic Statistic;
     public RealtimeDatabase RealtimeDatabase;
+    public readonly UnityEvent OnLogin = new UnityEvent();
+
+    public FirestoreManager(ClientMatchmaker clientMatchmaker)
+    {
+        _clientMatchmaker = clientMatchmaker;
+    }
+    
     public async Task Init()
     {
         try
@@ -54,16 +64,32 @@ public class FirestoreManager
     private const string EloKey = "Elo";
     private const string IconURLKey = "IconURL";
     private const string EmailKey = "Email";
-    private const string HistoryIDs = "HistoryIDs";
+    private const string HistoryIDsKey = "HistoryIDs";
+    private const string FriendIdsKey = "FriendIds";
 
     public delegate void GetPlayerDataCallBack(FirebasePlayerData result);
 
     public void SetPlayerData(FirebasePlayerData playerData)
     {
+        Debug.LogWarning("SetPlayerData FirebasePlayerData");
         PlayerData = playerData;
-        RealtimeDatabase = new RealtimeDatabase(playerData.ID);
+        RealtimeDatabase = new RealtimeDatabase(playerData.ID, AddFriend, _clientMatchmaker);
+        OnLogin?.Invoke();
     }
-    
+
+    private void AddFriend(string friendId)
+    {
+        var docRef = _db.Collection(PlayersDataCollectionName).Document(PlayerData.ID);
+        
+        docRef.UpdateAsync(FriendIdsKey, FieldValue.ArrayUnion(friendId))
+            .ContinueWithOnMainThread(task =>
+            {
+                if (task.IsCompleted)
+                    Debug.Log("HistoryMatchIDs updated successfully.");
+                else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
+            });
+    }
+
     public async Task<FirebasePlayerData> GetPlayerData(string playerId, GetPlayerDataCallBack callback)
     {
         FirebasePlayerData result = null;
@@ -78,11 +104,12 @@ public class FirestoreManager
                 var existingElo = snapshot.GetValue<int>(EloKey);
                 var imageURL = snapshot.GetValue<string>(IconURLKey);
                 var email = snapshot.GetValue<string>(EmailKey);
-                var historyIds = snapshot.GetValue<List<string>>(HistoryIDs);
+                var historyIds = snapshot.GetValue<List<string>>(HistoryIDsKey);
+                var friendIds = snapshot.GetValue<List<string>>(FriendIdsKey);
 
                 Debug.Log("Load From DB");
                 var ico = await GlobalTools.LoadSprite(new Uri(imageURL));
-                result = new FirebasePlayerData(playerId, existingName, existingElo, ico, email, historyIds);
+                result = new FirebasePlayerData(playerId, existingName, existingElo, ico, email, historyIds, friendIds);
             }
 
             callback(result);
@@ -148,7 +175,9 @@ public class FirestoreManager
                 IconURLKey,
                 "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no"
             },
-            { EmailKey, "test@gmail.com" }
+            { EmailKey, "test@gmail.com" },
+            {HistoryIDsKey, new object[]{} },
+            {FriendIdsKey, new object[]{} }
         };
 
         SingUp(player, testId);
@@ -164,7 +193,8 @@ public class FirestoreManager
             { EloKey, 500 },
             { IconURLKey, user.ImageUrl.ToString() },
             { EmailKey, user.Email },
-            {HistoryIDs, new object[]{} }
+            {HistoryIDsKey, new object[]{} },
+            {FriendIdsKey, new object[]{} }
         };
         SingUp(player, user.UserId);
     }
@@ -189,6 +219,7 @@ public class FirestoreManager
                     int.Parse(playerData[EloKey].ToString()),
                     icon,
                     playerData[EmailKey].ToString(),
+                    new List<string>(),
                     new List<string>()
                 );
                 SetPlayerData(firebasePlayerData);
@@ -213,12 +244,12 @@ public class FirestoreManager
         });
     }
 
-    private void BdAddHistoryId(string playerId, string historyId)//TODO NOTWORK 
+    private void BdAddHistoryId(string playerId, string historyId)
     {
         Debug.Log("playerId: " + playerId);
         var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
         
-        docRef.UpdateAsync(HistoryIDs, FieldValue.ArrayUnion(historyId))
+        docRef.UpdateAsync(HistoryIDsKey, FieldValue.ArrayUnion(historyId))
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted)

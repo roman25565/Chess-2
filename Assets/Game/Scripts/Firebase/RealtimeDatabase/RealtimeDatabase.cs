@@ -1,23 +1,41 @@
 using Firebase.Database;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
-using Firebase.Extensions;
 using Firebase.RealtimeDatabase.Data;
 using UnityEngine;
+using UnityEngine.Events;
+using Type = Firebase.RealtimeDatabase.Data.Type;
 
 namespace Firebase.RealtimeDatabase
 {
-
     public class RealtimeDatabase
     {
-        private DatabaseReference _database;
-        private string _currentUserId;
-        // 7 днів у мілісекундах
-        private const long WeekInMs = 7 * 24 * 60 * 60 * 1000; 
+        private ClientMatchmaker _clientMatchmaker;
         
-        private List<FriendRequestData> _friendRequests = new List<FriendRequestData>();
-        private class FirebaseEventDisposable : IDisposable
+        private const long WeekInMs = 7 * 24 * 60 * 60 * 1000; // 7 day in ms
+        private readonly List<AbstractRequestData> Requests = new ();
+
+        public IReadOnlyList<AbstractRequestData> GetRequests
+        {
+            get
+            {
+                var combinedList = new List<AbstractRequestData>();
+                combinedList.AddRange(_friendRequestsManager.GetRequestData());
+                combinedList.AddRange(_matchRequestsManager.GetRequestData());
+                return combinedList;
+            }
+        }
+        
+        public readonly UnityEvent OnChangedRequests = new ();
+        
+        private readonly DatabaseReference _database;
+        private readonly string _currentUserId;
+        private FriendRequestsManager _friendRequestsManager;
+        private MatchRequestsManager _matchRequestsManager;
+        
+        public class FirebaseEventDisposable : IDisposable
         {
             private Action _unsubscribeAction;
 
@@ -34,29 +52,29 @@ namespace Firebase.RealtimeDatabase
         }
         
 
-        public RealtimeDatabase(string userId)
+        public RealtimeDatabase(string userId, UnityAction<string> addFriend, ClientMatchmaker clientMatchmaker)
         {
             _currentUserId = userId;
             _database = FirebaseDatabase.DefaultInstance.RootReference;
-            Init();
+            _clientMatchmaker = clientMatchmaker;
+            Init(addFriend);
         }
 
-        private void Init()
+        private void Init(UnityAction<string> addFriend)
         {
-            SendMatchInvite("003", "Dota", "lol");
-            SendFriendRequest("004", "Dota");
+            // _ = SendMatchInvite("003", "Data", "lol");
             
-            DeleteOldRequests();
+            DeleteLegacyRequests();
             
-            
-            ListenForFriendRequests(((s, s1) => {}));
-            ListenForMatchInvites(((s, s1, s3) => {}));
+            _friendRequestsManager = new FriendRequestsManager(_database, _currentUserId, OnChangedRequests, addFriend);
+            _matchRequestsManager = new MatchRequestsManager(_database, _currentUserId, OnChangedRequests, _clientMatchmaker);
         }
 
-        private void DeleteOldRequests()
+
+        private void DeleteLegacyRequests()
         {
             long currentTimeMs = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
-            long cutoffTime = currentTimeMs + WeekInMs;
+            long cutoffTime = currentTimeMs - WeekInMs;
             
             _database.Child("friendRequests")
                 .OrderByChild("senderId_timestamp")
@@ -81,7 +99,7 @@ namespace Firebase.RealtimeDatabase
                     }
                 });
             
-            _database.Child("matchInvites")
+            _database.Child("matchRequests")
                 .OrderByChild("senderId_timestamp")
                 .StartAt($"{_currentUserId}_0")
                 .EndAt($"{_currentUserId}_{cutoffTime}")
@@ -93,10 +111,10 @@ namespace Firebase.RealtimeDatabase
                         return;
                     }
 
-                    DataSnapshot snapshot = task.Result;
+                    var snapshot = task.Result;
                     if (snapshot.Exists)
                     {
-                        foreach (DataSnapshot request in snapshot.Children)
+                        foreach (var request in snapshot.Children)
                         {
                             request.Reference.RemoveValueAsync();
                             Debug.Log($"Removed old received request from {request.Key}");
@@ -106,234 +124,27 @@ namespace Firebase.RealtimeDatabase
 
         }
 
-
-        #region Friend Requests
-        public async Task SendFriendRequest(string recipientId, string senderName)
+        public void AcceptInvite(AbstractRequestData request)
         {
-            try
+            if (request.RequestType == Type.FriendRequest)
             {
-                var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-                var requestData = new Dictionary<string, object>
-                {
-                    ["senderId"] = _currentUserId,
-                    ["timestamp"] = timestamp,
-                    ["senderId_timestamp"] = $"{_currentUserId}_{timestamp}",
-                    ["senderName"] = senderName,
-                    ["status"] = "pending"
-                };
-
-                await _database.Child("friendRequests")
-                    .Child(recipientId)
-                    .SetValueAsync(requestData);
-
-                Debug.Log("Friend request sent successfully");
+                _ = _friendRequestsManager.AcceptFriendRequest(request);
             }
-            catch (Exception e)
+            else if (request.RequestType == Type.MatchRequest)
             {
-                Debug.LogError($"Error sending friend request: {e.Message}");
+                _ = _matchRequestsManager.AcceptMatchRequest(request);
             }
         }
-
-        public async Task AcceptFriendRequest(string senderId)
+        public void DeclineInvite(AbstractRequestData request)
         {
-            try
+            if (request.RequestType == Type.FriendRequest)
             {
-                // Оновлюємо статус запиту
-                var updates = new Dictionary<string, object>
-                {
-                    [$"friendRequests/{_currentUserId}/{senderId}/status"] = "accepted",
-                };
-
-                await _database.UpdateChildrenAsync(updates);
-                Debug.Log("Friend request accepted");
+                _ = _friendRequestsManager.DeclineFriendRequest(request);
             }
-            catch (Exception e)
+            else if (request.RequestType == Type.MatchRequest)
             {
-                Debug.LogError($"Error accepting friend request: {e.Message}");
+                _ = _matchRequestsManager.DeclineMatchRequest(request);
             }
         }
-
-        public async Task DeclineFriendRequest(string senderId)
-        {
-            try
-            {
-                await _database.Child("friendRequests")
-                    .Child(_currentUserId)
-                    .Child(senderId)
-                    .RemoveValueAsync();
-
-                Debug.Log("Friend request declined");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error declining friend request: {e.Message}");
-            }
-        }
-
-        public IDisposable ListenForFriendRequests(Action<string, string> onRequestReceived)
-        {
-            void Handler(object sender, ChildChangedEventArgs args)
-            {
-                if (args.DatabaseError != null)
-                {
-                    Debug.LogError(args.DatabaseError.Message);
-                    return;
-                }
-                
-                _friendRequests.Add(new FriendRequestData(args.Snapshot));
-
-                var senderId = args.Snapshot.Key;
-                var senderName = args.Snapshot.Child("senderName").Value.ToString();
-                onRequestReceived?.Invoke(senderId, senderName);
-            }
-
-            var query = _database.Child("friendRequests")
-                .Child(_currentUserId)
-                .OrderByChild("status")
-                .EqualTo("pending");
-
-            query.ChildAdded += Handler;
-
-            return new FirebaseEventDisposable(() => 
-            {
-                query.ChildAdded -= Handler;
-            });
-        }
-
-        #endregion
-
-        #region Match Invitations
-
-        public async Task SendMatchInvite(string recipientId, string senderName, string gameMode)
-        {
-            try
-            {
-                var timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds().ToString();
-                var inviteData = new Dictionary<string, object>
-                {
-                    ["senderId"] = _currentUserId,
-                    ["timestamp"] = timestamp,
-                    ["senderId_timestamp"] = $"{_currentUserId}_{timestamp}",
-                    ["senderName"] = senderName,
-                    ["gameMode"] = gameMode,
-                    ["status"] = "pending"
-                };
-
-                await _database.Child("matchInvites")
-                    .Child(recipientId)
-                    .SetValueAsync(inviteData);
-
-                Debug.Log("Match invite sent successfully");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error sending match invite: {e.Message}");
-            }
-        }
-
-        public async Task AcceptMatchInvite(string senderId, Action<string, string> onSuccess)
-        {
-            try
-            {
-                // Отримуємо дані про запрошення
-                var inviteSnapshot = await _database.Child("matchInvites")
-                    .Child(_currentUserId)
-                    .Child(senderId)
-                    .GetValueAsync();
-
-                if (!inviteSnapshot.Exists)
-                {
-                    Debug.LogWarning("Match invite no longer exists");
-                    return;
-                }
-
-                var gameMode = inviteSnapshot.Child("gameMode").Value.ToString();
-
-                // Видаляємо запрошення
-                await _database.Child("matchInvites")
-                    .Child(_currentUserId)
-                    .Child(senderId)
-                    .RemoveValueAsync();
-
-                // Створюємо кімнату гри
-                var roomId = Guid.NewGuid().ToString();
-                var roomData = new Dictionary<string, object>
-                {
-                    ["player1"] = senderId,
-                    ["player2"] = _currentUserId,
-                    ["gameMode"] = gameMode,
-                    ["status"] = "waiting"
-                };
-
-                await _database.Child("gameRooms")
-                    .Child(roomId)
-                    .SetValueAsync(roomData);
-
-                onSuccess?.Invoke(roomId, gameMode);
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error accepting match invite: {e.Message}");
-            }
-        }
-
-        public async Task DeclineMatchInvite(string senderId)
-        {
-            try
-            {
-                await _database.Child("matchInvites")
-                    .Child(_currentUserId)
-                    .Child(senderId)
-                    .RemoveValueAsync();
-
-                Debug.Log("Match invite declined");
-            }
-            catch (Exception e)
-            {
-                Debug.LogError($"Error declining match invite: {e.Message}");
-            }
-        }
-
-        public IDisposable ListenForMatchInvites(Action<string, string, string> onInviteReceived)
-        {
-            void Handler(object sender, ChildChangedEventArgs args)
-            {
-                if (args.DatabaseError != null)
-                {
-                    Debug.LogError(args.DatabaseError.Message);
-                    return;
-                }
-
-                var senderId = args.Snapshot.Key;
-                var senderName = args.Snapshot.Child("senderName").Value.ToString();
-                var gameMode = args.Snapshot.Child("gameMode").Value.ToString();
-                Debug.Log("senderId" + senderId + " senderName" + senderName + " gameMode" + gameMode);
-                onInviteReceived?.Invoke(senderId, senderName, gameMode);
-            }
-
-            var query = _database.Child("matchInvites")
-                .Child(_currentUserId)
-                .OrderByChild("status")
-                .EqualTo("pending");
-
-            query.ChildAdded += Handler;
-
-            return new FirebaseEventDisposable(() => 
-            {
-                query.ChildAdded -= Handler;
-            });
-        }
-
-
-        #endregion
-
-        #region Helper Methods
-
-        public void DisposeListeners(IDisposable listener)
-        {
-            listener?.Dispose();
-        }
-
-        #endregion
     }
 }

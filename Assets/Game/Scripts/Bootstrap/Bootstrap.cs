@@ -34,12 +34,15 @@ public class Bootstrap : MonoBehaviour
     
     private async void Start()
     {
+        Application.targetFrameRate = 60;
+        
         if (_global.IsSignIn)
         {
             signIn.Init();
             return;
         }
         var isServer = Environment.GetCommandLineArgs().Any(arg => arg == "-port");
+        // isServer = true;
         await LoadSettings(!isServer);
         if (isServer)
         {
@@ -92,11 +95,16 @@ public class Bootstrap : MonoBehaviour
     {
         var arrangement = LoadArrangement();
 
-        var piecesData = Resources.LoadAll<PieceData>("Global/Pieces");
+        var piecesData = Resources.LoadAll<PieceData>("Settings/Pieces");
+        if (piecesData == null)
+            Debug.LogError("PieceData not found");
+        Debug.Log("piecesData" + piecesData.Length);
 
-        var cellStates = Resources.Load<CellStates>("Global/CellStates");
+        var cellStates = Resources.Load<CellStates>("Settings/CellStates");
+        if (cellStates == null)
+            Debug.LogError("CellStates not found");
         
-        var firestore = new FirestoreManager();
+        var firestore = new FirestoreManager(clientMatchmaker);
         if (isClient)
         {
             await firestore.Init();
@@ -119,7 +127,7 @@ public class Bootstrap : MonoBehaviour
     {
         if (user == null)
         {
-            _global.FirestoreManager.SingUp("001");
+            _global.FirestoreManager.SingUp(user.UserId);
             return;
         }
 
@@ -158,7 +166,7 @@ public class Bootstrap : MonoBehaviour
             return pieceData;
         }
 
-        return Resources.Load<Arrangement>("Global/Arrangement").arrangements;
+        return Resources.Load<Arrangement>("Settings/Arrangement").arrangements;
     }
 
     private void DisableButtons()

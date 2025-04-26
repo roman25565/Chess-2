@@ -1,4 +1,5 @@
 using System.Collections;
+using UI.Test;
 using UnityEngine;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
@@ -19,13 +20,18 @@ namespace UI
         [SerializeField] private Image profileImage;
         [SerializeField] private GameObject profilePanel;
         
-        [SerializeField] private GameObject notificationPanel;
+        [SerializeField] private NotificationPanel notificationPanel;
+        [SerializeField] private TestInvite testInvite;
+        
         
         
         public void Init()
         {
             DisableAllPanels();
             DisableFindMatchPanel();
+            ShowSignInPanel();
+            notificationPanel.Init();
+            testInvite.Init();
         }
         
         private void DisableAllPanels()
@@ -37,7 +43,7 @@ namespace UI
             if (profilePanel != null) profilePanel.SetActive(false);
             if (editBoard != null) editBoard.SetActive(false);
             if (signInPanel != null) mainMenuPanel.SetActive(false);
-            HideNotification();
+            if (notificationPanel != null) notificationPanel.gameObject.SetActive(false);
             
             if (defaultUI != null) defaultUI.SetActive(true);
         }
@@ -113,14 +119,29 @@ namespace UI
             profileImage.color = new Color(255, 255, 255, 255);
         }
 
-        public void HideNotification()
+        private bool _notificationOpen;
+        public void NotificationOnClick()
         {
-            if (notificationPanel != null) notificationPanel.SetActive(false);
+            if (notificationPanel == null) return;
+            
+            if (_notificationOpen)
+            {
+                notificationPanel.gameObject.SetActive(false);
+                _notificationOpen = false;
+            }
+            else
+            {
+                notificationPanel.gameObject.SetActive(true);
+                notificationPanel.OnOpen();
+                _notificationOpen = true;
+            }
         }
 
-        public void ShowNotification()
+        public void DisableNotificationPanel()
         {
-            if (notificationPanel != null) notificationPanel.SetActive(true);
+            notificationPanel.gameObject.SetActive(false);
+            _notificationOpen = false;
         }
+
     }
 }

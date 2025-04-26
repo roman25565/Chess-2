@@ -39,7 +39,6 @@ public class SignIn : MonoBehaviour
         if(_global != null && _global.IsSignIn) //if return from Game Scene
         {
             mainMenu.DisableSignInPanel();
-            mainMenu.DisableSignInPanel();
             return;
         }else if (LoadLastSignType(out var type) != SignTypes.None) // if ReLogin
         {
@@ -60,6 +59,18 @@ public class SignIn : MonoBehaviour
     {
         bootstrap.OnSignInDebug("001");
         UpdateUI(new GoogleSignInUser{UserId = "001"});
+    }
+    
+    public void OnSignInDebug2()
+    {
+        bootstrap.OnSignInDebug("002");
+        UpdateUI(new GoogleSignInUser{UserId = "002"});
+    }
+    
+    public void OnSignInDebug3()
+    {
+        bootstrap.OnSignInDebug("003");
+        UpdateUI(new GoogleSignInUser{UserId = "003"});
     }
     
     public void OnSignOut()

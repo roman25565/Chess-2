@@ -69,13 +69,13 @@ namespace Board
                 _global.FirestoreManager.GetIcon(historyMatchData.Player1Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.Player1Id, historyMatchData.Player1Name,
-                        historyMatchData.Player1Elo, sprite, null, null), historyMatchData.Player1Id != _global.FirestoreManager.PlayerData.ID);
+                        historyMatchData.Player1Elo, sprite, null, null,null), historyMatchData.Player1Id != _global.FirestoreManager.PlayerData.ID);
                 });
                 
                 _global.FirestoreManager.GetIcon(historyMatchData.Player2Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.Player2Id, historyMatchData.Player2Name,
-                        historyMatchData.Player2Elo, sprite, null, null), historyMatchData.Player2Id != _global.FirestoreManager.PlayerData.ID);
+                        historyMatchData.Player2Elo, sprite, null, null,null), historyMatchData.Player2Id != _global.FirestoreManager.PlayerData.ID);
                 });
 
                 _internalMoveHistory = new MoveHistory(Move);

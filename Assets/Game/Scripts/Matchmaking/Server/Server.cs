@@ -8,6 +8,7 @@ using Unity.Services.Core;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
 #if UNITY_SERVER
+using Unity.Networking.Transport;
 using Unity.Services.Multiplay;
 #endif
 using UnityEngine;
@@ -21,9 +22,16 @@ public class Server : MonoBehaviour
 
     void Start()
     {
+        Application.targetFrameRate = 60;
         DontDestroyOnLoad(gameObject);
         StartCoroutine(StartServer());
         //StartCoroutine(ApproveBackfillTicketEverySecond());
+        
+    }
+
+    private void Update()
+    {
+        Debug.Log("Updat" + NetworkManager.Singleton.NetworkConfig.TickRate );
     }
 
     async Awaitable StartServer()
@@ -32,6 +40,7 @@ public class Server : MonoBehaviour
         var server = MultiplayService.Instance.ServerConfig;
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
         transport.SetConnectionData("0.0.0.0", server.Port);
+        // transport.SetConnectionData("0.0.0.0", 25565);
         Debug.Log("Network Transport " + transport.ConnectionData.Address + ":" + transport.ConnectionData.Port);
 
         if (!NetworkManager.Singleton.StartServer())

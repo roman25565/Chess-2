@@ -12,8 +12,10 @@ public class FirebasePlayerData
     public string ID;
     public string Name;
     public PlayerStatistic Statistic;
+    public List<string> FriendIds;
 
-    public FirebasePlayerData(string id, string name, int elo, Sprite icon, string email, List<string> historyMatchIDs)
+    public FirebasePlayerData(string id, string name, int elo, Sprite icon, 
+        string email, List<string> historyMatchIDs, List<string> friendIds)
     {
         ID = id;
         Name = name;
@@ -22,18 +24,11 @@ public class FirebasePlayerData
         Email = email;
         HistoryMatchIDs = historyMatchIDs;
         Statistic = new PlayerStatistic();
+        FriendIds = friendIds;
     }
 
     public void SetHistoryMatches(List<HistoryMatchData> matches)
     {
         HistoryMatches = matches;
     }
-
-    // public FirebasePlayerData() { } : INetworkSerializable
-    // public void NetworkSerialize<T>(BufferSerializer<T> serializer) where T : IReaderWriter
-    // {
-    //     serializer.SerializeValue(ref ID);
-    //     serializer.SerializeValue(ref Name);
-    //     serializer.SerializeValue(ref Elo);
-    // }
 }

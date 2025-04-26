@@ -23,7 +23,11 @@ public class Global
         CellStates = cellStates;
         FirestoreManager = firestoreManager;
         Pieces = new Dictionary<PieceType, PieceData>();
-        foreach (var piece in pieces) Pieces.Add(piece.pieceType, piece);
+        foreach (var piece in pieces)
+        {
+            Debug.Log(piece);
+            Pieces.Add(piece.pieceType, piece);
+        };
     }
 
     public AbstractPiece CreatePiece(PieceType pieceType)

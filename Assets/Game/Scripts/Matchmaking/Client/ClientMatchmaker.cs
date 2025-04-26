@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using Setting;
 using TMPro;
 using UI;
 using Unity.Netcode;
@@ -11,11 +12,14 @@ using Unity.Services.Core;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
 using UnityEngine;
+using UnityEngine.Events;
 using UnityEngine.UI;
+using Zenject;
 using Random = UnityEngine.Random;
 
 public class ClientMatchmaker : MonoBehaviour
 {
+    [Inject] private Global _global;
     private static bool initialized;
 
     [SerializeField] private TextMeshProUGUI statusText;
@@ -47,9 +51,13 @@ public class ClientMatchmaker : MonoBehaviour
         cts = null;
     }
 
-    public async void SearchMatch()
+    private void Start()
     {
-        mainMenu.EnableFindMatchPanel();
+        _ = Initialize();
+    }
+
+    private async Task Initialize()
+    {
         if (!initialized)
         {
             await UnityServices.InitializeAsync();
@@ -57,6 +65,11 @@ public class ClientMatchmaker : MonoBehaviour
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
             initialized = true;
         }
+    }
+
+    public async void SearchMatch()
+    {
+        mainMenu.EnableFindMatchPanel();
         cts = new CancellationTokenSource();
         await StartSearch(cts.Token);
     }
@@ -105,10 +118,11 @@ public class ClientMatchmaker : MonoBehaviour
         ResetSearchState();
         isSearching = true;
         cts = new CancellationTokenSource();
-        
+        var elo =  _global.FirestoreManager.PlayerData.Elo;
+        var playerData = new Dictionary<string, object> { { "ELO", elo } };
         var players = new List<Player>
         {
-            new(AuthenticationService.Instance.PlayerId, new Dictionary<string, object>())
+            new(AuthenticationService.Instance.PlayerId, playerData)
         };
 
         var attributes = new Dictionary<string, object>();
@@ -142,7 +156,7 @@ public class ClientMatchmaker : MonoBehaviour
         }
     }
 
-    private async Task<bool> FindMatch(string ticketId)
+    public async Task<bool> FindMatch(string ticketId,UnityAction<string,ushort> action = null)
     {
         var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
 
@@ -156,7 +170,6 @@ public class ClientMatchmaker : MonoBehaviour
                 return false;
             }
             
-            Debug.Log("Polling attempt: " + (attempt + 1));
             statusText.SetText("Polling attempt: " + (attempt + 1));
 
             try
@@ -171,6 +184,7 @@ public class ClientMatchmaker : MonoBehaviour
                         case MultiplayAssignment.StatusOptions.Found:
                             if (assignment.Port.HasValue)
                             {
+                                action?.Invoke(assignment.Ip, (ushort)assignment.Port.Value);
                                 transport.SetConnectionData(assignment.Ip, (ushort)assignment.Port);
                                 var result = NetworkManager.Singleton.StartClient();
 
@@ -214,4 +228,62 @@ public class ClientMatchmaker : MonoBehaviour
         cts?.Dispose();
         cts = null;
     }
+    #region FriendMatch
+
+    public async Task StartFriendMatch(UnityAction<string,ushort> action)
+    {
+        var ct = new CancellationTokenSource();
+        if (ct.IsCancellationRequested || isSearching)
+        {
+            Debug.LogWarning("Search already in progress");
+            return;
+        }
+        ResetSearchState();
+        isSearching = true;
+        cts = new CancellationTokenSource();
+        var players = new List<Player>
+        {
+            new(AuthenticationService.Instance.PlayerId),
+            new("132")
+        };
+
+        var attributes = new Dictionary<string, object>();
+        var queueName = "Invite";
+        var options = new CreateTicketOptions(queueName, attributes);
+
+        try
+        {
+            var ticketResponse = await MatchmakerService.Instance.CreateTicketAsync(players, options);
+            currentTicketId = ticketResponse.Id;
+            Debug.Log("Ticket created with ID: " + ticketResponse.Id);
+            
+            var matchFound = await FindMatch(ticketResponse.Id, action);
+            if (!matchFound && !isCancelled)
+            {
+                Debug.LogError("Failed to find a match.");
+                statusText.SetText("Failed to find a match.");
+            }
+        }
+        catch (Exception ex)
+        {
+            Debug.LogError("Error during matchmaking: " + ex.Message);
+            statusText.SetText("Matchmaking error: " + ex.Message);
+        }
+        finally
+        {
+            if (!isCancelled)
+            {
+                ResetSearchState();
+            }
+        }
+    }
+
+    public void JoinFriendMatch(string ip, ushort port)
+    {
+        mainMenu.EnableFindMatchPanel();
+        NetworkManager.Singleton.GetComponent<UnityTransport>()
+            .SetConnectionData(ip, port);
+        NetworkManager.Singleton.StartClient();
+    }
+    #endregion
 }
