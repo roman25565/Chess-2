@@ -2,18 +2,18 @@ using System;
 
 namespace Zenject
 {
-public class ActionInstaller : Installer<ActionInstaller>
-{
-    private readonly Action<DiContainer> _installMethod;
-
-    public ActionInstaller(Action<DiContainer> installMethod)
+    public class ActionInstaller : Installer<ActionInstaller>
     {
-        _installMethod = installMethod;
-    }
+        readonly Action<DiContainer> _installMethod;
 
-    public override void InstallBindings()
-    {
-        _installMethod(Container);
+        public ActionInstaller(Action<DiContainer> installMethod)
+        {
+            _installMethod = installMethod;
+        }
+
+        public override void InstallBindings()
+        {
+            _installMethod(Container);
+        }
     }
-}
 }

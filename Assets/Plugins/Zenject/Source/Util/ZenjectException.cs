@@ -3,19 +3,19 @@ using System.Diagnostics;
 
 namespace Zenject
 {
-[DebuggerStepThrough]
-[NoReflectionBaking]
-public class ZenjectException : Exception
-{
-    public ZenjectException(string message)
-        : base(message)
+    [DebuggerStepThrough]
+    [NoReflectionBaking]
+    public class ZenjectException : Exception
     {
-    }
+        public ZenjectException(string message)
+            : base(message)
+        {
+        }
 
-    public ZenjectException(
-        string message, Exception innerException)
-        : base(message, innerException)
-    {
+        public ZenjectException(
+            string message, Exception innerException)
+            : base(message, innerException)
+        {
+        }
     }
-}
 }

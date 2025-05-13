@@ -1,3 +1,5 @@
+#if !UNITY_SERVER
+
 using System.Collections;
 using UI.Test;
 using UnityEngine;
@@ -19,10 +21,11 @@ namespace UI
         [SerializeField] private GameObject findMatchPanel;
         [SerializeField] private Image profileImage;
         [SerializeField] private GameObject profilePanel;
+        [SerializeField] private GameObject gameModeSelectorPanel;
         
         [SerializeField] private NotificationPanel notificationPanel;
         [SerializeField] private TestInvite testInvite;
-        
+        [SerializeField] private GameModeSelector gameModeSelector;
         
         
         public void Init()
@@ -30,10 +33,17 @@ namespace UI
             DisableAllPanels();
             DisableFindMatchPanel();
             ShowSignInPanel();
+        }
+
+        public void InitUIComponents()
+        {
+#if !UNITY_SERVER
             notificationPanel.Init();
             testInvite.Init();
+            gameModeSelector.Init();
+#endif
         }
-        
+
         private void DisableAllPanels()
         {
             if (historyPanel != null) historyPanel.gameObject.SetActive(false);
@@ -44,6 +54,7 @@ namespace UI
             if (editBoard != null) editBoard.SetActive(false);
             if (signInPanel != null) mainMenuPanel.SetActive(false);
             if (notificationPanel != null) notificationPanel.gameObject.SetActive(false);
+            if (gameModeSelectorPanel != null) gameModeSelectorPanel.SetActive(false);
             
             if (defaultUI != null) defaultUI.SetActive(true);
         }
@@ -122,6 +133,7 @@ namespace UI
         private bool _notificationOpen;
         public void NotificationOnClick()
         {
+#if !UNITY_SERVER
             if (notificationPanel == null) return;
             
             if (_notificationOpen)
@@ -135,6 +147,7 @@ namespace UI
                 notificationPanel.OnOpen();
                 _notificationOpen = true;
             }
+#endif
         }
 
         public void DisableNotificationPanel()
@@ -142,6 +155,16 @@ namespace UI
             notificationPanel.gameObject.SetActive(false);
             _notificationOpen = false;
         }
-
+        
+        public void ShowGameModeSelectorPanel()
+        {
+            if (gameModeSelectorPanel != null) gameModeSelectorPanel.SetActive(true);
+        }
+        public void HideGameModeSelectorPanel()
+        {
+            if (gameModeSelectorPanel != null) gameModeSelectorPanel.SetActive(false);
+        }
     }
 }
+
+#endif

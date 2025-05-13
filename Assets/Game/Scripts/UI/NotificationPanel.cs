@@ -1,17 +1,16 @@
+#if !UNITY_SERVER
 using UnityEngine;
+using TMPro;
 using Firebase.RealtimeDatabase.Data;
 using Setting;
-using TMPro;
 using Zenject;
 using Type = Firebase.RealtimeDatabase.Data.Type;
-
 namespace UI
 {
 public class NotificationPanel : MonoBehaviour
 {
     private const string EmptyText = "Null";
 
-    [Inject] private Global _global;
     [SerializeField] private MainMenu _mainMenu;
     [SerializeField] private Transform parent;
     [SerializeField] private Notification prefab;
@@ -19,6 +18,7 @@ public class NotificationPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI emptyText;
     [SerializeField] private TextMeshProUGUI notificationCountText;
     [SerializeField] private GameObject notificationCountPanel;
+    [Inject] private Global _global;
 
     public void Init()
     {
@@ -133,3 +133,4 @@ public class NotificationPanel : MonoBehaviour
     }
 }
 }
+#endif

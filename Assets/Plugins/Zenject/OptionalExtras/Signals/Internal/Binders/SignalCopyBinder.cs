@@ -2,57 +2,60 @@ using System.Collections.Generic;
 
 namespace Zenject
 {
-[NoReflectionBaking]
-public class SignalCopyBinder
-{
-    private readonly List<BindInfo> _bindInfos;
-
-    public SignalCopyBinder()
+    [NoReflectionBaking]
+    public class SignalCopyBinder
     {
-        _bindInfos = new List<BindInfo>();
-    }
+        readonly List<BindInfo> _bindInfos;
 
-    public SignalCopyBinder(BindInfo bindInfo)
-    {
-        _bindInfos = new List<BindInfo>
+        public SignalCopyBinder()
         {
-            bindInfo
-        };
-    }
+            _bindInfos = new List<BindInfo>();
+        }
 
-    // This is used in cases where you have multiple bindings that depend on each other so should
-    // be inherited together
-    public void AddCopyBindInfo(BindInfo bindInfo)
-    {
-        _bindInfos.Add(bindInfo);
-    }
+        public SignalCopyBinder(BindInfo bindInfo)
+        {
+            _bindInfos = new List<BindInfo>
+            {
+                bindInfo
+            };
+        }
 
-    public void CopyIntoAllSubContainers()
-    {
-        SetInheritanceMethod(BindingInheritanceMethods.CopyIntoAll);
-    }
+        // This is used in cases where you have multiple bindings that depend on each other so should
+        // be inherited together
+        public void AddCopyBindInfo(BindInfo bindInfo)
+        {
+            _bindInfos.Add(bindInfo);
+        }
 
-    // Only copy the binding into children and not grandchildren
-    public void CopyIntoDirectSubContainers()
-    {
-        SetInheritanceMethod(BindingInheritanceMethods.CopyDirectOnly);
-    }
+        public void CopyIntoAllSubContainers()
+        {
+            SetInheritanceMethod(BindingInheritanceMethods.CopyIntoAll);
+        }
 
-    // Do not apply the binding on the current container
-    public void MoveIntoAllSubContainers()
-    {
-        SetInheritanceMethod(BindingInheritanceMethods.MoveIntoAll);
-    }
+        // Only copy the binding into children and not grandchildren
+        public void CopyIntoDirectSubContainers()
+        {
+            SetInheritanceMethod(BindingInheritanceMethods.CopyDirectOnly);
+        }
 
-    // Do not apply the binding on the current container
-    public void MoveIntoDirectSubContainers()
-    {
-        SetInheritanceMethod(BindingInheritanceMethods.MoveDirectOnly);
-    }
+        // Do not apply the binding on the current container
+        public void MoveIntoAllSubContainers()
+        {
+            SetInheritanceMethod(BindingInheritanceMethods.MoveIntoAll);
+        }
 
-    private void SetInheritanceMethod(BindingInheritanceMethods method)
-    {
-        for (var i = 0; i < _bindInfos.Count; i++) _bindInfos[i].BindingInheritanceMethod = method;
+        // Do not apply the binding on the current container
+        public void MoveIntoDirectSubContainers()
+        {
+            SetInheritanceMethod(BindingInheritanceMethods.MoveDirectOnly);
+        }
+
+        void SetInheritanceMethod(BindingInheritanceMethods method)
+        {
+            for (int i = 0; i < _bindInfos.Count; i++)
+            {
+                _bindInfos[i].BindingInheritanceMethod = method;
+            }
+        }
     }
-}
 }

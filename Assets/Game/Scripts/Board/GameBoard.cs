@@ -1,19 +1,23 @@
-﻿using UnityEngine;
+﻿using System.Collections.Generic;
+using Board.Piece;
+using UnityEngine;
 
 namespace Board
 {
 public class GameBoard : AbstractBoard
 {
     private bool _lastMoveIsFantom;
-    public override void StartGame(MatchBootstrap.PlayerBootstrapData player1, MatchBootstrap.PlayerBootstrapData player2)
+    public override void ArrangeFigures(MatchBootstrap.PlayerBootstrapData player1, MatchBootstrap.PlayerBootstrapData player2, bool needRotate = true)
     {
-        ArrangeFigures(player1);
-        ArrangeFigures(player2);
+        ArrangeFigures(player1, needRotate);
+        ArrangeFigures(player2, needRotate);
     }
     
     
-    protected override void OnCanMove(Cell from, Cell to)
+    protected override void BoardTryMove(Cell from, Cell to)
     {
+        if (!MatchCore.CanMove())
+            return;
         MovePiece(from, to);
         _lastMoveIsFantom  = true;
         MatchCore.TryMove(new Vector2Int(from.Row, from.Column),
@@ -25,7 +29,7 @@ public class GameBoard : AbstractBoard
         if (_lastMoveIsFantom)
         {
             _lastMoveIsFantom = false;
-            var lastMove = MoveHistory.GetHistory()[MoveHistory.HistoryIndex];
+            var lastMove = MoveHistory.GetHistory()[MoveHistory.HistoryIndex - 1];
             if (lastMove.From == from && lastMove.To == to)
             {
                 return true;
@@ -43,6 +47,53 @@ public class GameBoard : AbstractBoard
     protected override void OnDraggingStop(Cell from, Cell to)
     {
         TryMove(to, false);
+        // Deselect();
+    }
+
+    private void DeleteFantomMove()
+    {
+        
+    }
+    
+    public override void GetPiecesInBoard(ulong connectedPlayerId, ulong remainingPlayerId, out ArrangementEntry[] connectedPlayerPieces, out ArrangementEntry[] remainingPlayerPieces)
+    {
+        List<ArrangementEntry> connectedPlayerPiecesList = new();
+        List<ArrangementEntry> remainingPlayerPiecesList = new();
+        ForEachCell(cell =>
+        {
+            if (cell.Piece == null) return;
+            Debug.Log(cell.Piece.OwnerId);
+            if (cell.Piece.OwnerId == connectedPlayerId)
+                connectedPlayerPiecesList.Add(new ArrangementEntry { row = cell.Row, column = cell.Column, pieceType = cell.Piece.PieceType });
+            else if (cell.Piece.OwnerId == remainingPlayerId)
+                remainingPlayerPiecesList.Add(new ArrangementEntry { row = cell.Row, column = cell.Column, pieceType = cell.Piece.PieceType });
+        });
+        connectedPlayerPieces = connectedPlayerPiecesList.ToArray();
+        remainingPlayerPieces = remainingPlayerPiecesList.ToArray();
+    }
+
+    public override void UpdateClientId(ulong oldId, ulong clientId)
+    {
+        var pieces = GetAllPiecesInBoardInCell();
+        foreach (var cell in pieces)
+        {
+            if (cell.Piece.OwnerId == oldId)
+            {
+                cell.Piece.OwnerId = clientId;
+            }
+        }
+    }
+
+    private List<Cell> GetAllPiecesInBoardInCell()
+    {
+        var result = new List<Cell>();
+
+        ForEachCell(cell =>
+        {
+            if (cell.Piece != null) result.Add(cell);
+        });
+    
+        return result;
     }
 }
 }

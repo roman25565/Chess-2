@@ -1,3 +1,4 @@
+#if !UNITY_SERVER
 using Firebase.Database;
 using System;
 using System.Collections.Generic;
@@ -33,7 +34,7 @@ public class MatchRequestsManager
         _onChangedRequests = onChangedRequests;
         _clientMatchmaker = clientMatchmaker;
 
-        ListenSentStatusRequests();
+        SubscribeToStatusUpdates();
         ListenReceivedRequests();
 
         // SendMatchRequest("002", "Alpha");
@@ -46,7 +47,7 @@ public class MatchRequestsManager
             var requestData = new MatchRequestData
                 (recipientId, senderName, _currentUserId).ToDictionary();
 
-            var requestRef = _database.Child("matchRequests")
+            var requestRef = _database.Child(MatchRequestData.CollectionName)
                 .Push();
 
             await requestRef.SetValueAsync(requestData);
@@ -63,7 +64,7 @@ public class MatchRequestsManager
     {
         try
         {
-            var requestRef = _database.Child("matchRequests").Child(request.RequestId);
+            var requestRef = _database.Child(MatchRequestData.CollectionName).Child(request.RequestId);
         
             var snapshot = await requestRef.GetValueAsync();
             if (!snapshot.Exists)
@@ -73,13 +74,13 @@ public class MatchRequestsManager
             }
             
             var matchRequest = new MatchRequestData(snapshot);
-            matchRequest.Status = "accepted";
+            matchRequest.Status = AbstractRequestData.StatusKeys.AcceptedKey;;
 
             _ = _clientMatchmaker.StartFriendMatch((ip, port) =>
             {
                 matchRequest.SetConnectionInfo(ip,port);
                         
-                var requestRef = _database.Child("matchRequests").Child(matchRequest.RequestId);
+                var requestRef = _database.Child(MatchRequestData.CollectionName).Child(matchRequest.RequestId);
                 requestRef.UpdateChildrenAsync(matchRequest.ToDictionary());
             });
         }
@@ -94,7 +95,7 @@ public class MatchRequestsManager
     {
         try
         {
-            var requestRef = _database.Child("matchRequests").Child(request.RequestId);
+            var requestRef = _database.Child(MatchRequestData.CollectionName).Child(request.RequestId);
         
             var snapshot = await requestRef.GetValueAsync();
             if (!snapshot.Exists)
@@ -105,7 +106,7 @@ public class MatchRequestsManager
 
 
             var matchRequest = new MatchRequestData(snapshot);
-            matchRequest.Status = "rejected";
+            matchRequest.Status = AbstractRequestData.StatusKeys.RejectedKey;
 
             await requestRef.UpdateChildrenAsync(matchRequest.ToDictionary());
             Debug.Log($"Request {request.RequestId} status updated to rejected");
@@ -119,8 +120,8 @@ public class MatchRequestsManager
     
     private void GetReceivedMatchRequests()
     {
-        var query = _database.Child("matchRequests")
-            .OrderByChild("recipientId")
+        var query = _database.Child(MatchRequestData.CollectionName)
+            .OrderByChild(AbstractRequestData.RecipientIdKey)
             .EqualTo(_currentUserId);
 
         query.GetValueAsync().ContinueWith(task =>
@@ -147,8 +148,8 @@ public class MatchRequestsManager
 
     private IDisposable ListenReceivedRequests()
     {
-        var query = _database.Child("matchRequests")
-            .OrderByChild("recipientId")
+        var query = _database.Child(MatchRequestData.CollectionName)
+            .OrderByChild(AbstractRequestData.RecipientIdKey)
             .EqualTo(_currentUserId);
 
         query.ChildAdded += Handler;
@@ -162,8 +163,8 @@ public class MatchRequestsManager
                 Debug.LogError(args.DatabaseError.Message);
                 return;
             }
-            var status = args.Snapshot.Child("status")?.Value as string;
-            if (status != "pending")
+            var status = args.Snapshot.Child(AbstractRequestData.StatusKey)?.Value as string;
+            if (status != AbstractRequestData.StatusKeys.PendingKey)
                 return;
             
             _requests.Add(new MatchRequestData(args.Snapshot));
@@ -171,10 +172,10 @@ public class MatchRequestsManager
         }
     }
     
-    private IDisposable ListenSentStatusRequests()
+    private IDisposable SubscribeToStatusUpdates()
     {
-        var query = _database.Child("matchRequests")
-            .OrderByChild("senderId")
+        var query = _database.Child(MatchRequestData.CollectionName)
+            .OrderByChild(AbstractRequestData.SenderIdKey)
             .EqualTo(_currentUserId);
 
         query.GetValueAsync().ContinueWith(task => 
@@ -195,8 +196,8 @@ public class MatchRequestsManager
             Debug.LogError(args.DatabaseError.Message);
             return;
         }
-        var newStatus = args.Snapshot.Child("status")?.Value as string;
-        var recipientId = args.Snapshot.Child("recipientId")?.Value as string;
+        var newStatus = args.Snapshot.Child(AbstractRequestData.StatusKey)?.Value as string;
+        var recipientId = args.Snapshot.Child(AbstractRequestData.RecipientIdKey)?.Value as string;
         
         if (!string.IsNullOrEmpty(newStatus))
         {
@@ -216,7 +217,7 @@ public class MatchRequestsManager
                     try 
                     {
                         var requestId = args.Snapshot.Key;
-                        _database.Child("matchRequests")
+                        _database.Child(MatchRequestData.CollectionName)
                             .Child(requestId)
                             .RemoveValueAsync();
                     }
@@ -230,3 +231,4 @@ public class MatchRequestsManager
     }
 }
 }
+#endif

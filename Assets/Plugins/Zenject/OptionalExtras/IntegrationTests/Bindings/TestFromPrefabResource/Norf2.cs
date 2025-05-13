@@ -2,7 +2,8 @@ using UnityEngine;
 
 namespace Zenject.Tests.Bindings.FromPrefabResource
 {
-public class Norf2 : MonoBehaviour, INorf
-{
+    public class Norf2 : MonoBehaviour, INorf
+    {
+    }
 }
-}
+

@@ -17,6 +17,7 @@ namespace UI.Test
 {
 public class TestInvite : MonoBehaviour
 {
+#if !UNITY_SERVER
     [Inject] private Global _global;
     public Button create;
     public Button connect;
@@ -34,7 +35,7 @@ public class TestInvite : MonoBehaviour
     
     public void Init()
     { 
-        // _global.FirestoreManager.OnLogin.AddListener((() => _ = Auth()));
+        // _global.FirestoreManager.OnLogin.AddListener(Auth);
     }
 
     private void OnDestroy()
@@ -42,12 +43,12 @@ public class TestInvite : MonoBehaviour
         // _global.FirestoreManager.OnLogin.RemoveListener((() => _ = Auth()));
     }
 
-    private async Task Auth()
+    private void Auth()
     {
-        Debug.Log(AuthenticationService.Instance.PlayerId);
-        playerId = AuthenticationService.Instance.PlayerId;
-        create.onClick.AddListener(() => _ = Create());
-        connect.onClick.AddListener(() => _ = Connect());
+        // Debug.Log(AuthenticationService.Instance.PlayerId);
+        // playerId = AuthenticationService.Instance.PlayerId;
+        // create.onClick.AddListener(() => _ = Create());
+        // connect.onClick.AddListener(Connect);
     }
     
 
@@ -90,13 +91,14 @@ public class TestInvite : MonoBehaviour
         }
     }
     
-    private async Task Connect()
+    private void Connect()
     {
+        Debug.Log("Connect");
         mainMenu.EnableFindMatchPanel();
             NetworkManager.Singleton.GetComponent<UnityTransport>()
                 .SetConnectionData(ip, port);
             NetworkManager.Singleton.StartClient();
     }
-
+#endif
 }
 }

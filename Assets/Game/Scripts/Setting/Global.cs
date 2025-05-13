@@ -1,27 +1,44 @@
 ﻿using System;
 using System.Collections.Generic;
 using Board.Piece;
+#if !UNITY_SERVER
 using Firebase.RealtimeDatabase;
+#endif
 using UnityEngine;
 
 namespace Setting
 {
-public class Global
+public enum EndGameType
+{
+    Null,
+    Won,
+    Lose,
+    Draw,
+    Canceled
+}
+public class Global : IDisposable
 {
     public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";
     public CellStates CellStates;
+#if !UNITY_SERVER
     public FirestoreManager FirestoreManager;
+#endif
     public List<ArrangementEntry> MyArrangements;
     public Dictionary<PieceType, PieceData> Pieces;
 
     public bool IsSignIn;
-
-    public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates,
-        FirestoreManager firestoreManager)
+    public EndGameType EndGameType;
+    public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates
+#if !UNITY_SERVER 
+, FirestoreManager firestoreManager
+#endif
+)
     {
         MyArrangements = RepackingArrangement(arrangement);
         CellStates = cellStates;
+#if !UNITY_SERVER
         FirestoreManager = firestoreManager;
+#endif
         Pieces = new Dictionary<PieceType, PieceData>();
         foreach (var piece in pieces)
         {
@@ -29,7 +46,7 @@ public class Global
             Pieces.Add(piece.pieceType, piece);
         };
     }
-
+    
     public AbstractPiece CreatePiece(PieceType pieceType)
     {
         AbstractPiece result = pieceType switch
@@ -56,6 +73,11 @@ public class Global
                 pieceType = arrangementArrangement.pieceType
             });
         return result;
+    }
+
+    public void Dispose()
+    {
+        GlobalTools.Dispose();
     }
 }
 }

@@ -1,16 +1,18 @@
-using System;
 using UnityEngine;
+#if !UNITY_SERVER
+using System;
 using UnityEngine.UIElements;
 using System.Collections.Generic;
 using Setting;
 using Statistics;
 using Zenject;
-
+#endif
 namespace UI
 {
 
 public class PlayerProfileController : MonoBehaviour
 {
+#if !UNITY_SERVER
     [Inject] private Global _global;
     private UIDocument uiDocument;
 
@@ -168,6 +170,7 @@ public class PlayerProfileController : MonoBehaviour
             closeButton.clicked -= HideProfile;
         }
     }
+#endif
 }
 
 }

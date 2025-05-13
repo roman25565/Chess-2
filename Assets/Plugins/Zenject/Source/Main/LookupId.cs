@@ -2,38 +2,38 @@ using ModestTree;
 
 namespace Zenject.Internal
 {
-[NoReflectionBaking]
-public class LookupId
-{
-    public BindingId BindingId;
-    public IProvider Provider;
-
-    public LookupId()
+    [NoReflectionBaking]
+    public class LookupId
     {
-    }
+        public IProvider Provider;
+        public BindingId BindingId;
 
-    public LookupId(IProvider provider, BindingId bindingId)
-    {
-        Assert.IsNotNull(provider);
-        Assert.IsNotNull(bindingId);
+        public LookupId()
+        {
+        }
 
-        Provider = provider;
-        BindingId = bindingId;
-    }
+        public LookupId(IProvider provider, BindingId bindingId)
+        {
+            Assert.IsNotNull(provider);
+            Assert.IsNotNull(bindingId);
 
-    public override int GetHashCode()
-    {
-        var hash = 17;
-        hash = hash * 23 + Provider.GetHashCode();
-        hash = hash * 23 + BindingId.GetHashCode();
-        return hash;
-    }
+            Provider = provider;
+            BindingId = bindingId;
+        }
 
-    public void Reset()
-    {
-        Provider = null;
-        BindingId.Type = null;
-        BindingId.Identifier = null;
+        public override int GetHashCode()
+        {
+            int hash = 17;
+            hash = hash * 23 + Provider.GetHashCode();
+            hash = hash * 23 + BindingId.GetHashCode();
+            return hash;
+        }
+
+        public void Reset()
+        {
+            Provider = null;
+            BindingId.Type = null;
+            BindingId.Identifier = null;
+        }
     }
-}
 }

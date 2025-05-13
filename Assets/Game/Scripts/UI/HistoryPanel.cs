@@ -1,3 +1,4 @@
+#if !UNITY_SERVER
 using System;
 using Setting;
 using UnityEngine;
@@ -7,10 +8,10 @@ namespace UI
 {
     public class HistoryPanel : MonoBehaviour
     {
-        [Inject] private Global _global;
-        [SerializeField] private Transform parentPanel;
         [SerializeField] private HistotyMatchButton buttonPrefab;
         [SerializeField] private MainMenu mainMenu;
+        [SerializeField] private Transform parentPanel;
+        [Inject] private Global _global;
 
         private void AddButton(HistoryMatchData historyMatchData)
         {
@@ -44,3 +45,4 @@ namespace UI
         }
     }
 }
+#endif

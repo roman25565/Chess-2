@@ -1,3 +1,4 @@
+#if !UNITY_SERVER
 using System;
 using System.Collections.Generic;
 using Firebase.Database;
@@ -11,8 +12,25 @@ public enum Type
     MatchRequest,
 }
 
+public class StatusKeys
+{
+    public readonly string PendingKey = "Pending"; 
+    public readonly string AcceptedKey = "Accepted"; 
+    public readonly string RejectedKey = "Rejected"; 
+}
+
 public abstract class AbstractRequestData
 {
+    public static readonly string RequestIdKey = "RequestId"; 
+    public static readonly string RecipientIdKey = "RecipientId"; 
+    public static readonly string SenderIdKey = "SenderId"; 
+    public static readonly string SenderNameKey = "SenderName"; 
+    public static readonly string StatusKey = "Status";
+    public static readonly string TimestampKey = "Timestamp"; 
+    public static readonly string SenderIdTimestampKey = "SenderId_Timestamp"; 
+    
+    public static readonly StatusKeys StatusKeys = new();
+    
     public readonly string RequestId;
     public readonly Type RequestType;
     public readonly string RecipientId;
@@ -26,12 +44,12 @@ public abstract class AbstractRequestData
     {
         RequestId = snapshot.Key;
         RequestType = requestType;
-        RecipientId = snapshot.Child("recipientId")?.Value as string;
-        SenderId = snapshot.Child("senderId")?.Value as string;
-        SenderName = snapshot.Child("senderName")?.Value as string;
-        Status = snapshot.Child("status")?.Value as string;
+        RecipientId = snapshot.Child(RecipientIdKey)?.Value as string;
+        SenderId = snapshot.Child(SenderIdKey)?.Value as string;
+        SenderName = snapshot.Child(SenderNameKey)?.Value as string;
+        Status = snapshot.Child(StatusKey)?.Value as string;
         
-        var timestampObj = snapshot.Child("timestamp")?.Value;
+        var timestampObj = snapshot.Child(TimestampKey)?.Value;
         if (timestampObj is long) 
             Timestamp = (long)timestampObj;
         else if (timestampObj is string)
@@ -47,7 +65,7 @@ public abstract class AbstractRequestData
         RecipientId = recipientId;
         SenderName = senderName;
         SenderId = senderId;
-        Status = "pending";
+        Status = StatusKeys.PendingKey;
         Timestamp = timestamp;
         SenderIdTimestamp = $"{senderId}_{timestamp}";
     }
@@ -56,13 +74,14 @@ public abstract class AbstractRequestData
     {
         return new Dictionary<string, object>
         {
-            ["recipientId"] = RecipientId,
-            ["senderName"] = SenderName,
-            ["senderId"] = SenderId,
-            ["status"] = Status,
-            ["timestamp"] = Timestamp,
-            ["senderId_timestamp"] = SenderIdTimestamp
+            [RecipientIdKey] = RecipientId,
+            [SenderNameKey] = SenderName,
+            [SenderIdKey] = SenderId,
+            [StatusKey] = Status,
+            [TimestampKey] = Timestamp,
+            [SenderIdTimestampKey] = SenderIdTimestamp
         };
     }
 }
 }
+#endif

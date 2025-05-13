@@ -1,3 +1,4 @@
+#if !UNITY_SERVER
 using System;
 using System.Collections.Generic;
 using System.Threading;
@@ -20,6 +21,7 @@ using Random = UnityEngine.Random;
 public class ClientMatchmaker : MonoBehaviour
 {
     [Inject] private Global _global;
+    [Inject] private GameData _gameData;
     private static bool initialized;
 
     [SerializeField] private TextMeshProUGUI statusText;
@@ -67,16 +69,18 @@ public class ClientMatchmaker : MonoBehaviour
         }
     }
 
-    public async void SearchMatch()
+#if !UNITY_SERVER
+    public async void SearchMatch(GameData gameModeSelector)
     {
         mainMenu.EnableFindMatchPanel();
         cts = new CancellationTokenSource();
-        await StartSearch(cts.Token);
+        await StartSearch(cts.Token, gameModeSelector);
     }
 
     public void Init()
     {
         cancelSearchMatchButton.onClick.AddListener(CancelSearchMatch);
+        
     }
 
     private async void CancelSearchMatch()
@@ -107,8 +111,11 @@ public class ClientMatchmaker : MonoBehaviour
         {
         }
     }
-
-    private async Task StartSearch(CancellationToken ct)
+    
+    private const string EloKey = "ELO";
+    private const string TimeControlKey = "TimeControl";
+    
+    private async Task StartSearch(CancellationToken ct, GameData gameModeData)
     {
         if (ct.IsCancellationRequested || isSearching)
         {
@@ -119,7 +126,11 @@ public class ClientMatchmaker : MonoBehaviour
         isSearching = true;
         cts = new CancellationTokenSource();
         var elo =  _global.FirestoreManager.PlayerData.Elo;
-        var playerData = new Dictionary<string, object> { { "ELO", elo } };
+        var playerData = new Dictionary<string, object>
+        {
+            { EloKey, elo },
+            { TimeControlKey, gameModeData.TimeControl}
+        };
         var players = new List<Player>
         {
             new(AuthenticationService.Instance.PlayerId, playerData)
@@ -155,11 +166,9 @@ public class ClientMatchmaker : MonoBehaviour
             }
         }
     }
-
+#endif
     public async Task<bool> FindMatch(string ticketId,UnityAction<string,ushort> action = null)
     {
-        var transport = NetworkManager.Singleton.GetComponent<UnityTransport>();
-
         for (var attempt = 0; attempt < 60 * 10; attempt++)
         {
             Debug.Log("isCancelled:" + isCancelled);
@@ -185,8 +194,10 @@ public class ClientMatchmaker : MonoBehaviour
                             if (assignment.Port.HasValue)
                             {
                                 action?.Invoke(assignment.Ip, (ushort)assignment.Port.Value);
-                                transport.SetConnectionData(assignment.Ip, (ushort)assignment.Port);
-                                var result = NetworkManager.Singleton.StartClient();
+
+                                var result = ConnectToMatch(assignment.Ip, (ushort)assignment.Port.Value);
+
+                                Debug.Log("IP " + assignment.Ip + " Port " + assignment.Port);;
 
                                 Debug.Log("StartClient result: " + result);
                                 statusText.SetText("Connecting to server...");
@@ -218,7 +229,7 @@ public class ClientMatchmaker : MonoBehaviour
         statusText.SetText("Matchmaking timed out.");
         return false;
     }
-    
+
     private void ResetSearchState()
     {
         Debug.Log("ResetSearchState");
@@ -280,10 +291,44 @@ public class ClientMatchmaker : MonoBehaviour
 
     public void JoinFriendMatch(string ip, ushort port)
     {
-        mainMenu.EnableFindMatchPanel();
-        NetworkManager.Singleton.GetComponent<UnityTransport>()
-            .SetConnectionData(ip, port);
-        NetworkManager.Singleton.StartClient();
+        ConnectToMatch(ip, port);
     }
     #endregion
+
+    public void ReConnectToMatch(string ip, ushort port)
+    {
+        Debug.Log("ReConnectToMatch");
+        Debug.Log("ip " + ip + " port " + port);
+        _gameData.Mode = GameMode.Reconnect;
+        var result = ConnectToMatch(ip, port);
+        Debug.Log("StartClient result: " + result);
+    }
+    public void ReConnectTest()
+    {
+        _gameData.Mode = GameMode.Reconnect;
+        NetworkManager.Singleton.StartClient();
+    }
+
+    private bool ConnectToMatch(string ip, ushort port)
+    {
+#if !UNITY_SERVER
+        try
+        {
+
+            Debug.Log("ConnectToMatch");
+            Debug.Log("ip " + ip + " port " + port);
+            _gameData.SetConnectionData(ip, port);
+            NetworkManager.Singleton.GetComponent<UnityTransport>()
+                .SetConnectionData(ip, port);
+            return NetworkManager.Singleton.StartClient();
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            throw;
+        }
+#endif
+        throw new NotImplementedException();
+    }
 }
+#endif

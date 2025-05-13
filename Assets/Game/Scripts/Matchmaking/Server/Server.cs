@@ -7,7 +7,7 @@ using Unity.Netcode.Transports.UTP;
 using Unity.Services.Core;
 using Unity.Services.Matchmaker;
 using Unity.Services.Matchmaker.Models;
-#if UNITY_SERVER
+#if UNITY_SERVER || UNITY_EDITOR
 using Unity.Networking.Transport;
 using Unity.Services.Multiplay;
 #endif
@@ -16,10 +16,11 @@ using UnityEngine.SceneManagement;
 
 public class Server : MonoBehaviour
 {
-#if UNITY_SERVER
+#if UNITY_SERVER || UNITY_EDITOR
     
     string _ticketId;
-
+    private MatchCore _matchCore;
+    
     void Start()
     {
         Application.targetFrameRate = 60;
@@ -27,11 +28,6 @@ public class Server : MonoBehaviour
         StartCoroutine(StartServer());
         //StartCoroutine(ApproveBackfillTicketEverySecond());
         
-    }
-
-    private void Update()
-    {
-        Debug.Log("Updat" + NetworkManager.Singleton.NetworkConfig.TickRate );
     }
 
     async Awaitable StartServer()
@@ -71,13 +67,22 @@ public class Server : MonoBehaviour
         await CreateBackfillTicket();
     }
 
-    private static void OnClientDisconnect(ulong clientId)
+    public void SetMatchCore(MatchCore matchCore)
+    {
+        _matchCore = matchCore;
+    }
+    
+    private void OnClientDisconnect(ulong clientId)
     {
         Debug.Log("Client disconnected");
         if (NetworkManager.Singleton.ConnectedClients.Count == 0)
         {
             NetworkManager.Singleton.Shutdown();
             Application.Quit();
+        }
+        else
+        {
+            _matchCore.OnClientDisconnect(clientId);
         }
     }
 

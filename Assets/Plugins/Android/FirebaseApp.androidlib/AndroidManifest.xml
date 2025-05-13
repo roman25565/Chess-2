@@ -3,4 +3,8 @@
           package="com.google.firebase.app.unity"
           android:versionCode="1"
           android:versionName="1.0">
+    <application>
+        <meta-data android:name="com.google.android.gms.ads.APPLICATION_ID"
+                   android:value="ca-app-pub-8869929513208283~6792510141"/>
+    </application>
 </manifest>

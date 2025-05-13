@@ -13,7 +13,7 @@ public class Example_ServerQueryHandler : MonoBehaviour
     const ushort k_DefaultMaxPlayers = 2;
     const string k_DefaultServerName = "MyServerExample";
     const string k_DefaultGameType = "MyGameType";
-    const string k_DefaultBuildId = "test2";
+    const string k_DefaultBuildId = "test3";
     const string k_DefaultMap = "MyMap";
 
     IServerQueryHandler m_ServerQueryHandler;

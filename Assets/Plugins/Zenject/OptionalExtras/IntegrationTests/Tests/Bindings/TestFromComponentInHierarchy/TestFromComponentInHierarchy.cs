@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Collections.Generic;
 using ModestTree;
@@ -6,203 +7,207 @@ using UnityEngine.TestTools;
 
 namespace Zenject.Tests.Bindings
 {
-public class TestFromComponentInHierarchy : ZenjectIntegrationTestFixture
-{
-    private Foo _foo1;
-    private Foo _foo2;
-
-    public void Setup1()
+    public class TestFromComponentInHierarchy : ZenjectIntegrationTestFixture
     {
-        var root = new GameObject();
+        Foo _foo1;
+        Foo _foo2;
 
-        _foo1 = root.AddComponent<Foo>();
+        public void Setup1()
+        {
+            var root = new GameObject();
 
-        var child1 = new GameObject();
-        child1.transform.SetParent(root.transform);
+            _foo1 = root.AddComponent<Foo>();
 
-        var child2 = new GameObject();
-        child2.transform.SetParent(root.transform);
+            var child1 = new GameObject();
+            child1.transform.SetParent(root.transform);
 
-        _foo2 = child2.AddComponent<Foo>();
-    }
+            var child2 = new GameObject();
+            child2.transform.SetParent(root.transform);
 
-    public void Setup2()
-    {
-        var root = new GameObject();
+            _foo2 = child2.AddComponent<Foo>();
+        }
 
-        var child1 = new GameObject();
-        child1.transform.SetParent(root.transform);
-    }
+        public void Setup2()
+        {
+            var root = new GameObject();
 
-    [UnityTest]
-    public IEnumerator RunMatchSingle()
-    {
-        Setup1();
-        PreInstall();
-        Container.Bind<Qux>().AsSingle();
-        Container.Bind<Foo>().FromComponentInHierarchy().AsSingle();
+            var child1 = new GameObject();
+            child1.transform.SetParent(root.transform);
+        }
 
-        PostInstall();
+        [UnityTest]
+        public IEnumerator RunMatchSingle()
+        {
+            Setup1();
+            PreInstall();
+            Container.Bind<Qux>().AsSingle();
+            Container.Bind<Foo>().FromComponentInHierarchy().AsSingle();
 
-        var qux = Container.Resolve<Qux>();
-        Assert.IsEqual(qux.Foos.Count, 1);
-        Assert.IsEqual(qux.Foos[0], _foo1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator RunMatchMultiple()
-    {
-        Setup1();
-        PreInstall();
-        Container.Bind<Qux>().AsSingle();
-        Container.Bind<Foo>().FromComponentsInHierarchy().AsCached();
+            var qux = Container.Resolve<Qux>();
+            Assert.IsEqual(qux.Foos.Count, 1);
+            Assert.IsEqual(qux.Foos[0], _foo1);
+            yield break;
+        }
 
-        PostInstall();
+        [UnityTest]
+        public IEnumerator RunMatchMultiple()
+        {
+            Setup1();
+            PreInstall();
+            Container.Bind<Qux>().AsSingle();
+            Container.Bind<Foo>().FromComponentsInHierarchy().AsCached();
 
-        var qux = Container.Resolve<Qux>();
-        Assert.IsEqual(qux.Foos.Count, 2);
-        Assert.IsEqual(qux.Foos[0], _foo1);
-        Assert.IsEqual(qux.Foos[1], _foo2);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator RunMatchNotFoundFailure()
-    {
-        Setup2();
-        PreInstall();
-        Container.Bind<Bar>().AsSingle().NonLazy();
-        Container.Bind<Foo>().FromComponentInHierarchy().AsSingle();
+            var qux = Container.Resolve<Qux>();
+            Assert.IsEqual(qux.Foos.Count, 2);
+            Assert.IsEqual(qux.Foos[0], _foo1);
+            Assert.IsEqual(qux.Foos[1], _foo2);
+            yield break;
+        }
 
-        Assert.Throws(() => PostInstall());
-        yield break;
-    }
+        [UnityTest]
+        public IEnumerator RunMatchNotFoundFailure()
+        {
+            Setup2();
+            PreInstall();
+            Container.Bind<Bar>().AsSingle().NonLazy();
+            Container.Bind<Foo>().FromComponentInHierarchy().AsSingle();
 
-    [UnityTest]
-    public IEnumerator RunMatchNotFoundSuccess()
-    {
-        Setup2();
-        PreInstall();
+            Assert.Throws(() => PostInstall());
+            yield break;
+        }
 
-        Container.Bind<Qux>().AsSingle().NonLazy();
-        Container.Bind<Foo>().FromComponentsInHierarchy().AsCached();
+        [UnityTest]
+        public IEnumerator RunMatchNotFoundSuccess()
+        {
+            Setup2();
+            PreInstall();
 
-        PostInstall();
+            Container.Bind<Qux>().AsSingle().NonLazy();
+            Container.Bind<Foo>().FromComponentsInHierarchy().AsCached();
 
-        var qux = Container.Resolve<Qux>();
-        Assert.IsEqual(qux.Foos.Count, 0);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestOptional()
-    {
-        PreInstall();
+            var qux = Container.Resolve<Qux>();
+            Assert.IsEqual(qux.Foos.Count, 0);
+            yield break;
+        }
 
-        Container.Bind<Qiv>().AsSingle().NonLazy();
-        Container.Bind<Foo>().FromComponentInHierarchy().AsSingle();
+        [UnityTest]
+        public IEnumerator TestOptional()
+        {
+            PreInstall();
 
-        PostInstall();
+            Container.Bind<Qiv>().AsSingle().NonLazy();
+            Container.Bind<Foo>().FromComponentInHierarchy().AsSingle();
 
-        var qiv = Container.Resolve<Qiv>();
-        Assert.IsNull(qiv.Foo);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator RunMatchSingleNonGeneric()
-    {
-        Setup1();
-        PreInstall();
-        Container.Bind<Qux>().AsSingle();
-        Container.Bind(typeof(Foo)).FromComponentInHierarchy().AsSingle();
+            var qiv = Container.Resolve<Qiv>();
+            Assert.IsNull(qiv.Foo);
+            yield break;
+        }
 
-        PostInstall();
+        [UnityTest]
+        public IEnumerator RunMatchSingleNonGeneric()
+        {
+            Setup1();
+            PreInstall();
+            Container.Bind<Qux>().AsSingle();
+            Container.Bind(typeof(Foo)).FromComponentInHierarchy().AsSingle();
 
-        var qux = Container.Resolve<Qux>();
-        Assert.IsEqual(qux.Foos.Count, 1);
-        Assert.IsEqual(qux.Foos[0], _foo1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator RunMatchMultipleNonGeneric()
-    {
-        Setup1();
-        PreInstall();
-        Container.Bind<Qux>().AsSingle();
-        Container.Bind(typeof(Foo)).FromComponentsInHierarchy().AsCached();
+            var qux = Container.Resolve<Qux>();
+            Assert.IsEqual(qux.Foos.Count, 1);
+            Assert.IsEqual(qux.Foos[0], _foo1);
+            yield break;
+        }
 
-        PostInstall();
+        [UnityTest]
+        public IEnumerator RunMatchMultipleNonGeneric()
+        {
+            Setup1();
+            PreInstall();
+            Container.Bind<Qux>().AsSingle();
+            Container.Bind(typeof(Foo)).FromComponentsInHierarchy().AsCached();
 
-        var qux = Container.Resolve<Qux>();
-        Assert.IsEqual(qux.Foos.Count, 2);
-        Assert.IsEqual(qux.Foos[0], _foo1);
-        Assert.IsEqual(qux.Foos[1], _foo2);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator RunMatchNotFoundFailureNonGeneric()
-    {
-        Setup2();
-        PreInstall();
-        Container.Bind<Bar>().AsSingle().NonLazy();
-        Container.Bind(typeof(Foo)).FromComponentInHierarchy().AsSingle();
+            var qux = Container.Resolve<Qux>();
+            Assert.IsEqual(qux.Foos.Count, 2);
+            Assert.IsEqual(qux.Foos[0], _foo1);
+            Assert.IsEqual(qux.Foos[1], _foo2);
+            yield break;
+        }
 
-        Assert.Throws(() => PostInstall());
-        yield break;
-    }
+        [UnityTest]
+        public IEnumerator RunMatchNotFoundFailureNonGeneric()
+        {
+            Setup2();
+            PreInstall();
+            Container.Bind<Bar>().AsSingle().NonLazy();
+            Container.Bind(typeof(Foo)).FromComponentInHierarchy().AsSingle();
 
-    [UnityTest]
-    public IEnumerator RunMatchNotFoundSuccessNonGeneric()
-    {
-        Setup2();
-        PreInstall();
+            Assert.Throws(() => PostInstall());
+            yield break;
+        }
 
-        Container.Bind<Qux>().AsSingle().NonLazy();
-        Container.Bind(typeof(Foo)).FromComponentsInHierarchy().AsCached();
+        [UnityTest]
+        public IEnumerator RunMatchNotFoundSuccessNonGeneric()
+        {
+            Setup2();
+            PreInstall();
 
-        PostInstall();
+            Container.Bind<Qux>().AsSingle().NonLazy();
+            Container.Bind(typeof(Foo)).FromComponentsInHierarchy().AsCached();
 
-        var qux = Container.Resolve<Qux>();
-        Assert.IsEqual(qux.Foos.Count, 0);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestOptionalNonGeneric()
-    {
-        PreInstall();
+            var qux = Container.Resolve<Qux>();
+            Assert.IsEqual(qux.Foos.Count, 0);
+            yield break;
+        }
 
-        Container.Bind<Qiv>().AsSingle().NonLazy();
-        Container.Bind(typeof(Foo)).FromComponentInHierarchy().AsSingle();
+        [UnityTest]
+        public IEnumerator TestOptionalNonGeneric()
+        {
+            PreInstall();
 
-        PostInstall();
+            Container.Bind<Qiv>().AsSingle().NonLazy();
+            Container.Bind(typeof(Foo)).FromComponentInHierarchy().AsSingle();
 
-        var qiv = Container.Resolve<Qiv>();
-        Assert.IsNull(qiv.Foo);
-        yield break;
-    }
+            PostInstall();
 
-    public class Foo : MonoBehaviour
-    {
-    }
+            var qiv = Container.Resolve<Qiv>();
+            Assert.IsNull(qiv.Foo);
+            yield break;
+        }
 
-    public class Qux
-    {
-        [Inject] public List<Foo> Foos;
-    }
+        public class Foo : MonoBehaviour
+        {
+        }
 
-    public class Bar
-    {
-        [Inject] public Foo Foo;
-    }
+        public class Qux
+        {
+            [Inject]
+            public List<Foo> Foos;
+        }
 
-    public class Qiv
-    {
-        [InjectOptional] public Foo Foo;
+        public class Bar
+        {
+            [Inject]
+            public Foo Foo;
+        }
+
+        public class Qiv
+        {
+            [InjectOptional]
+            public Foo Foo;
+        }
     }
 }
-}
+

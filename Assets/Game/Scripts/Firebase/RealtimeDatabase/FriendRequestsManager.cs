@@ -1,3 +1,4 @@
+#if !UNITY_SERVER
 using Firebase.Database;
 using System;
 using System.Collections.Generic;
@@ -33,11 +34,9 @@ public class FriendRequestsManager
         _onChangedRequests = onChangedRequests;
         _addFriend = addFriend;
 
-        ListenSentStatusRequests();
+        SubscribeToStatusUpdates();
         ListenReceivedRequests();
         // GetReceivedFriendRequests();
-
-        
     }
 
     public async Task SendFriendRequest(string recipientId, string senderName)
@@ -47,7 +46,7 @@ public class FriendRequestsManager
             var requestData = new FriendRequestData
                 (recipientId, senderName, _currentUserId).ToDictionary();
 
-            var requestRef = _database.Child("friendRequests")
+            var requestRef = _database.Child(FriendRequestData.CollectionName)
                 .Push();
 
             await requestRef.SetValueAsync(requestData);
@@ -64,7 +63,7 @@ public class FriendRequestsManager
     {
         try
         {
-            var requestRef = _database.Child("friendRequests").Child(request.RequestId);
+            var requestRef = _database.Child(FriendRequestData.CollectionName).Child(request.RequestId);
         
             var snapshot = await requestRef.GetValueAsync();
             if (!snapshot.Exists)
@@ -74,7 +73,7 @@ public class FriendRequestsManager
             }
             
             var friendRequest = new FriendRequestData(snapshot);
-            friendRequest.Status = "accepted";
+            friendRequest.Status = AbstractRequestData.StatusKeys.AcceptedKey;;
 
             await requestRef.UpdateChildrenAsync(friendRequest.ToDictionary());
             _addFriend?.Invoke(friendRequest.SenderId);
@@ -90,7 +89,7 @@ public class FriendRequestsManager
     {
         try
         {
-            var requestRef = _database.Child("friendRequests").Child(request.RequestId);
+            var requestRef = _database.Child(FriendRequestData.CollectionName).Child(request.RequestId);
         
             var snapshot = await requestRef.GetValueAsync();
             if (!snapshot.Exists)
@@ -101,7 +100,7 @@ public class FriendRequestsManager
 
 
             var friendRequest = new FriendRequestData(snapshot);
-            friendRequest.Status = "rejected";
+            friendRequest.Status = AbstractRequestData.StatusKeys.RejectedKey;
 
             await requestRef.UpdateChildrenAsync(friendRequest.ToDictionary());
             Debug.Log($"Request {request.RequestId} status updated to rejected");
@@ -115,8 +114,8 @@ public class FriendRequestsManager
     
     private void GetReceivedFriendRequests()
     {
-        var query = _database.Child("friendRequests")
-            .OrderByChild("recipientId")
+        var query = _database.Child(FriendRequestData.CollectionName)
+            .OrderByChild(AbstractRequestData.RecipientIdKey)
             .EqualTo(_currentUserId);
 
         query.GetValueAsync().ContinueWith(task =>
@@ -143,8 +142,8 @@ public class FriendRequestsManager
 
     private IDisposable ListenReceivedRequests()
     {
-        var query = _database.Child("friendRequests")
-            .OrderByChild("recipientId")
+        var query = _database.Child(FriendRequestData.CollectionName)
+            .OrderByChild(AbstractRequestData.RecipientIdKey)
             .EqualTo(_currentUserId);
 
         query.ChildAdded += Handler;
@@ -158,8 +157,8 @@ public class FriendRequestsManager
                 Debug.LogError(args.DatabaseError.Message);
                 return;
             }
-            var status = args.Snapshot.Child("status")?.Value as string;
-            if (status != "pending")
+            var status = args.Snapshot.Child(AbstractRequestData.StatusKey)?.Value as string;
+            if (status != AbstractRequestData.StatusKeys.PendingKey)
                 return;
             
             _requests.Add(new FriendRequestData(args.Snapshot));
@@ -167,10 +166,10 @@ public class FriendRequestsManager
         }
     }
     
-    private IDisposable ListenSentStatusRequests()
+    private IDisposable SubscribeToStatusUpdates()
     {
-        var query = _database.Child("friendRequests")
-            .OrderByChild("senderId")
+        var query = _database.Child(FriendRequestData.CollectionName)
+            .OrderByChild(AbstractRequestData.SenderIdKey)
             .EqualTo(_currentUserId);
 
         query.GetValueAsync().ContinueWith(task => 
@@ -192,13 +191,13 @@ public class FriendRequestsManager
             return;
         }
         
-        var newStatus = args.Snapshot.Child("status")?.Value as string;
-        var recipientId = args.Snapshot.Child("recipientId")?.Value as string;
+        var newStatus = args.Snapshot.Child(AbstractRequestData.StatusKey)?.Value as string;
+        var recipientId = args.Snapshot.Child(AbstractRequestData.RecipientIdKey)?.Value as string;
         
         if (!string.IsNullOrEmpty(newStatus))
         {
             Debug.Log($"Request to {recipientId} changed status to: {newStatus}");
-
+            
             switch (newStatus)
             {
                 case "accepted":
@@ -209,7 +208,7 @@ public class FriendRequestsManager
                     try 
                     {
                         var requestId = args.Snapshot.Key;
-                        _database.Child("friendRequests")
+                        _database.Child(FriendRequestData.CollectionName)
                             .Child(requestId)
                             .RemoveValueAsync();
                     }
@@ -223,3 +222,4 @@ public class FriendRequestsManager
     }
 }
 }
+#endif

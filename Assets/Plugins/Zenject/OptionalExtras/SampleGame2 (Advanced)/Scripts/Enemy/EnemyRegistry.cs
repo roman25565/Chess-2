@@ -2,20 +2,23 @@ using System.Collections.Generic;
 
 namespace Zenject.SpaceFighter
 {
-public class EnemyRegistry
-{
-    private readonly List<EnemyFacade> _enemies = new();
-
-    public IEnumerable<EnemyFacade> Enemies => _enemies;
-
-    public void AddEnemy(EnemyFacade enemy)
+    public class EnemyRegistry
     {
-        _enemies.Add(enemy);
-    }
+        readonly List<EnemyFacade> _enemies = new List<EnemyFacade>();
 
-    public void RemoveEnemy(EnemyFacade enemy)
-    {
-        _enemies.Remove(enemy);
+        public IEnumerable<EnemyFacade> Enemies
+        {
+            get { return _enemies; }
+        }
+
+        public void AddEnemy(EnemyFacade enemy)
+        {
+            _enemies.Add(enemy);
+        }
+
+        public void RemoveEnemy(EnemyFacade enemy)
+        {
+            _enemies.Remove(enemy);
+        }
     }
-}
 }

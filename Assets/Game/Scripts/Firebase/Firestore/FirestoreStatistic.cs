@@ -1,4 +1,4 @@
-
+#if !UNITY_SERVER
 using System;
 using System.Threading.Tasks;
 using Firebase.Firestore;
@@ -74,4 +74,10 @@ public class FirestoreStatistic
             return false;
         }
     }
+
+    public void ReportAnotherPlayer(string id)
+    {
+        throw new NotImplementedException();
+    }
 }
+#endif

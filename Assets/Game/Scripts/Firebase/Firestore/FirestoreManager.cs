@@ -1,4 +1,6 @@
-﻿using System;
+﻿#if !UNITY_SERVER
+
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Board;
@@ -108,11 +110,12 @@ public class FirestoreManager
                 var friendIds = snapshot.GetValue<List<string>>(FriendIdsKey);
 
                 Debug.Log("Load From DB");
-                var ico = await GlobalTools.LoadSprite(new Uri(imageURL));
-                result = new FirebasePlayerData(playerId, existingName, existingElo, ico, email, historyIds, friendIds);
+                GlobalTools.LoadSprite(new Uri(imageURL), sprite =>
+                {
+                    result = new FirebasePlayerData(playerId, existingName, existingElo, sprite, email, historyIds, friendIds);
+                    callback(result);
+                });
             }
-
-            callback(result);
         }
         catch (Exception e)
         {
@@ -121,20 +124,19 @@ public class FirestoreManager
         }
         return result;
     }
-
+    
     public async void GetIcon(string playerId, Action<Sprite> action)
     {
-        Debug.Log("Get Icon");
-        Sprite result = null;
         try
         {
+            Debug.Log("Get Icon");
             var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
             var snapshot = await docRef.GetSnapshotAsync();
 
             if (snapshot.Exists)
             {
                 var imageURL = snapshot.GetValue<string>(IconURLKey);
-                result = await GlobalTools.LoadSprite(new Uri(imageURL));
+                GlobalTools.LoadSprite(new Uri(imageURL), action.Invoke);
             }
         }
         catch (Exception e)
@@ -143,8 +145,6 @@ public class FirestoreManager
             Console.WriteLine(e);
             throw;
         }
-
-        action.Invoke(result);
     }
 
     private async Task<string> GetPlayerName(string playerId)
@@ -202,28 +202,32 @@ public class FirestoreManager
     private void SingUp(Dictionary<string, object> playerData, string playerId)
     {
         var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
-        docRef.SetAsync(playerData).ContinueWithOnMainThread(async setTask =>
+        docRef.SetAsync(playerData).ContinueWithOnMainThread(setTask =>
         {
             if (setTask.IsFaulted)
             {
-                Debug.LogError("Failed to add player: " + setTask.Exception);
+                Debug.LogError("Failed to SingUp player: " + setTask.Exception);
             }
             else
             {
-                Debug.Log("Player added successfully.");
-                var icon = await GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()));
-                var firebasePlayerData = new FirebasePlayerData
-                (
-                    playerData[IDKey].ToString(),
-                    playerData[NameKey].ToString(),
-                    int.Parse(playerData[EloKey].ToString()),
-                    icon,
-                    playerData[EmailKey].ToString(),
-                    new List<string>(),
-                    new List<string>()
-                );
-                SetPlayerData(firebasePlayerData);
+                GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()), sprite =>
+                {
+                    Debug.Log("Player SingUp successfully.");
+                    var firebasePlayerData = new FirebasePlayerData
+                    (
+                        playerData[IDKey].ToString(),
+                        playerData[NameKey].ToString(),
+                        int.Parse(playerData[EloKey].ToString()),
+                        sprite,
+                        playerData[EmailKey].ToString(),
+                        new List<string>(),
+                        new List<string>()
+                    );
+                    SetPlayerData(firebasePlayerData);
+                });
             }
+
+            return Task.CompletedTask;
         });
     }
 
@@ -520,3 +524,4 @@ public class FirestoreManager
 
     #endregion
 }
+#endif

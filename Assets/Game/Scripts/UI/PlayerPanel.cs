@@ -11,6 +11,7 @@ public class PlayerPanel : MonoBehaviour
     [SerializeField] private TextMeshProUGUI NameText;
     [SerializeField] private TextMeshProUGUI EloText;
     [SerializeField] private Image IconImage;
+#if !UNITY_SERVER
     public void SetTime(float time)
     {
         TimeSpan timeSpan = TimeSpan.FromSeconds(time);
@@ -23,7 +24,7 @@ public class PlayerPanel : MonoBehaviour
         EloText.text = playerData.Elo.ToString();
         IconImage.sprite = playerData.Icon;
     }
-
+#endif
     public void EndGame(int newElo)
     {
         EloText.text = newElo.ToString();

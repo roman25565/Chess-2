@@ -1,3 +1,4 @@
+#if !UNITY_SERVER
 using System;
 using System.Collections.Generic;
 using Firebase.Database;
@@ -7,6 +8,7 @@ namespace Firebase.RealtimeDatabase.Data
 public class FriendRequestData : AbstractRequestData
 
 {
+    public static readonly string CollectionName = "FriendRequests";
     public FriendRequestData(DataSnapshot snapshot) : base(snapshot, Type.FriendRequest)
     {
     }
@@ -17,3 +19,4 @@ public class FriendRequestData : AbstractRequestData
 
 }
 }
+#endif

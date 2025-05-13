@@ -1,13 +1,14 @@
 ﻿using System.Threading.Tasks;
+using Zenject;
 
 namespace Zenject.Tests.TestAnimationStateBehaviourInject
 {
-public class DelayedInitializeKernel : BaseMonoKernelDecorator
-{
-    public override async void Initialize()
+    public class DelayedInitializeKernel : BaseMonoKernelDecorator
     {
-        await Task.Delay(5000);
-        DecoratedMonoKernel.Initialize();
+        public async override void Initialize()
+        {
+            await Task.Delay(5000);
+            DecoratedMonoKernel.Initialize();
+        }
     }
-}
 }

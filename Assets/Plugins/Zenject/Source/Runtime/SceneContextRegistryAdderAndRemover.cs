@@ -2,27 +2,28 @@ using System;
 
 namespace Zenject
 {
-public class SceneContextRegistryAdderAndRemover : IInitializable, IDisposable
-{
-    private readonly SceneContextRegistry _registry;
-    private readonly SceneContext _sceneContext;
-
-    public SceneContextRegistryAdderAndRemover(
-        SceneContext sceneContext,
-        SceneContextRegistry registry)
+    public class SceneContextRegistryAdderAndRemover : IInitializable, IDisposable
     {
-        _registry = registry;
-        _sceneContext = sceneContext;
-    }
+        readonly SceneContextRegistry _registry;
+        readonly SceneContext _sceneContext;
 
-    public void Dispose()
-    {
-        _registry.Remove(_sceneContext);
-    }
+        public SceneContextRegistryAdderAndRemover(
+            SceneContext sceneContext,
+            SceneContextRegistry registry)
+        {
+            _registry = registry;
+            _sceneContext = sceneContext;
+        }
 
-    public void Initialize()
-    {
-        _registry.Add(_sceneContext);
+        public void Initialize()
+        {
+            _registry.Add(_sceneContext);
+        }
+
+        public void Dispose()
+        {
+            _registry.Remove(_sceneContext);
+        }
     }
 }
-}
+

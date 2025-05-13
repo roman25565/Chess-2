@@ -2,22 +2,22 @@ using UnityEngine;
 
 namespace Zenject.Tests.Factories.PrefabFactory
 {
-public class Foo : MonoBehaviour
-{
-    public bool WasInitialized;
-
-    [Inject]
-    public void Init()
+    public class Foo : MonoBehaviour
     {
-        WasInitialized = true;
-    }
+        public bool WasInitialized;
 
-    public class Factory : PlaceholderFactory<Object, Foo>
-    {
-    }
+        [Inject]
+        public void Init()
+        {
+            WasInitialized = true;
+        }
 
-    public class Factory2 : PlaceholderFactory<string, Foo>
-    {
+        public class Factory : PlaceholderFactory<Object, Foo>
+        {
+        }
+
+        public class Factory2 : PlaceholderFactory<string, Foo>
+        {
+        }
     }
-}
 }

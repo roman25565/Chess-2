@@ -22,27 +22,49 @@ public class Bootstrap : MonoBehaviour
     [Inject] private GameData _gameData;
     [Inject] private Global _global;
     
-    [SerializeField] private ClientMatchmaker clientMatchmaker;
-    [SerializeField] private SignIn signIn;
-    [SerializeField] private MainMenu mainMenu;
-    
+#if !UNITY_SERVER
+#if UNITY_EDITOR
+    private void OnValidate()
+    {
+        if (!Application.isPlaying)
+        {
+            clientMatchmaker = GetComponent<ClientMatchmaker>();
+            signIn = GetComponent<SignIn>();
+            mainMenu = GetComponent<MainMenu>();
+            adsManager = GetComponent<ADSManager>();
+
+            if (clientMatchmaker == null || signIn == null || mainMenu == null || adsManager == null)
+            {
+                Debug.LogWarning("Деякі компоненти відсутні на цьому GameObject", this);
+            }
+        }
+    }
+#endif
+    [SerializeReference] private ClientMatchmaker clientMatchmaker;
+    [SerializeReference] private SignIn signIn;
+    [SerializeReference] private MainMenu mainMenu;
+    [SerializeReference] private ADSManager adsManager;
+#endif
     [SerializeField] private Button startOnlineMatch;
     [SerializeField] private Button startLocalMatch;
     [SerializeField] private Button startTestMatch;
     [SerializeField] private Button hostLocalMatch;
     [SerializeField] private Button settingsButton;
     
-    private async void Start()
+    private async void Awake()
     {
         Application.targetFrameRate = 60;
-        
+#if !UNITY_SERVER
         if (_global.IsSignIn)
         {
             signIn.Init();
+            adsManager.TryStartAds();
             return;
         }
+        mainMenu.Init();
+#endif
         var isServer = Environment.GetCommandLineArgs().Any(arg => arg == "-port");
-        // isServer = true;
+        // isServer = true;//TO Test
         await LoadSettings(!isServer);
         if (isServer)
         {
@@ -51,15 +73,15 @@ public class Bootstrap : MonoBehaviour
         }
         else
         {
-            mainMenu.Init();
+#if !UNITY_SERVER
+            mainMenu.InitUIComponents();
             signIn.Init();
             clientMatchmaker.Init();
+            adsManager.Init();
             
             startOnlineMatch.onClick.AddListener(() =>
             {
-                Debug.Log("startOnlineMatch");
-                _gameData.Mode = GameMode.Online;
-                clientMatchmaker.SearchMatch();
+                mainMenu.ShowGameModeSelectorPanel();
             });
             startLocalMatch.onClick.AddListener(() =>
             {
@@ -88,6 +110,7 @@ public class Bootstrap : MonoBehaviour
                 SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
                 NetworkManager.Singleton.StartServer();
             });
+#endif
         }
     }
 
@@ -104,6 +127,7 @@ public class Bootstrap : MonoBehaviour
         if (cellStates == null)
             Debug.LogError("CellStates not found");
         
+#if !UNITY_SERVER
         var firestore = new FirestoreManager(clientMatchmaker);
         if (isClient)
         {
@@ -111,6 +135,9 @@ public class Bootstrap : MonoBehaviour
         }
 
         _global.Init(arrangement, piecesData, cellStates, firestore);
+#else
+        _global.Init(arrangement, piecesData, cellStates);
+        #endif
     }
 
     public void OnSignIn(GoogleSignInUser user)
@@ -125,6 +152,7 @@ public class Bootstrap : MonoBehaviour
 
     private void SignInFireBase(GoogleSignInUser user)
     {
+#if !UNITY_SERVER
         if (user == null)
         {
             _global.FirestoreManager.SingUp(user.UserId);
@@ -152,6 +180,7 @@ public class Bootstrap : MonoBehaviour
                 });
             }
         }
+#endif
     }
 
 

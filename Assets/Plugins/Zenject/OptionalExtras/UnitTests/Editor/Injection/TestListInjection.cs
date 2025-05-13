@@ -5,104 +5,117 @@ using Assert = ModestTree.Assert;
 
 namespace Zenject.Tests.Injection
 {
-[TestFixture]
-public class TestListInjection : ZenjectUnitTestFixture
-{
-    [Test]
-    public void TestConstructor1()
+    [TestFixture]
+    public class TestListInjection : ZenjectUnitTestFixture
     {
-        BindListItems();
-        Container.Bind<Test1>().AsSingle();
-        TestListItems(Container.Resolve<Test1>().Values);
-    }
-
-    [Test]
-    public void TestField1()
-    {
-        BindListItems();
-        Container.Bind<Test3>().AsSingle();
-        TestListItems(Container.Resolve<Test3>().Values);
-    }
-
-    [Test]
-    public void TestIList()
-    {
-        BindListItems();
-        Container.Bind<Test2>().AsSingle();
-        TestListItems(Container.Resolve<Test2>().Values.ToList());
-    }
-
-    [Test]
-    public void TestIEnumerable()
-    {
-        BindListItems();
-        Container.Bind<Test4>().AsSingle();
-        TestListItems(Container.Resolve<Test4>().Values.ToList());
-    }
-
-    [Test]
-    public void TestArrays()
-    {
-        BindListItems();
-        Container.Bind<Test5>().AsSingle();
-        TestListItems(Container.Resolve<Test5>().Values.ToList());
-    }
-
-    private void BindListItems()
-    {
-        Container.BindInstance("foo");
-        Container.BindInstance("bar");
-    }
-
-    private void TestListItems(List<string> values)
-    {
-        Assert.IsEqual(values[0], "foo");
-        Assert.IsEqual(values[1], "bar");
-    }
-
-    private class Test1
-    {
-        public Test1(List<string> values)
+        [Test]
+        public void TestConstructor1()
         {
-            Values = values;
+            BindListItems();
+            Container.Bind<Test1>().AsSingle();
+            TestListItems(Container.Resolve<Test1>().Values);
         }
 
-        public List<string> Values { get; }
-    }
-
-    private class Test3
-    {
-        [Inject] public List<string> Values;
-    }
-
-    private class Test2
-    {
-        public Test2(IList<string> values)
+        [Test]
+        public void TestField1()
         {
-            Values = values;
+            BindListItems();
+            Container.Bind<Test3>().AsSingle();
+            TestListItems(Container.Resolve<Test3>().Values);
         }
 
-        public IList<string> Values { get; }
-    }
-
-    private class Test4
-    {
-        public Test4(IEnumerable<string> values)
+        [Test]
+        public void TestIList()
         {
-            Values = values;
+            BindListItems();
+            Container.Bind<Test2>().AsSingle();
+            TestListItems(Container.Resolve<Test2>().Values.ToList());
         }
 
-        public IEnumerable<string> Values { get; }
-    }
-
-    private class Test5
-    {
-        public Test5(string[] values)
+        [Test]
+        public void TestIEnumerable()
         {
-            Values = values;
+            BindListItems();
+            Container.Bind<Test4>().AsSingle();
+            TestListItems(Container.Resolve<Test4>().Values.ToList());
         }
 
-        public string[] Values { get; }
+        [Test]
+        public void TestArrays()
+        {
+            BindListItems();
+            Container.Bind<Test5>().AsSingle();
+            TestListItems(Container.Resolve<Test5>().Values.ToList());
+        }
+
+        void BindListItems()
+        {
+            Container.BindInstance("foo");
+            Container.BindInstance("bar");
+        }
+
+        void TestListItems(List<string> values)
+        {
+            Assert.IsEqual(values[0], "foo");
+            Assert.IsEqual(values[1], "bar");
+        }
+
+        class Test1
+        {
+            public Test1(List<string> values)
+            {
+                Values = values;
+            }
+
+            public List<string> Values
+            {
+                get; private set;
+            }
+        }
+
+        class Test3
+        {
+            [Inject]
+            public List<string> Values = null;
+        }
+
+        class Test2
+        {
+            public Test2(IList<string> values)
+            {
+                Values = values;
+            }
+
+            public IList<string> Values
+            {
+                get; private set;
+            }
+        }
+
+        class Test4
+        {
+            public Test4(IEnumerable<string> values)
+            {
+                Values = values;
+            }
+
+            public IEnumerable<string> Values
+            {
+                get; private set;
+            }
+        }
+
+        class Test5
+        {
+            public Test5(string[] values)
+            {
+                Values = values;
+            }
+
+            public string[] Values
+            {
+                get; private set;
+            }
+        }
     }
-}
 }

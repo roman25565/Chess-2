@@ -3,136 +3,151 @@ using Assert = ModestTree.Assert;
 
 namespace Zenject.Tests.Signals
 {
-[TestFixture]
-public class TestAsyncSignals : ZenjectUnitTestFixture
-{
-    private static int CallCount;
-
-    [Inject] private SignalBus _signalBus;
-
-    [Inject] private Receiver1 _receiver1;
-
-    [Inject] private Receiver2 _receiver2;
-
-    [Inject] private TickableManager _tickManager;
-
-    [InjectOptional] private Foo _foo;
-
-    public override void Setup()
+    [TestFixture]
+    public class TestAsyncSignals : ZenjectUnitTestFixture
     {
-        base.Setup();
+        static int CallCount;
 
-        SignalBusInstaller.Install(Container);
-        ZenjectManagersInstaller.Install(Container);
-    }
+        [Inject]
+        SignalBus _signalBus = null;
 
-    [Test]
-    public void TestBasicAsync()
-    {
-        Container.DeclareSignal<Signal1>().RunAsync();
-        Container.DeclareSignal<Signal2>().RunAsync();
+        [Inject]
+        Receiver1 _receiver1 = null;
 
-        Container.Bind<Receiver1>().AsSingle();
-        Container.Bind<Receiver2>().AsSingle();
+        [Inject]
+        Receiver2 _receiver2 = null;
 
-        Container.BindSignal<Signal1>().ToMethod<Receiver1>(x => x.OnSignal).FromResolve();
-        Container.BindSignal<Signal2>().ToMethod<Receiver2>(x => x.OnSignal).FromResolve();
+        [Inject]
+        TickableManager _tickManager = null;
 
-        Container.ResolveRoots();
-        Container.Resolve<InitializableManager>().Initialize();
+        [InjectOptional]
+        Foo _foo = null;
 
-        Container.Inject(this);
-
-        CallCount = 1;
-        _receiver1.CallIndex = 0;
-        _receiver2.CallIndex = 0;
-
-        _signalBus.Fire<Signal1>();
-        _signalBus.Fire<Signal2>();
-
-        Assert.IsEqual(_receiver1.CallIndex, 0);
-        Assert.IsEqual(_receiver2.CallIndex, 0);
-
-        _tickManager.Update();
-
-        Assert.IsEqual(_receiver1.CallIndex, 1);
-        Assert.IsEqual(_receiver2.CallIndex, 2);
-    }
-
-    [Test]
-    public void TestTickPriority()
-    {
-        Container.DeclareSignal<Signal1>().WithTickPriority(1);
-        Container.DeclareSignal<Signal2>().WithTickPriority(-4);
-
-        Container.BindInterfacesAndSelfTo<Foo>().AsSingle();
-
-        Container.Bind<Receiver1>().AsSingle();
-        Container.Bind<Receiver2>().AsSingle();
-
-        Container.BindSignal<Signal1>().ToMethod<Receiver1>(x => x.OnSignal).FromResolve();
-        Container.BindSignal<Signal2>().ToMethod<Receiver2>(x => x.OnSignal).FromResolve();
-
-        Container.ResolveRoots();
-        Container.Resolve<InitializableManager>().Initialize();
-
-        Container.Inject(this);
-
-        CallCount = 1;
-        _receiver1.CallIndex = 0;
-        _receiver2.CallIndex = 0;
-        _foo.CallIndex = 0;
-
-        _signalBus.Fire<Signal1>();
-        _signalBus.Fire<Signal2>();
-
-        Assert.IsEqual(_receiver1.CallIndex, 0);
-        Assert.IsEqual(_receiver2.CallIndex, 0);
-        Assert.IsEqual(_foo.CallIndex, 0);
-
-        _tickManager.Update();
-
-        Assert.IsEqual(_receiver2.CallIndex, 1);
-        Assert.IsEqual(_foo.CallIndex, 2);
-        Assert.IsEqual(_receiver1.CallIndex, 3);
-    }
-
-    public class Foo : ITickable
-    {
-        public int CallIndex { get; set; }
-
-        public void Tick()
+        public override void Setup()
         {
-            CallIndex = CallCount++;
+            base.Setup();
+
+            SignalBusInstaller.Install(Container);
+            ZenjectManagersInstaller.Install(Container);
         }
-    }
 
-    public class Signal1
-    {
-    }
-
-    public class Signal2
-    {
-    }
-
-    public class Receiver1
-    {
-        public int CallIndex { get; set; }
-
-        public void OnSignal()
+        [Test]
+        public void TestBasicAsync()
         {
-            CallIndex = CallCount++;
+            Container.DeclareSignal<Signal1>().RunAsync();
+            Container.DeclareSignal<Signal2>().RunAsync();
+
+            Container.Bind<Receiver1>().AsSingle();
+            Container.Bind<Receiver2>().AsSingle();
+
+            Container.BindSignal<Signal1>().ToMethod<Receiver1>(x => x.OnSignal).FromResolve();
+            Container.BindSignal<Signal2>().ToMethod<Receiver2>(x => x.OnSignal).FromResolve();
+
+            Container.ResolveRoots();
+            Container.Resolve<InitializableManager>().Initialize();
+
+            Container.Inject(this);
+
+            CallCount = 1;
+            _receiver1.CallIndex = 0;
+            _receiver2.CallIndex = 0;
+
+            _signalBus.Fire<Signal1>();
+            _signalBus.Fire<Signal2>();
+
+            Assert.IsEqual(_receiver1.CallIndex, 0);
+            Assert.IsEqual(_receiver2.CallIndex, 0);
+
+            _tickManager.Update();
+
+            Assert.IsEqual(_receiver1.CallIndex, 1);
+            Assert.IsEqual(_receiver2.CallIndex, 2);
         }
-    }
 
-    public class Receiver2
-    {
-        public int CallIndex { get; set; }
-
-        public void OnSignal()
+        [Test]
+        public void TestTickPriority()
         {
-            CallIndex = CallCount++;
+            Container.DeclareSignal<Signal1>().WithTickPriority(1);
+            Container.DeclareSignal<Signal2>().WithTickPriority(-4);
+
+            Container.BindInterfacesAndSelfTo<Foo>().AsSingle();
+
+            Container.Bind<Receiver1>().AsSingle();
+            Container.Bind<Receiver2>().AsSingle();
+
+            Container.BindSignal<Signal1>().ToMethod<Receiver1>(x => x.OnSignal).FromResolve();
+            Container.BindSignal<Signal2>().ToMethod<Receiver2>(x => x.OnSignal).FromResolve();
+
+            Container.ResolveRoots();
+            Container.Resolve<InitializableManager>().Initialize();
+
+            Container.Inject(this);
+
+            CallCount = 1;
+            _receiver1.CallIndex = 0;
+            _receiver2.CallIndex = 0;
+            _foo.CallIndex = 0;
+
+            _signalBus.Fire<Signal1>();
+            _signalBus.Fire<Signal2>();
+
+            Assert.IsEqual(_receiver1.CallIndex, 0);
+            Assert.IsEqual(_receiver2.CallIndex, 0);
+            Assert.IsEqual(_foo.CallIndex, 0);
+
+            _tickManager.Update();
+
+            Assert.IsEqual(_receiver2.CallIndex, 1);
+            Assert.IsEqual(_foo.CallIndex, 2);
+            Assert.IsEqual(_receiver1.CallIndex, 3);
+        }
+
+        public class Foo : ITickable
+        {
+            public int CallIndex
+            {
+                get; set;
+            }
+
+            public void Tick()
+            {
+                CallIndex = CallCount++;
+            }
+        }
+
+        public class Signal1
+        {
+        }
+
+        public class Signal2
+        {
+        }
+
+        public class Receiver1
+        {
+            public int CallIndex
+            {
+                get; set;
+            }
+
+            public void OnSignal()
+            {
+                CallIndex = CallCount++;
+            }
+        }
+
+        public class Receiver2
+        {
+            public int CallIndex
+            {
+                get; set;
+            }
+
+            public void OnSignal()
+            {
+                CallIndex = CallCount++;
+            }
         }
     }
 }
-}
+

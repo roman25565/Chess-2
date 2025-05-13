@@ -1,10 +1,10 @@
 namespace Zenject.Tests.TestDestructionOrder
 {
-public class ProjectInstaller : MonoInstaller<ProjectInstaller>
-{
-    public override void InstallBindings()
+    public class ProjectInstaller : MonoInstaller<ProjectInstaller>
     {
-        Container.BindInterfacesTo<FooDisposable3>().AsSingle();
+        public override void InstallBindings()
+        {
+            Container.BindInterfacesTo<FooDisposable3>().AsSingle();
+        }
     }
-}
 }

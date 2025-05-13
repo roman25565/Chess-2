@@ -1,11 +1,13 @@
+#if !UNITY_SERVER
+using UnityEngine;
+using UI;
 using System;
 using System.Threading.Tasks;
 using Firebase.Extensions;
+
 using Google;
 using Setting;
 using TMPro;
-using UI;
-using UnityEngine;
 using Zenject;
 
 namespace Bootstrap
@@ -22,12 +24,11 @@ public class SignIn : MonoBehaviour
     
     private const string WebClientId = "492940055939-57m8n1fr0eu5cgis5kn94p1kj310cm4f.apps.googleusercontent.com";
     
-    [SerializeField] private Bootstrap bootstrap;
-    [SerializeField] private MainMenu mainMenu;
     
     private GoogleSignInConfiguration _configuration;
     private const string SignTypeKey = "SignType";
-    
+    [SerializeField] private Bootstrap bootstrap;
+    [SerializeField] private MainMenu mainMenu;
     public void Init()
     {
         _configuration = new GoogleSignInConfiguration
@@ -45,42 +46,52 @@ public class SignIn : MonoBehaviour
             OnSignInGoogle();
             mainMenu.DisableSignInPanel();
         }
-
     }
     
     public void OnSignInGoogle()
     {
+
         GoogleSignIn.Configuration = _configuration;
         GoogleSignIn.DefaultInstance.SignIn().ContinueWithOnMainThread(
             OnAuthenticationFinished);
+
     }
     
     public void OnSignInDebug()
     {
         bootstrap.OnSignInDebug("001");
-        UpdateUI(new GoogleSignInUser{UserId = "001"});
+        UpdateUI(new GoogleSignInUser{UserId = "001", ImageUrl = new Uri("https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no")});
     }
     
     public void OnSignInDebug2()
     {
         bootstrap.OnSignInDebug("002");
-        UpdateUI(new GoogleSignInUser{UserId = "002"});
+        UpdateUI(new GoogleSignInUser{UserId = "002", ImageUrl = new Uri("https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no")});
     }
     
     public void OnSignInDebug3()
     {
-        bootstrap.OnSignInDebug("003");
-        UpdateUI(new GoogleSignInUser{UserId = "003"});
+        var user = new GoogleSignInUser
+        {
+            UserId = "103990844753421114504",
+            Email = "halturach@gmail.com", DisplayName = "haltura0*//",
+            ImageUrl = new Uri(
+                "https://lh3.googleusercontent.com/a/ACg8ocIjApkKKdmwnIjpScmQaPwOVEvC_PTAmgIWU8RmEf921fozJ91N")
+        };
+        bootstrap.OnSignIn(user);
+        UpdateUI(user);
     }
     
     public void OnSignOut()
     {
+
         try
         {
             mainMenu.EnableSignInPanel();
             
             Debug.Log("Calling SignOut");
             GoogleSignIn.DefaultInstance.SignOut();
+            PlayerPrefs.SetString(SignTypeKey, SignTypes.None.ToString());
         }
         catch (Exception e)
         {
@@ -90,6 +101,7 @@ public class SignIn : MonoBehaviour
     }
 
 
+    
     internal void OnAuthenticationFinished(Task<GoogleSignInUser> task)
     {
         if (task.IsFaulted)
@@ -126,8 +138,8 @@ public class SignIn : MonoBehaviour
             Debug.Log("Welcome: " + user.DisplayName + "!!!!!");
 
             mainMenu.DisableSignInPanel();
-            
-            _global.FirestoreManager.GetIcon(user.UserId, (Sprite sprite) =>
+
+            GlobalTools.LoadSprite(user.ImageUrl, (Sprite sprite) =>
             {
                 mainMenu.SetProfileImage(sprite);
             });
@@ -138,6 +150,7 @@ public class SignIn : MonoBehaviour
             throw;
         }
     }
+    
 
 
     private SignTypes LoadLastSignType(out SignTypes type)
@@ -158,3 +171,4 @@ public class SignIn : MonoBehaviour
     }
 }
 }
+#endif   

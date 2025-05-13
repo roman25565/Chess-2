@@ -1,3 +1,4 @@
+
 using System.Collections;
 using System.Linq;
 using NUnit.Framework;
@@ -7,32 +8,39 @@ using Assert = ModestTree.Assert;
 
 namespace Zenject.Tests.Bindings.FromComponentInHierarchyGameObjectContext
 {
-public class TestFromComponentInHierarchyGameObjectContext : ZenjectIntegrationTestFixture
-{
-    private GameObject FooPrefab => FixtureUtil.GetPrefab("TestFromComponentInHierarchyGameObjectContext/Foo");
-
-    [SetUp]
-    public void SetUp()
+    public class TestFromComponentInHierarchyGameObjectContext : ZenjectIntegrationTestFixture
     {
-        new GameObject().AddComponent<Gorp>();
-        new GameObject().AddComponent<Gorp>();
-    }
+        GameObject FooPrefab
+        {
+            get
+            {
+                return FixtureUtil.GetPrefab("TestFromComponentInHierarchyGameObjectContext/Foo");
+            }
+        }
 
-    [UnityTest]
-    public IEnumerator TestCorrectHierarchy()
-    {
-        PreInstall();
+        [SetUp]
+        public void SetUp()
+        {
+            new GameObject().AddComponent<Gorp>();
+            new GameObject().AddComponent<Gorp>();
+        }
 
-        Container.Bind<Foo>().FromSubContainerResolve()
-            .ByNewContextPrefab(FooPrefab).AsSingle().NonLazy();
+        [UnityTest]
+        public IEnumerator TestCorrectHierarchy()
+        {
+            PreInstall();
 
-        PostInstall();
+            Container.Bind<Foo>().FromSubContainerResolve()
+                .ByNewContextPrefab(FooPrefab).AsSingle().NonLazy();
 
-        var foo = Container.Resolve<Foo>();
+            PostInstall();
 
-        Assert.IsNotNull(foo.Gorp);
-        Assert.IsEqual(foo.gameObject.GetComponentsInChildren<Gorp>().Single(), foo.Gorp);
-        yield break;
+            var foo = Container.Resolve<Foo>();
+
+            Assert.IsNotNull(foo.Gorp);
+            Assert.IsEqual(foo.gameObject.GetComponentsInChildren<Gorp>().Single(), foo.Gorp);
+            yield break;
+        }
     }
 }
-}
+

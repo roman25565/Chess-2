@@ -9,6 +9,7 @@ using Zenject;
 
 public class HistotyMatchButton : MonoBehaviour
 {
+#if !UNITY_SERVER
     [Inject] private Global _global;
     [Inject] private GameData _gameData;
     
@@ -46,7 +47,7 @@ public class HistotyMatchButton : MonoBehaviour
         button.onClick.AddListener(() =>
         {
             mainMenu.ShowEditBoard();
-            _gameData.ActiveBoard.StartGame(historyMatchData);
+            _gameData.ActiveBoard.ArrangeFigures(historyMatchData);
             //ShowEditBoardAndStartGame(historyMatchData, mainMenu);
         });
     }
@@ -86,4 +87,5 @@ public class HistotyMatchButton : MonoBehaviour
         player2Name.text = historyMatchData.Player2Name;
         player2Elo.text = $"({historyMatchData.Player2Elo.ToString()})";
     }
+#endif
 }

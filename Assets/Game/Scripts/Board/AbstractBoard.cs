@@ -10,26 +10,27 @@ namespace Board
 {
 public abstract class AbstractBoard : MonoBehaviour
 {
-    private bool _gameEnded;
+    [Inject] protected Global Global;
     protected MatchCore MatchCore;
 
     protected MoveHistory MoveHistory;
 
-    [Inject] protected Global Global;
+    protected Dictionary<int, List<Cell>> BoardLines;
     protected virtual bool IsRotated => MatchCore.IsRotated;
+    private bool _gameEnded;
 
-    public virtual void StartGame(MatchBootstrap.PlayerBootstrapData player1,
-        MatchBootstrap.PlayerBootstrapData player2)
+    public virtual void ArrangeFigures(MatchBootstrap.PlayerBootstrapData player1,
+        MatchBootstrap.PlayerBootstrapData player2, bool needRotate = true)
     {
         throw new NotImplementedException();
     }
 
-    public virtual void StartGame(HistoryMatchData historyMatchData)
+    public virtual void ArrangeFigures(HistoryMatchData historyMatchData)
     {
         throw new NotImplementedException();
     }
 
-    protected void ArrangeFigures(MatchBootstrap.PlayerBootstrapData playerBootstrapData)
+    protected void ArrangeFigures(MatchBootstrap.PlayerBootstrapData playerBootstrapData, bool needRotate = true)
     {
         foreach (var arrangementArrangement in playerBootstrapData.Arrangement)
         {
@@ -40,7 +41,7 @@ public abstract class AbstractBoard : MonoBehaviour
             piece.OwnerId = playerBootstrapData.PlayerId;
             piece.IsRotated = playerBootstrapData.IsRotate;
             piece.Color = playerBootstrapData.IsWhite ? PieceColor.White : PieceColor.Black;
-            if (playerBootstrapData.IsRotate)
+            if (needRotate && playerBootstrapData.IsRotate)
             {
                 column = 7 - column;
                 row = 7 - row;
@@ -68,7 +69,6 @@ public abstract class AbstractBoard : MonoBehaviour
     #region InitBoard
 
     [Inject] private GameData _gameData;
-    protected Dictionary<int, List<Cell>> BoardLines;
 
     public Cell GetCell(int row, int column)
     {
@@ -109,13 +109,6 @@ public abstract class AbstractBoard : MonoBehaviour
     {
         transform.rotation = Quaternion.Euler(0, 0, 180);
         ForEachCell(cell => cell.transform.localRotation = Quaternion.Euler(0, 0, 180));
-        // foreach (var boardLinesKey in BoardLines.Keys)
-        // {
-        //     foreach (var cell in BoardLines[boardLinesKey])
-        //     {
-        //         cell.transform.localRotation = Quaternion.Euler(0, 0, 180);
-        //     }
-        // }
     }
 
     protected void ForEachCell(Action<Cell> action)
@@ -182,7 +175,7 @@ public abstract class AbstractBoard : MonoBehaviour
         }
         else if (_selectedCell != null && IsValidMove(_selectedCell, cell))
         {
-            OnCanMove(_selectedCell, cell);
+            BoardTryMove(_selectedCell, cell);
             Deselect();
         }
         else if (cell.Piece != null)
@@ -207,7 +200,7 @@ public abstract class AbstractBoard : MonoBehaviour
         }
     }
 
-    protected abstract void OnCanMove(Cell from, Cell to);
+    protected abstract void BoardTryMove(Cell from, Cell to);
 
     public void StartDragging(RectTransform piece)
     {
@@ -369,5 +362,14 @@ public abstract class AbstractBoard : MonoBehaviour
         });
     }
 #endif
+    public virtual void GetPiecesInBoard(ulong connectedPlayerId, ulong remainingPlayerId, out ArrangementEntry[] connectedPlayerPieces, out ArrangementEntry[] remainingPlayerPieces)
+    {
+        throw new NotImplementedException();
+    }
+
+    public virtual void UpdateClientId(ulong oldId, ulong clientId)
+    {
+        throw new NotImplementedException();
+    }
 }
 }

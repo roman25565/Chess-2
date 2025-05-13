@@ -3,24 +3,29 @@ using ModestTree;
 
 namespace Zenject
 {
-public class HashSetPool<T> : StaticMemoryPool<HashSet<T>>
-{
-    public HashSetPool()
+    public class HashSetPool<T> : StaticMemoryPool<HashSet<T>>
     {
-        OnSpawnMethod = OnSpawned;
-        OnDespawnedMethod = OnDespawned;
-    }
+        static HashSetPool<T> _instance = new HashSetPool<T>();
 
-    public static HashSetPool<T> Instance { get; } = new();
+        public HashSetPool()
+        {
+            OnSpawnMethod = OnSpawned;
+            OnDespawnedMethod = OnDespawned;
+        }
 
-    private static void OnSpawned(HashSet<T> items)
-    {
-        Assert.That(items.IsEmpty());
-    }
+        public static HashSetPool<T> Instance
+        {
+            get { return _instance; }
+        }
 
-    private static void OnDespawned(HashSet<T> items)
-    {
-        items.Clear();
+        static void OnSpawned(HashSet<T> items)
+        {
+            Assert.That(items.IsEmpty());
+        }
+
+        static void OnDespawned(HashSet<T> items)
+        {
+            items.Clear();
+        }
     }
-}
 }

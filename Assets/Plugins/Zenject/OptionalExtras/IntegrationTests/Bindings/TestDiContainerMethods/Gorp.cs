@@ -5,16 +5,20 @@ using UnityEngine;
 
 namespace Zenject.Tests.Bindings.DiContainerMethods
 {
-public class Gorp : MonoBehaviour
-{
-    [Inject] private string _arg;
-
-    public string Arg => _arg;
-
-    [Inject]
-    public void Initialize()
+    public class Gorp : MonoBehaviour
     {
-        Log.Trace("Received arg '{0}' in Gorp", _arg);
+        [Inject]
+        string _arg;
+
+        public string Arg
+        {
+            get { return _arg; }
+        }
+
+        [Inject]
+        public void Initialize()
+        {
+            Log.Trace("Received arg '{0}' in Gorp", _arg);
+        }
     }
-}
 }

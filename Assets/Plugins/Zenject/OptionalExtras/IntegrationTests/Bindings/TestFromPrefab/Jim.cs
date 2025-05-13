@@ -3,8 +3,10 @@ using UnityEngine;
 
 namespace Zenject.Tests.Bindings.FromPrefab
 {
-public class Jim : MonoBehaviour
-{
-    [NonSerialized] [Inject] public Bob Bob;
-}
+    public class Jim : MonoBehaviour
+    {
+        [NonSerialized]
+        [Inject]
+        public Bob Bob;
+    }
 }

@@ -8,10 +8,11 @@ namespace Board
 {
     public class EditBoard : AbstractBoard
     {
-        [Inject] private Global _global;
-     
         [SerializeField] private PlayerPanel myPlayerPanel;
         [SerializeField] private PlayerPanel enemyPlayerPanel;
+#if !UNITY_SERVER
+        [Inject] private Global _global;
+     
         
         public override bool IsMyId(ulong id) => _matchData.MovingPlayerId == id;
         protected override bool IsRotated => _isRotated;
@@ -21,7 +22,7 @@ namespace Board
         private bool _isHistoryMatch; 
         private MoveHistory _internalMoveHistory;
         private MoveHistory _selectedHistory;
-        public override void StartGame(HistoryMatchData historyMatchData)
+        public override void ArrangeFigures(HistoryMatchData historyMatchData)
         {
 #if !UNITY_SERVER
             ClearBoard();
@@ -92,7 +93,7 @@ namespace Board
             
             void SetPlayerUI(FirebasePlayerData playerData, bool isEnemyPlayer)
             {
-                if (isEnemyPlayer) enemyPlayerPanel.SetPlayerUI(playerData);
+                if (isEnemyPlayer) enemyPlayerPanel.SetPlayerUI(playerData);//TODO Save TimeControll
                 else myPlayerPanel.SetPlayerUI(playerData);
             }
         }
@@ -108,7 +109,7 @@ namespace Board
             }
         }
 
-        protected override void OnCanMove(Cell from, Cell to)
+        protected override void BoardTryMove(Cell from, Cell to)
         {
             if (from.Piece.OwnerId == _matchData.MovingPlayerId)
             {
@@ -142,7 +143,6 @@ namespace Board
         {
             TryMove(to, false);
         }
-#if !UNITY_SERVER
         public override void NextMove()
         {
             if (!_selectedHistory.InHistory) return;
@@ -159,6 +159,16 @@ namespace Board
                 _internalMoveHistory.GetHistory().Clear();
                 _selectedHistory = MoveHistory;
             }
+        }
+#else
+        protected override void BoardTryMove(Cell from, Cell to)
+        {
+            throw new System.NotImplementedException();
+        }
+
+        protected override void OnDraggingStop(Cell from, Cell to)
+        {
+            throw new System.NotImplementedException();
         }
 #endif
     }

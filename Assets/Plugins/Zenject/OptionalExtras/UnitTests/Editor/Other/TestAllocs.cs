@@ -1,12 +1,13 @@
-// In order to run this, install dotMemoryPeek through nuget and then change this to 1
 
+// In order to run this, install dotMemoryPeek through nuget and then change this to 1
 #if false
+
 using System;
 using System.Diagnostics;
 using JetBrains.dotMemoryUnit;
 using ModestTree;
 using NUnit.Framework;
-using Assert = ModestTree.Assert;
+using Assert=ModestTree.Assert;
 using System.Linq;
 
 namespace Zenject.Tests.Other
@@ -27,7 +28,7 @@ namespace Zenject.Tests.Other
         }
 
         [Test]
-        [DotMemoryUnit(CollectAllocations = true)]
+        [DotMemoryUnit(CollectAllocations=true)]
         public void TryStuff()
         {
             Container.Bind<IFoo>().To<Foo1>().AsSingle();

@@ -1,240 +1,230 @@
-﻿using System.Collections;
+﻿
+using System.Collections;
 using ModestTree;
 using UnityEngine.TestTools;
 using Zenject.Tests.Bindings.FromSubContainerPrefabResource;
 
 namespace Zenject.Tests.Bindings
 {
-public class TestFromSubContainerPrefabResource : ZenjectIntegrationTestFixture
-{
-    private const string PathPrefix = "TestFromSubContainerPrefabResource/";
-    private const string FooResourcePath = PathPrefix + "FooSubContainer";
-
-    private void CommonInstall()
+    public class TestFromSubContainerPrefabResource : ZenjectIntegrationTestFixture
     {
-        Container.Settings = new ZenjectSettings(ValidationErrorResponses.Throw);
-    }
+        const string PathPrefix = "TestFromSubContainerPrefabResource/";
+        const string FooResourcePath = PathPrefix + "FooSubContainer";
 
-    [UnityTest]
-    public IEnumerator TestTransientError()
-    {
-        PreInstall();
-        CommonInstall();
+        void CommonInstall()
+        {
+            Container.Settings = new ZenjectSettings(ValidationErrorResponses.Throw);
+        }
 
-        // Validation should detect that it doesn't exist
-        Container.Bind<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(PathPrefix + "asdfasdfas")
-            .AsTransient().NonLazy();
+        [UnityTest]
+        public IEnumerator TestTransientError()
+        {
+            PreInstall();
+            CommonInstall();
 
-        Assert.Throws(() => PostInstall());
-        yield break;
-    }
+            // Validation should detect that it doesn't exist
+            Container.Bind<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(PathPrefix + "asdfasdfas").AsTransient().NonLazy();
 
-    [UnityTest]
-    public IEnumerator TestSelfSingle()
-    {
-        PreInstall();
-        CommonInstall();
+            Assert.Throws(() => PostInstall());
+            yield break;
+        }
 
-        Container.Bind<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle()
-            .NonLazy();
+        [UnityTest]
+        public IEnumerator TestSelfSingle()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestSelfTransient()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            yield break;
+        }
 
-        Container.Bind<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsTransient()
-            .NonLazy();
+        [UnityTest]
+        public IEnumerator TestSelfTransient()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsTransient().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestSelfCached()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            yield break;
+        }
 
-        Container.Bind<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle()
-            .NonLazy();
+        [UnityTest]
+        public IEnumerator TestSelfCached()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestSelfSingleMultipleContracts()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            yield break;
+        }
 
-        Container.Bind(typeof(Foo), typeof(Bar)).FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath)
-            .AsSingle().NonLazy();
+        [UnityTest]
+        public IEnumerator TestSelfSingleMultipleContracts()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind(typeof(Foo), typeof(Bar)).FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        FixtureUtil.AssertComponentCount<Bar>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestSelfCachedMultipleContracts()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            FixtureUtil.AssertComponentCount<Bar>(1);
+            yield break;
+        }
 
-        Container.Bind(typeof(Foo), typeof(Bar)).FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath)
-            .AsSingle().NonLazy();
+        [UnityTest]
+        public IEnumerator TestSelfCachedMultipleContracts()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind(typeof(Foo), typeof(Bar)).FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        FixtureUtil.AssertComponentCount<Bar>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestSelfTransientMultipleContracts()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            FixtureUtil.AssertComponentCount<Bar>(1);
+            yield break;
+        }
 
-        Container.Bind(typeof(Foo), typeof(Bar)).FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath)
-            .AsTransient().NonLazy();
+        [UnityTest]
+        public IEnumerator TestSelfTransientMultipleContracts()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind(typeof(Foo), typeof(Bar)).FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsTransient().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(2);
-        FixtureUtil.AssertComponentCount<Foo>(2);
-        FixtureUtil.AssertComponentCount<Bar>(2);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestConcreteSingle()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(2);
+            FixtureUtil.AssertComponentCount<Foo>(2);
+            FixtureUtil.AssertComponentCount<Bar>(2);
+            yield break;
+        }
 
-        Container.Bind<IFoo>().To<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath)
-            .AsSingle().NonLazy();
+        [UnityTest]
+        public IEnumerator TestConcreteSingle()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind<IFoo>().To<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestConcreteTransient()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            yield break;
+        }
 
-        Container.Bind<IFoo>().To<Foo>().FromSubContainerResolve()
-            .ByNewContextPrefabResource(FooResourcePath).AsTransient().NonLazy();
+        [UnityTest]
+        public IEnumerator TestConcreteTransient()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind<IFoo>().To<Foo>().FromSubContainerResolve()
+                .ByNewContextPrefabResource(FooResourcePath).AsTransient().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestConcreteCached()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            yield break;
+        }
 
-        Container.Bind<IFoo>().To<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath)
-            .AsSingle().NonLazy();
+        [UnityTest]
+        public IEnumerator TestConcreteCached()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind<IFoo>().To<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestConcreteSingleMultipleContracts()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            yield break;
+        }
 
-        Container.Bind(typeof(IFoo), typeof(Bar)).To(typeof(Foo), typeof(Bar))
-            .FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
+        [UnityTest]
+        public IEnumerator TestConcreteSingleMultipleContracts()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind(typeof(IFoo), typeof(Bar)).To(typeof(Foo), typeof(Bar))
+                .FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        FixtureUtil.AssertComponentCount<Bar>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestConcreteCachedMultipleContracts()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            FixtureUtil.AssertComponentCount<Bar>(1);
+            yield break;
+        }
 
-        Container.Bind(typeof(Foo), typeof(IFoo)).To<Foo>().FromSubContainerResolve()
-            .ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
+        [UnityTest]
+        public IEnumerator TestConcreteCachedMultipleContracts()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind(typeof(Foo), typeof(IFoo)).To<Foo>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        FixtureUtil.AssertComponentCount<Foo>(1);
-        yield break;
-    }
+            PostInstall();
 
-    [UnityTest]
-    public IEnumerator TestSelfIdentifiersFails()
-    {
-        PreInstall();
-        CommonInstall();
+            FixtureUtil.AssertNumGameObjects(1);
+            FixtureUtil.AssertComponentCount<Foo>(1);
+            yield break;
+        }
 
-        Container.Bind<Gorp>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle()
-            .NonLazy();
+        [UnityTest]
+        public IEnumerator TestSelfIdentifiersFails()
+        {
+            PreInstall();
+            CommonInstall();
 
-        Assert.Throws(() => PostInstall());
-        yield break;
-    }
+            Container.Bind<Gorp>().FromSubContainerResolve().ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-    [UnityTest]
-    public IEnumerator TestSelfIdentifiers()
-    {
-        PreInstall();
-        CommonInstall();
+            Assert.Throws(() => PostInstall());
+            yield break;
+        }
 
-        Container.Bind<Gorp>().FromSubContainerResolve("gorp").ByNewContextPrefabResource(FooResourcePath).AsSingle()
-            .NonLazy();
+        [UnityTest]
+        public IEnumerator TestSelfIdentifiers()
+        {
+            PreInstall();
+            CommonInstall();
 
-        PostInstall();
+            Container.Bind<Gorp>().FromSubContainerResolve("gorp").ByNewContextPrefabResource(FooResourcePath).AsSingle().NonLazy();
 
-        FixtureUtil.AssertNumGameObjects(1);
-        yield break;
+            PostInstall();
+
+            FixtureUtil.AssertNumGameObjects(1);
+            yield break;
+        }
     }
 }
-}
+

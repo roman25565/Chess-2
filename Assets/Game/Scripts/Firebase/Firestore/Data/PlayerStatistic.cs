@@ -1,3 +1,4 @@
+#if !UNITY_SERVER
 using Firebase.Firestore;
 using System;
 
@@ -53,6 +54,7 @@ namespace Statistics
         [FirestoreProperty] public int MaxWinStreak { get; set; }
         [FirestoreProperty] public int CurrentLoseStreak { get; set; }
         [FirestoreProperty] public int MaxLoseStreak { get; set; }
+        
 
         // Методи для роботи з датами
         public DateTime GetRegistrationDate() => RegistrationDate.ToDateTime();
@@ -61,3 +63,4 @@ namespace Statistics
         public void SetLastPlayedDate(DateTime date) => LastPlayedDate = Timestamp.FromDateTime(date);
     }
 }
+#endif
