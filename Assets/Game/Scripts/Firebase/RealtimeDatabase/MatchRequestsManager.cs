@@ -12,7 +12,7 @@ namespace Firebase.RealtimeDatabase
 {
 public class MatchRequestsManager
 {
-    private ClientMatchmaker _clientMatchmaker;
+    private AdvancedMatchmaking _advancedMatchmaking;
     
     private const long WeekInMs = 7 * 24 * 60 * 60 * 1000; // 7 day in ms
         
@@ -26,13 +26,13 @@ public class MatchRequestsManager
         return _requests;
     }
 
-    public MatchRequestsManager(DatabaseReference database, string currentUserId, UnityEvent onChangedRequests, ClientMatchmaker clientMatchmaker)
+    public MatchRequestsManager(DatabaseReference database, string currentUserId, UnityEvent onChangedRequests, AdvancedMatchmaking advancedMatchmaking)
     {
         _database = database;
         _currentUserId = currentUserId;
         Debug.Log($"Current user id: {_currentUserId}");
         _onChangedRequests = onChangedRequests;
-        _clientMatchmaker = clientMatchmaker;
+        _advancedMatchmaking = advancedMatchmaking;
 
         SubscribeToStatusUpdates();
         ListenReceivedRequests();
@@ -65,25 +65,23 @@ public class MatchRequestsManager
         try
         {
             var requestRef = _database.Child(MatchRequestData.CollectionName).Child(request.RequestId);
-        
+
             var snapshot = await requestRef.GetValueAsync();
             if (!snapshot.Exists)
             {
                 Debug.LogWarning($"Request {request.RequestId} not found");
                 return;
             }
-            
-            var matchRequest = new MatchRequestData(snapshot);
-            matchRequest.Status = AbstractRequestData.StatusKeys.AcceptedKey;;
 
-            _ = _clientMatchmaker.StartFriendMatch((ip, port) =>
+            var matchRequest = new MatchRequestData(snapshot);
+            matchRequest.Status = AbstractRequestData.StatusKeys.AcceptedKey;
+            await _advancedMatchmaking.HostMatch(joinCode =>
             {
-                matchRequest.SetConnectionInfo(ip,port);
-                        
-                var requestRef = _database.Child(MatchRequestData.CollectionName).Child(matchRequest.RequestId);
+                matchRequest.SetConnectionInfo(joinCode);
                 requestRef.UpdateChildrenAsync(matchRequest.ToDictionary());
             });
         }
+            
         catch (Exception e)
         {
             Debug.LogError($"Error accepting match request from {request.RequestId}: {e.Message}");
@@ -207,9 +205,9 @@ public class MatchRequestsManager
             {
                 case "accepted":
                     var matchRequest = new MatchRequestData(args.Snapshot);
-                    if (!string.IsNullOrEmpty(matchRequest.Ip) && matchRequest.Port > 0)
+                    if (!string.IsNullOrEmpty(matchRequest.RelayJoinCode))
                     {
-                        _clientMatchmaker.JoinFriendMatch(matchRequest.Ip, matchRequest.Port);
+                        _ = _advancedMatchmaking.ConnectToMatch(matchRequest.RelayJoinCode);
                     }
                     break;
                 

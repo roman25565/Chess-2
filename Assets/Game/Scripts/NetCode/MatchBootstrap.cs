@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Board;
 using Setting;
 using Unity.Netcode;
 using Unity.VisualScripting;
@@ -26,6 +27,9 @@ public class MatchBootstrap : NetworkBehaviour
 
     [Inject] private Global _global;
 
+    private MatchData _matchData;
+    private AdvancedMatchmaking _advancedMatchmaking;
+    
     private void Awake()
     {
         ProjectContext.Instance.Container.InjectGameObject(gameObject);
@@ -105,6 +109,10 @@ public class MatchBootstrap : NetworkBehaviour
 
         if (_player1 != null && _player0 != null)
         {
+            _advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
+            _advancedMatchmaking.CancelMatchmaking(false);
+            
+            
             var whitePlayerId = GetWhitePlayerId(_player0.ID, _player1.ID);
 
             var player1 = CreatePlayerBootstrapData(_player0.ID, firestoreId, _player0.Arrangement.ArrangementEntry,
@@ -112,9 +120,11 @@ public class MatchBootstrap : NetworkBehaviour
             var player2 = CreatePlayerBootstrapData(_player1.ID, firestoreId, _player1.Arrangement.ArrangementEntry,
                 whitePlayerId, timeControl);
 
+            Debug.Log($"player1 IsRotate {player1.IsRotate} player2 IsRotate {player2.IsRotate}" );
             _gameData.ActiveBoard.ArrangeFigures(player1, player2);
-
+            _matchData = CreateMatchData(player1, player2, whitePlayerId, timeControl);
             _ = StartMatchServer(player1, player2, whitePlayerId, timeControl);
+            
 
             var matchBootstraps = FindObjectsByType<MatchBootstrap>((FindObjectsSortMode)FindObjectsInactive.Exclude);
 
@@ -133,22 +143,18 @@ public class MatchBootstrap : NetworkBehaviour
 
     private Task StartMatchServer(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId, int timeControl)
     {
-        var coreServer = Instantiate(matchCore);
-
+        var matchData = CreateMatchData(player1, player2, whitePlayerId, timeControl);
+        
         var corePlayer1 = Instantiate(matchCore, transform);
         corePlayer1.GetComponent<NetworkObject>().SpawnWithOwnership(player1.PlayerId);
-        corePlayer1.SetServerCore(coreServer);
 
         var corePlayer2 = Instantiate(matchCore, transform);
         corePlayer2.GetComponent<NetworkObject>().SpawnWithOwnership(player2.PlayerId);
-        corePlayer2.SetServerCore(coreServer);
 
-        coreServer.GetComponent<NetworkObject>().Spawn();
-
-        var matchData = CreateMatchData(player1, player2, whitePlayerId, timeControl);
-
-        coreServer.Init(matchData);
-        coreServer.SetServerCore(coreServer);
+        corePlayer1.SetServerCore(corePlayer1);
+        corePlayer2.SetServerCore(corePlayer1);
+        corePlayer1.SetServerMatchData(matchData);
+        corePlayer2.SetServerMatchData(matchData);
         return Task.CompletedTask;
     }
 
@@ -159,13 +165,17 @@ public class MatchBootstrap : NetworkBehaviour
         ulong whitePlayerId, int timeControl)
     {
         if (!IsLocalPlayer) return;
+
+        
         var player1 = new PlayerBootstrapData(playerId, firestoreId, arrangement, playerId != whitePlayerId,
             whitePlayerId == playerId);
         var player2 = new PlayerBootstrapData(playerId2, firestoreId2, arrangement2, playerId2 != whitePlayerId,
             whitePlayerId == playerId2);
+        Debug.Log($"P1 {player1.PlayerId}, {player1.IsWhite}, P2 {player2.PlayerId}, {player2.IsWhite}");
 
         InitCore(player1, player2, whitePlayerId, timeControl);
         TryArrangeFigures(player1, player2);
+        NetworkManager.Singleton.OnClientDisconnectCallback += OnClientDisconnect;
     }
 
     private void InitCore(PlayerBootstrapData player1, PlayerBootstrapData player2, ulong whitePlayerId, int timeControl)
@@ -176,10 +186,10 @@ public class MatchBootstrap : NetworkBehaviour
         {
             if (!core.IsOwner) continue;
 
-            var matchData = CreateMatchData(player1, player2, whitePlayerId, timeControl);
+            _matchData = CreateMatchData(player1, player2, whitePlayerId, timeControl);
             
-            core.Init(matchData);
-            LoadFirestoreRefreshUI(player1, player2, matchData, core);
+            core.Init(_matchData);
+            LoadFirestoreRefreshUI(player1, player2, _matchData, core);
             Debug.Log("matchCore.Init(matchData);");
         }
     }
@@ -207,7 +217,6 @@ public class MatchBootstrap : NetworkBehaviour
     }
     private void LoadFirestoreRefreshUI(PlayerBootstrapData player1, PlayerBootstrapData player2, MatchData matchData, MatchCore core)
     {
-#if !UNITY_SERVER
         _ = _global.FirestoreManager.GetPlayerData(player1.FirestoreId, result =>
         {
             matchData.Player1.FirebasePlayer = result;
@@ -219,12 +228,10 @@ public class MatchBootstrap : NetworkBehaviour
             matchData.Player2.FirebasePlayer = result;
             core.RefreshPlayerUI(matchData.Player2.PlayerId, matchData.Player2.PlayerId != OwnerClientId);
         });
-#endif
     }
 
     private void TryArrangeFigures(PlayerBootstrapData player1, PlayerBootstrapData player2)
     {
-        if(_gameData.Mode == GameMode.Reconnect) return;
         var board = _gameData.ActiveBoard;
         board.ArrangeFigures(player1, player2);
         var ownerData = FindOwnerData();
@@ -259,7 +266,7 @@ public class MatchBootstrap : NetworkBehaviour
                 IsMoving = player1.PlayerId == whitePlayerId,
                 IsRotate = player1.IsRotate,
                 IsWhite = player1.IsWhite,
-                Arrangement = player1.Arrangement,
+                StartArrangement = player1.Arrangement,
                 TimeToMove = timeControl * 60f
             },
             Player2 = new PlayerData
@@ -269,7 +276,7 @@ public class MatchBootstrap : NetworkBehaviour
                 IsMoving = player2.PlayerId == whitePlayerId,
                 IsRotate = player2.IsRotate,
                 IsWhite = player2.IsWhite,
-                Arrangement = player2.Arrangement,
+                StartArrangement = player2.Arrangement,
                 TimeToMove = timeControl * 60f
             }
         };
@@ -281,121 +288,340 @@ public class MatchBootstrap : NetworkBehaviour
         return new PlayerBootstrapData(playerId, firestoreId, arrangement, whitePlayerId != playerId,
             whitePlayerId == playerId);
     }
+    
 
     private ulong GetWhitePlayerId(ulong playerId, ulong playerId2)
     {
-        Debug.Log("GetWhitePlayerId");
-        Debug.Log("playerId" + playerId);
-        Debug.Log("playerId2" + playerId2);
         var randomValue = Random.value;
-        Debug.Log("randomValue" + randomValue);
         var randomIndex = randomValue < 0.5 ? 1 : 2;
 
         return randomIndex == 1 ? playerId : playerId2;
     }
 
+    
+    private async void OnClientDisconnect(ulong clientId)
+    {
+        Debug.Log($"OnClientDisconnect clientId: {clientId}");
+        Debug.Log($"IsHost: {IsHost}");
+        Debug.Log($"IsServer {IsServer}");
+        Debug.Log($"_advancedMatchmaking is null {_advancedMatchmaking == null}");
+        
+        if (IsHost)
+        {
+            SendReConnectRequest(clientId);
+            DestroyDisconnectedCoreRpc();
+        }
+        else
+        {
+            _advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
+            await _advancedMatchmaking.MigrateHost(GetMyCore().GetMatchData());
+            SendReConnectRequest(clientId);
+        }
+    }
+
     [Rpc(SendTo.Server)]
-    private void GetReConnectDataRpc(ulong connectedPlayerId, string firestoreId, RpcParams rpcParams = default)
+    public void OnHostMigratedRpc(
+        ulong playerId, string firestoreId, ArrangementEntry[] arrangement, float timeControl,
+        ulong playerId2, string firestoreId2, ArrangementEntry[] arrangement2, float timeControl2,
+        ulong whitePlayerId,RpcParams rpcParams = default)
+    {
+
+        var player1 = CreatePlayerBootstrapData(playerId, firestoreId, arrangement,
+            whitePlayerId, 10);
+        var player2 = CreatePlayerBootstrapData(playerId2, firestoreId2, arrangement2,
+            whitePlayerId, 10);
+        
+        _matchData = CreateMatchData(player1, player2, whitePlayerId, 10);
+        _matchData.Player1.TimeToMove = timeControl;
+        _matchData.Player2.TimeToMove = timeControl2;
+        
+        var hostId = OwnerClientId == playerId ? playerId : playerId2;
+        
+        var hostCore = Instantiate(matchCore, transform);
+        hostCore.GetComponent<NetworkObject>().SpawnWithOwnership(hostId);
+
+        hostCore.SetServerCore(hostCore);
+        hostCore.SetServerMatchData(_matchData);
+        hostCore.OnHostMigratedRpc();
+
+        // SendToClientPlayerBootstrapDataRpc(
+        //     _player0.ID,
+        //     _player0.FirestoreId,
+        //     _player0.Arrangement.ArrangementEntry,
+        //     _player1.ID,
+        //     _player1.FirestoreId,
+        //     _player1.Arrangement.ArrangementEntry,
+        //     whitePlayerId,
+        //     10);
+        
+        var hostData = _matchData.GetPlayerData(hostId);
+        var anotherPlayerData = _matchData.GetAnotherPlayerData(hostId);
+        // SetTimeControlRpc(hostData.TimeToMove, anotherPlayerData.TimeToMove);
+        // SetMovingPlayerIdRpc(data.MovingPlayerId);
+    }
+    
+    public void OnMigrateHost(MatchData data)
+    {
+        var history = _gameData.ActiveBoard.GetHistory();
+        Debug.Log("moves Count " + history.Count);
+        
+        var hostId = OwnerClientId == data.Player1.PlayerId ? data.Player1.PlayerId : data.Player2.PlayerId;
+        var hostData = data.GetPlayerData(hostId);
+        var anotherPlayerData = data.GetAnotherPlayerData(hostId);
+        var whitePlayerId = data.Player1.IsWhite ?  data.Player1.PlayerId : data.Player2.PlayerId;
+
+        var player1 = CreatePlayerBootstrapData(data.Player1.PlayerId, data.Player1.FirebasePlayer.ID, data.Player1.StartArrangement,
+            whitePlayerId, 10);
+        var player2 = CreatePlayerBootstrapData(data.Player2.PlayerId, data.Player2.FirebasePlayer.ID, data.Player2.StartArrangement,
+            whitePlayerId, 10);
+        
+        _gameData.ActiveBoard.ArrangeFigures(player1, player2);
+        _matchData = data;
+        
+        var hostCore = Instantiate(matchCore, transform);
+        hostCore.GetComponent<NetworkObject>().SpawnWithOwnership(hostId);
+
+        hostCore.SetServerCore(hostCore);
+        hostCore.SetServerMatchData(data);
+
+        SendToClientPlayerBootstrapDataRpc(
+            _player0.ID,
+            _player0.FirestoreId,
+            _player0.Arrangement.ArrangementEntry,
+            _player1.ID,
+            _player1.FirestoreId,
+            _player1.Arrangement.ArrangementEntry,
+            whitePlayerId,
+            10);
+        
+        GetMoves(out var from, out var to);
+        SendReMovesRpc(from.ToArray(), to.ToArray());
+        SetTimeControlRpc(hostData.TimeToMove, anotherPlayerData.TimeToMove);
+        SetMovingPlayerIdRpc(data.MovingPlayerId);
+    }
+    
+    private void SendReConnectRequest(ulong clientId)
+    {
+        Debug.Log("SendReConnectRequest");
+        var enemyPlayerId = _matchData.GetPlayerData(clientId).FirebasePlayer.ID;
+        _ = _global.FirestoreManager.RealtimeDatabase.ReConnectRequestsManager.SendReConnectRequest(enemyPlayerId, _gameData.RelayJoinCode);
+    }
+
+    [Rpc(SendTo.Server)]
+    private void DestroyDisconnectedCoreRpc()
+    {
+        var matchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
+        var serverCore = matchCores[0].IsServerCore ? matchCores[0] : matchCores[1];
+        serverCore.DestroyDisconnectedCore();
+    }
+    
+    // [Rpc(SendTo.Server)]
+    // private void GetReConnectDataRpc(ulong connectedPlayerId, string firestoreId, RpcParams rpcParams = default)
+    // {
+    //     var board = _gameData.ActiveBoard;
+    //     var matchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
+    //     
+    //     if (matchCores.Length != 2) 
+    //     {
+    //         Debug.Log("matchCores.Length" + matchCores.Length);
+    //         throw new ArgumentOutOfRangeException(nameof(matchCores));
+    //     }
+    //
+    //     var remainingPlayerCore = matchCores[0].IsServerCore ? matchCores[0] : matchCores[1];
+    //     var remainingPlayerId = remainingPlayerCore.OwnerClientId;
+    //     var oldId = (ulong)(remainingPlayerId == 1 ? 2 : 1);
+    //     
+    //     var connectedPlayerCore = Instantiate(matchCore, transform);
+    //     var matchBootstraps = FindObjectsByType<MatchBootstrap>((FindObjectsSortMode)FindObjectsInactive.Exclude);
+    //     var remainingPlayerBootstrap = matchBootstraps[0].OwnerClientId == remainingPlayerId
+    //         ? matchBootstraps[0]
+    //         : matchBootstraps[1];
+    //     var connectedPlayerBootstrap =
+    //         matchBootstraps[0].OwnerClientId == connectedPlayerId ? matchBootstraps[0] : matchBootstraps[1];
+    //
+    //     
+    //     var serverCore = GetServerCore();
+    //     if (serverCore == null) throw new ArgumentOutOfRangeException(nameof(serverCore));
+    //     var remainingPlayerFirestoreId = serverCore.GetFirestoreId(remainingPlayerId); 
+    //     
+    //     foreach (var core in matchCores)
+    //         core.OnClientReConnectRpc(oldId, connectedPlayerId, firestoreId);
+    //     serverCore.OnClientReConnect(oldId, connectedPlayerId);
+    //     
+    //     serverCore.AddCore(connectedPlayerCore);
+    //     connectedPlayerCore.GetComponent<NetworkObject>().SpawnWithOwnership(connectedPlayerId);
+    //     connectedPlayerCore.SetServerCore(serverCore);
+    //     
+    //     serverCore.GetMatchData(connectedPlayerId, remainingPlayerId,out float connectedTimeToMove, out float remainingTimeToMove, out ulong movingPlayerId,
+    //         out ulong whitePlayerId);
+    //     
+    //     board.GetPiecesInBoard(connectedPlayerId, remainingPlayerId, out var connectedPlayerPieces, out var remainingPlayerPieces);
+    //     Debug.Log("connectedPlayerPieces" + connectedPlayerPieces.Length);
+    //     Debug.Log("remainingPlayerPieces" + remainingPlayerPieces.Length);
+    //     Debug.Log("Ecuals" + (connectedPlayerPieces[0] == remainingPlayerPieces[0]));;
+    //     connectedPlayerBootstrap.SendReConnectDataRpc(connectedTimeToMove, remainingTimeToMove, movingPlayerId, whitePlayerId, connectedPlayerPieces, remainingPlayerPieces, remainingPlayerId, remainingPlayerFirestoreId);
+    //
+    //     var player = _matchData.GetPlayerData(connectedPlayerId);
+    //     connectedPlayerBootstrap.SendStartArrangementRpc(connectedPlayerId,player.FirebasePlayer.ID,player.Arrangement);
+    //
+    //     return;
+    //
+    //     MatchCore GetServerCore()
+    //     {
+    //         MatchCore serverCore1 = null;
+    //         foreach (var core in matchCores)
+    //         {
+    //             if (!core.IsServerCore) continue;
+    //             serverCore1 = core;
+    //             break;
+    //         }
+    //
+    //         return serverCore1;
+    //     }
+    // }
+
+    [Rpc(SendTo.Server)]
+    private void GetReConnectDataRpc(ulong connectedPlayerId, string connectedFirestoreId, RpcParams rpcParams = default)
     {
         var board = _gameData.ActiveBoard;
         var matchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
-        
-        if (matchCores.Length != 2) 
-        {
-            Debug.Log("matchCores.Length" + matchCores.Length);
-            throw new ArgumentOutOfRangeException(nameof(matchCores));
-        }
 
-        var remainingPlayerCore = matchCores[0].IsServerCore ? matchCores[1] : matchCores[0];
-        var remainingPlayerId = remainingPlayerCore.OwnerClientId;
-        var oldId = (ulong)(remainingPlayerId == 1 ? 2 : 1);
-        
+        var hostPlayerCore = matchCores[0].IsServerCore ? matchCores[0] : matchCores[1];
+        var hostPlayerId = hostPlayerCore.OwnerClientId;
+        var oldId = (ulong)(hostPlayerId == 1 ? 2 : 1);
         var connectedPlayerCore = Instantiate(matchCore, transform);
         var matchBootstraps = FindObjectsByType<MatchBootstrap>((FindObjectsSortMode)FindObjectsInactive.Exclude);
-        var remainingPlayerBootstrap = matchBootstraps[0].OwnerClientId == remainingPlayerId
-            ? matchBootstraps[0]
-            : matchBootstraps[1];
         var connectedPlayerBootstrap =
             matchBootstraps[0].OwnerClientId == connectedPlayerId ? matchBootstraps[0] : matchBootstraps[1];
-
-        
         var serverCore = GetServerCore();
-        if (serverCore == null) throw new ArgumentOutOfRangeException(nameof(serverCore));
-        var remainingPlayerFirestoreId = serverCore.GetFirestoreId(remainingPlayerId); 
-        
+        var hostPlayerFirestoreId = serverCore.GetFirestoreId(hostPlayerId);
+
+        Debug.Log("vars Complete");
+
+        // 8. Виконання логіки реконекту
         foreach (var core in matchCores)
-            core.OnClientReConnectRpc(oldId, connectedPlayerId, firestoreId);
+            core.OnClientReConnectRpc(oldId, connectedPlayerId, connectedFirestoreId);
+
         serverCore.OnClientReConnect(oldId, connectedPlayerId);
         
-        serverCore.AddCore(connectedPlayerCore);
-        connectedPlayerCore.GetComponent<NetworkObject>().SpawnWithOwnership(connectedPlayerId);
-        connectedPlayerCore.SetServerCore(serverCore);
-        
-        serverCore.GetMatchData(connectedPlayerId, remainingPlayerId,out float connectedTimeToMove, out float remainingTimeToMove, out ulong movingPlayerId,
-            out ulong whitePlayerId);
-        
-        board.GetPiecesInBoard(connectedPlayerId, remainingPlayerId, out var connectedPlayerPieces, out var remainingPlayerPieces);
-        Debug.Log("connectedPlayerPieces" + connectedPlayerPieces.Length);
-        Debug.Log("remainingPlayerPieces" + remainingPlayerPieces.Length);
-        Debug.Log("Ecuals" + (connectedPlayerPieces[0] == remainingPlayerPieces[0]));;
-        connectedPlayerBootstrap.SendReConnectDataRpc(connectedTimeToMove, remainingTimeToMove, movingPlayerId, whitePlayerId, connectedPlayerPieces, remainingPlayerPieces, remainingPlayerId, remainingPlayerFirestoreId);
-        
-        remainingPlayerBootstrap.GetStartArrangementRpc();
+        if (!serverCore.AddCore(connectedPlayerCore))
+        {
+            Debug.LogError("Failed to add core to server");
+            Destroy(connectedPlayerCore);
+            return;
+        }
 
+        var netObj = connectedPlayerCore.GetComponent<NetworkObject>();
+        if (netObj == null)
+        {
+            Debug.LogError("No NetworkObject on core");
+            return;
+        }
+
+        netObj.SpawnWithOwnership(connectedPlayerId);
+        connectedPlayerCore.SetServerCore(serverCore);
+
+        serverCore.GetReconnectData(connectedPlayerId, hostPlayerId,
+            out float connectedTimeToMove,
+            out float hostTimeToMove,
+            out ulong movingPlayerId,
+            out ulong whitePlayerId,
+            out ArrangementEntry[] connectedArrangement,
+            out ArrangementEntry[] hostArrangement);
+
+
+        connectedPlayerBootstrap.SendToClientPlayerBootstrapDataRpc(hostPlayerId, hostPlayerFirestoreId, hostArrangement, connectedPlayerId, connectedFirestoreId, connectedArrangement, whitePlayerId, 10);
+        
+        Debug.Log($"whitePlayerId {whitePlayerId} remainingPlayerId {hostPlayerId}");
+
+        GetMoves(out var from, out var to);
+        connectedPlayerBootstrap.SendReMovesRpc(from.ToArray(), to.ToArray());
+        connectedPlayerBootstrap.SetTimeControlRpc(hostTimeToMove, connectedTimeToMove);
+        connectedPlayerBootstrap.SetMovingPlayerIdRpc(movingPlayerId);
+        
+        Debug.Log("Player1Id" + _matchData.Player1.PlayerId + "Player2Id" + _matchData.Player2.PlayerId );
+        
+        
         return;
 
         MatchCore GetServerCore()
         {
-            MatchCore serverCore1 = null;
             foreach (var core in matchCores)
             {
-                if (!core.IsServerCore) continue;
-                serverCore1 = core;
-                break;
+                if (core.IsServerCore)
+                    return core;
             }
 
-            return serverCore1;
+            return null;
         }
     }
-
-
+    private void GetMoves(out List<Vector2Int> from,out List<Vector2Int> to)
+    {
+        var history = _gameData.ActiveBoard.GetHistory();
+        from = new List<Vector2Int>();
+        to = new List<Vector2Int>();
+        
+        foreach (var move in history)
+        {
+            from.Add(new Vector2Int(move.From.Row,  move.From.Column));
+            to.Add(new Vector2Int(move.To.Row, move.To.Column));
+        }
+    }
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void GetStartArrangementRpc()
+    private void SetMovingPlayerIdRpc(ulong movingPlayerId)
     {
-        if (!IsOwner || !IsLocalPlayer) return;
+        if (!IsLocalPlayer) return;
+        var myCore = GetMyCore();
+        if (myCore == null) new NullReferenceException(nameof(myCore));
+        
+        myCore.SetMovingPlayerId(movingPlayerId);
+    }
 
-        var gameMode = _gameData.Mode;
-        var myArrangements = _global.MyArrangements;
+    [Rpc(SendTo.ClientsAndHost)]
+    private void SetTimeControlRpc(float hostTimeToMove, float myTimeToMove)
+    {
+        if (!IsLocalPlayer) return;
+        var myCore = GetMyCore();
+        if (myCore == null) new NullReferenceException(nameof(myCore));
+        
+        myCore.SetTimeControl(hostTimeToMove, myTimeToMove);
+    }
 
-        var arrangementEntryArray = new ArrangementEntryArray
+    [Rpc(SendTo.ClientsAndHost)]
+    private void SendReMovesRpc(Vector2Int[] from, Vector2Int[] to)
+    {
+        if (!IsLocalPlayer) return;
+        var myCore = GetMyCore();
+        if (myCore == null) new NullReferenceException(nameof(myCore));
+        
+        Debug.Log("SendReMovesRpc");
+
+        var movingPlayerId = myCore.GetMovingPlayerId();
+        for (int i = 0; i < from.Length; i++)
         {
-            ArrangementEntry = new ArrangementEntry[myArrangements.Count]
-        };
+            myCore.UseMove(from[i], to[i],movingPlayerId);
+        }
+        
+        return;
 
-        for (var index = 0; index < myArrangements.ToArray().Length; index++)
+    }
+
+    private MatchCore GetMyCore()
+    {
+        var matchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
+
+        foreach (var core in matchCores)
         {
-            var arrangementEntry = myArrangements.ToArray()[index];
-            arrangementEntryArray.ArrangementEntry[index] = arrangementEntry;
+            if (core.OwnerClientId == OwnerClientId)
+            {
+                return core;
+            }
         }
 
-#if !UNITY_SERVER
+        return null;
+    }
 
-        var id = OwnerClientId;
-        Debug.Log("GetArrangementsRpc: " + NetworkManager.Singleton.GetInstanceID());
-        ReSendStartArrangementRpc(id, _global.FirestoreManager.PlayerData.ID, arrangementEntryArray.ArrangementEntry);
-#endif
-    }
-    
-    [Rpc(SendTo.Server)]
-    public void ReSendStartArrangementRpc(ulong targetPlayerId, string firestoreId, ArrangementEntry[] arrangement,
-        RpcParams rpcParams = default)
-    {
-        var matchBootstraps = FindObjectsByType<MatchBootstrap>((FindObjectsSortMode)FindObjectsInactive.Exclude);
-        var remainingPlayerBootstrap= matchBootstraps[0].OwnerClientId == targetPlayerId ? matchBootstraps[0] : matchBootstraps[1];
-        remainingPlayerBootstrap.SendStartArrangementRpc(targetPlayerId, firestoreId, arrangement);
-    }
-    
     [Rpc(SendTo.ClientsAndHost)]
     public void SendStartArrangementRpc(ulong targetPlayerId, string firestoreId, ArrangementEntry[] arrangement,
         RpcParams rpcParams = default)
@@ -480,6 +706,8 @@ public class MatchBootstrap : NetworkBehaviour
     // }
 
     private ReconnectData _reconnectData;
+    
+
     public class ReconnectData
     {
         public PlayerBootstrapData Player1;

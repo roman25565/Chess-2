@@ -9,6 +9,7 @@ public class GameBoard : AbstractBoard
     private bool _lastMoveIsFantom;
     public override void ArrangeFigures(MatchBootstrap.PlayerBootstrapData player1, MatchBootstrap.PlayerBootstrapData player2, bool needRotate = true)
     {
+        Debug.Log("ArrangeFigures 2:1");
         ArrangeFigures(player1, needRotate);
         ArrangeFigures(player2, needRotate);
     }
@@ -17,7 +18,10 @@ public class GameBoard : AbstractBoard
     protected override void BoardTryMove(Cell from, Cell to)
     {
         if (!MatchCore.CanMove())
+        {
+            Deselect();
             return;
+        }
         MovePiece(from, to);
         _lastMoveIsFantom  = true;
         MatchCore.TryMove(new Vector2Int(from.Row, from.Column),

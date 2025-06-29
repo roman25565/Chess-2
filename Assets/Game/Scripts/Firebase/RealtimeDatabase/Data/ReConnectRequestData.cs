@@ -7,34 +7,24 @@ namespace Firebase.RealtimeDatabase.Data
 {
 public class ReConnectRequestData
 {
-    public const string IpKey = "IPAdress";
-    private const string PortKey = "Port";
+    public const string RelayJoinCodeKey = "RelayJoinCode";
     
     public static readonly string CollectionName = "ReConnects";
     
     public readonly string RecipientId;
     public readonly long Timestamp;
-    public readonly string IP;
-    public readonly ushort Port;
+    public readonly string RelayJoinCode;
 
-    public ReConnectRequestData(string recipientId, string ip,ushort port)
+    public ReConnectRequestData(string recipientId, string relayJoinCode)
     {
+        RelayJoinCode  = relayJoinCode;
         RecipientId = recipientId;
-        IP = ip;
-        Port = port;
         Timestamp = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
     }
     public ReConnectRequestData(DataSnapshot snapshot)
     {
         RecipientId = snapshot.Child(AbstractRequestData.RecipientIdKey)?.Value as string;
-        IP = snapshot.Child(IpKey)?.Value as string;
-            
-        var portObj = snapshot.Child(PortKey)?.Value;
-        if (portObj != null)
-        {
-            ushort.TryParse(portObj.ToString(), out ushort port);
-            Port = port;
-        }
+        RelayJoinCode = snapshot.Child(RelayJoinCodeKey)?.Value as string;
             
         var timestampObj = snapshot.Child(AbstractRequestData.TimestampKey)?.Value;
         if (timestampObj is long)
@@ -48,8 +38,7 @@ public class ReConnectRequestData
         return new Dictionary<string, object>
         {
             [AbstractRequestData.RecipientIdKey] = RecipientId,
-            [IpKey] = IP,
-            [PortKey] = Port,
+            [RelayJoinCodeKey] = RelayJoinCode,
             [AbstractRequestData.TimestampKey] = Timestamp
         };
     }

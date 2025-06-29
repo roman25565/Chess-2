@@ -205,6 +205,7 @@ public class MatchUIManager : MonoBehaviour
 
         void OnAccept()
         {
+            _matchCore.TryOfferDrawRpc();
         }
     }
 
@@ -215,6 +216,7 @@ public class MatchUIManager : MonoBehaviour
 
         void OnAccept()
         {
+            _matchCore.TryCancelMatchRpc();
         }
     }
 
@@ -231,5 +233,27 @@ public class MatchUIManager : MonoBehaviour
 
 
     #endregion
+    
+    #region BackButtonAndroid
+
+    private void Update()
+    {
+        if (Input.GetKeyDown(KeyCode.Escape))
+        {
+            Surrender();
+        }
+    }
+
+    #endregion
 #endif
+    public void OnAnotherPlayerWantsDrawRpc()
+    {
+        confirmation.Show("Cancel current match?", OnAccept);
+        return;
+
+        void OnAccept()
+        {
+            _matchCore.AcceptAnotherPlayerWantsDrawRpc();
+        }
+    }
 }

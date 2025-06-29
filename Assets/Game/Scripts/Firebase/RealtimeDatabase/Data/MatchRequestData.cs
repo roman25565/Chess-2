@@ -8,49 +8,32 @@ namespace Firebase.RealtimeDatabase.Data
 public class MatchRequestData : AbstractRequestData
 
 {
-    private const string IpKey = "IP";
-    private const string PortKey = "Port";
+    public const string RelayJoinCodeKey = "RelayJoinCode";
     
     public static readonly string CollectionName = "MatchRequests";
-    public string Ip { get; private set; }
-    public ushort Port { get; private set; }
+    public string RelayJoinCode;
     public MatchRequestData(DataSnapshot snapshot) : base(snapshot, Type.MatchRequest)
     {
-        Ip = snapshot.Child(IpKey)?.Value as string;
-        
-        var portObj = snapshot.Child(PortKey)?.Value;
-        if (portObj != null)
-        {
-            ushort tempPort;
-            if (ushort.TryParse(portObj.ToString(), out tempPort))
-            {
-                Port = tempPort;
-            }
-        }
+        RelayJoinCode = snapshot.Child(RelayJoinCodeKey)?.Value as string;
     }
 
     public MatchRequestData(string recipientId, string senderName, string senderId) 
         : base(recipientId, senderName, senderId, Type.MatchRequest)
     {
-        Ip = string.Empty;
-        Port = 0;
+        RelayJoinCode = string.Empty;
     }
 
-    public void SetConnectionInfo(string ip, ushort port)
+    public void SetConnectionInfo(string relayJoinCode)
     {
-        Ip = ip;
-        Port = port;
+        RelayJoinCode = relayJoinCode;
     }
 
     public override Dictionary<string, object> ToDictionary()
     {
         var dict = base.ToDictionary();
         
-        if (!string.IsNullOrEmpty(Ip))
-            dict[IpKey] = Ip;
-        
-        if (Port > 0)
-            dict[PortKey] = Port;
+        if (!string.IsNullOrEmpty(RelayJoinCode))
+            dict[RelayJoinCodeKey] = RelayJoinCode;
         
         return dict;
     }

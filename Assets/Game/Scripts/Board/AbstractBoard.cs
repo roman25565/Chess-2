@@ -317,6 +317,7 @@ public abstract class AbstractBoard : MonoBehaviour
     }
     protected virtual bool IsValidMove(Cell from, Cell to)
     {
+        Debug.Log("vir IsValidMove from " + from + "to " + to + "from.Piece " + from.Piece);
         return from.Piece.IsValidMove(from, to);
     }
 

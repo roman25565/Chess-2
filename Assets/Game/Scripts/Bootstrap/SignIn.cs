@@ -65,8 +65,23 @@ public class SignIn : MonoBehaviour
     
     public void OnSignInDebug2()
     {
-        bootstrap.OnSignInDebug("002");
-        UpdateUI(new GoogleSignInUser{UserId = "002", ImageUrl = new Uri("https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no")});
+        var user = new GoogleSignInUser
+        {
+            UserId = "1039908",
+            Email = "testttt@gmail.com", DisplayName = "halddtura0*//",
+        };
+        
+        string defaultImageUrl =
+            "https://lh3.googleusercontent.com/a/ACg8ocL4wCFqm80fhBx6h117v0DUgjklmq84dmQf6ViCtsv01_y3W9zq";
+        if (user.ImageUrl == null)
+        {
+            Debug.LogError("user.ImageUrl is null");
+            user.ImageUrl = new Uri(defaultImageUrl);
+        }
+        
+        bootstrap.OnSignIn(user);
+        UpdateUI(user);
+        
     }
     
     public void OnSignInDebug3()
@@ -123,8 +138,17 @@ public class SignIn : MonoBehaviour
             Debug.LogError("Cancelled");
         else
         {
-            UpdateUI(task.Result);
-            bootstrap.OnSignIn(task.Result);
+            var user = task.Result;
+            string defaultImageUrl =
+                "https://lh3.googleusercontent.com/a/ACg8ocL4wCFqm80fhBx6h117v0DUgjklmq84dmQf6ViCtsv01_y3W9zq";
+            if (user.ImageUrl == null)
+            {
+                Debug.LogError("user.ImageUrl is null");
+                user.ImageUrl = new Uri(defaultImageUrl);
+            }
+            
+            UpdateUI(user);
+            bootstrap.OnSignIn(user);
             PlayerPrefs.SetString(SignTypeKey, SignTypes.Google.ToString());
             Debug.Log("success");
         }

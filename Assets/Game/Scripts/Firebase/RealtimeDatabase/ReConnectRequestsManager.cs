@@ -13,7 +13,7 @@ namespace Firebase.RealtimeDatabase
 {
 public class ReConnectRequestsManager
 {
-    private ClientMatchmaker _clientMatchmaker;
+    private AdvancedMatchmaking _advancedMatchmaking;
     
     private const long WeekInMs = 7 * 24 * 60 * 60 * 1000; // 7 day in ms
         
@@ -21,25 +21,24 @@ public class ReConnectRequestsManager
     private readonly string _currentUserId;
 
 
-    public ReConnectRequestsManager(DatabaseReference database, string currentUserId, ClientMatchmaker clientMatchmaker)
+    public ReConnectRequestsManager(DatabaseReference database, string currentUserId, AdvancedMatchmaking advancedMatchmaking)
     {
         _database = database;
         _currentUserId = currentUserId;
         Debug.Log($"Current user id: {_currentUserId}");
-        _clientMatchmaker = clientMatchmaker;
+        _advancedMatchmaking = advancedMatchmaking;
 
         FetchRequests();
 
         // SendMatchRequest("002", "Alpha");
     }
 
-    public async Task SendReConnectRequest(string recipientId,string ip, ushort port)
+    public async Task SendReConnectRequest(string recipientId,string relayJoinCode)
     {
         try
         {
-            Debug.Log($"SendReConnectRequest: {recipientId}, {ip}, {port}");
-            var requestData = new ReConnectRequestData(recipientId, ip, port).ToDictionary();
-            Debug.Log($"RequestData IP: {requestData[ReConnectRequestData.IpKey]}");
+            Debug.Log($"SendReConnectRequest: {recipientId}, {relayJoinCode}");
+            var requestData = new ReConnectRequestData(recipientId, relayJoinCode).ToDictionary();
 
             var requestRef = _database.Child(ReConnectRequestData.CollectionName)
                 .Push();
@@ -64,7 +63,7 @@ public class ReConnectRequestsManager
                 .OrderByChild(AbstractRequestData.RecipientIdKey)
                 .EqualTo(_currentUserId);
 
-            query.GetValueAsync().ContinueWithOnMainThread(task =>
+            query.GetValueAsync().ContinueWithOnMainThread(async task =>
             {
                 Debug.Log("FetchRequests task");
                 if (task.IsFaulted)
@@ -81,13 +80,14 @@ public class ReConnectRequestsManager
                 foreach (var request in snapshot.Children)
                 {
                     var data = new ReConnectRequestData(request);
-                    Debug.Log("FetchRequests data" + data.Timestamp + " " + data.IP);
+                    Debug.Log("FetchRequests data" + data.Timestamp + " " + data.RelayJoinCode);
                     var currentTime = DateTimeOffset.UtcNow.ToUnixTimeMilliseconds();
                     var timeDifferenceInMinutes = (currentTime - data.Timestamp) / (1000 * 60);
                     Debug.Log("FetchRequests timeDifferenceInMinutes" + timeDifferenceInMinutes);
 
                     if (timeDifferenceInMinutes > 2)
                     {
+                        Debug.Log("DeleteRequest");
                         // Якщо пройшло більше хвилини - видаляємо запис
                         request.Reference.RemoveValueAsync().ContinueWith(removeTask =>
                         {
@@ -99,18 +99,27 @@ public class ReConnectRequestsManager
                     }
                     else
                     {
-                        Debug.Log("data.IP" + data.IP);
                         // Якщо пройшло менше хвилини - виконуємо реконект
-                        _clientMatchmaker.ReConnectToMatch(data.IP, data.Port);
-                        request.Reference.RemoveValueAsync();
+                        Debug.Log("ReConnect");
+                        try
+                        {
+                            await _advancedMatchmaking.ReConnectToMatch(data.RelayJoinCode);
+                            await request.Reference.RemoveValueAsync();
+
+                        }
+                        catch (Exception d)
+                        {
+                            Debug.LogError(d);
+                            Console.WriteLine(d);
+                            throw;
+                        }
                     }
-
                 }
-
             });
         }
         catch (Exception e)
         {
+            Debug.LogError("error: " + e);
             Console.WriteLine(e);
             throw;
         }

@@ -8,7 +8,7 @@ public class GameModeSelector : MonoBehaviour
 {
     [Inject] private GameData _gameData;
     
-    [SerializeField] private ClientMatchmaker clientMatchmaker;
+    [SerializeField] private AdvancedMatchmaking advancedMatchmaking;
     [SerializeField] private MainMenu mainMenu;
     
     [SerializeField] private Button oneMinutesButton;
@@ -46,7 +46,8 @@ public class GameModeSelector : MonoBehaviour
     private void FindMatch()
     {
         _gameData.Mode = GameMode.Online;
-        clientMatchmaker.SearchMatch(_gameData);
+        mainMenu.EnableFindMatchPanel();
+        advancedMatchmaking.SearchMatch(_gameData);
     }
     
     

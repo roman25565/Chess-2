@@ -17,7 +17,7 @@ namespace Firebase.RealtimeDatabase
         public MatchRequestsManager MatchRequestsManager;
         public ReConnectRequestsManager ReConnectRequestsManager;
         
-        private ClientMatchmaker _clientMatchmaker;
+        private AdvancedMatchmaking _advancedMatchmaking;
         
         private const long WeekInMs = 7 * 24 * 60 * 60 * 1000; // 7 day in ms
 
@@ -54,11 +54,11 @@ namespace Firebase.RealtimeDatabase
         }
         
 
-        public RealtimeDatabase(string userId, UnityAction<string> addFriend, ClientMatchmaker clientMatchmaker)
+        public RealtimeDatabase(string userId, UnityAction<string> addFriend, AdvancedMatchmaking advancedMatchmaking)
         {
             _currentUserId = userId;
             _database = FirebaseDatabase.DefaultInstance.RootReference;
-            _clientMatchmaker = clientMatchmaker;
+            _advancedMatchmaking = advancedMatchmaking;
             Init(addFriend);
         }
 
@@ -67,8 +67,8 @@ namespace Firebase.RealtimeDatabase
             DeleteLegacyRequests();
             
             FriendRequestsManager = new FriendRequestsManager(_database, _currentUserId, OnChangedRequests, addFriend);
-            MatchRequestsManager = new MatchRequestsManager(_database, _currentUserId, OnChangedRequests, _clientMatchmaker);
-            ReConnectRequestsManager = new ReConnectRequestsManager(_database, _currentUserId, _clientMatchmaker);
+            MatchRequestsManager = new MatchRequestsManager(_database, _currentUserId, OnChangedRequests, _advancedMatchmaking);
+            ReConnectRequestsManager = new ReConnectRequestsManager(_database, _currentUserId, _advancedMatchmaking);
         }
 
 

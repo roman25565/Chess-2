@@ -28,19 +28,18 @@ public class Bootstrap : MonoBehaviour
     {
         if (!Application.isPlaying)
         {
-            clientMatchmaker = GetComponent<ClientMatchmaker>();
             signIn = GetComponent<SignIn>();
             mainMenu = GetComponent<MainMenu>();
             adsManager = GetComponent<ADSManager>();
 
-            if (clientMatchmaker == null || signIn == null || mainMenu == null || adsManager == null)
+            if (advancedMatchmaking == null || signIn == null || mainMenu == null || adsManager == null)
             {
                 Debug.LogWarning("Деякі компоненти відсутні на цьому GameObject", this);
             }
         }
     }
 #endif
-    [SerializeReference] private ClientMatchmaker clientMatchmaker;
+    [SerializeReference] private AdvancedMatchmaking advancedMatchmaking;
     [SerializeReference] private SignIn signIn;
     [SerializeReference] private MainMenu mainMenu;
     [SerializeReference] private ADSManager adsManager;
@@ -76,7 +75,6 @@ public class Bootstrap : MonoBehaviour
 #if !UNITY_SERVER
             mainMenu.InitUIComponents();
             signIn.Init();
-            clientMatchmaker.Init();
             adsManager.Init();
             
             startOnlineMatch.onClick.AddListener(() =>
@@ -128,7 +126,7 @@ public class Bootstrap : MonoBehaviour
             Debug.LogError("CellStates not found");
         
 #if !UNITY_SERVER
-        var firestore = new FirestoreManager(clientMatchmaker);
+        var firestore = new FirestoreManager(advancedMatchmaking);
         if (isClient)
         {
             await firestore.Init();
@@ -137,7 +135,7 @@ public class Bootstrap : MonoBehaviour
         _global.Init(arrangement, piecesData, cellStates, firestore);
 #else
         _global.Init(arrangement, piecesData, cellStates);
-        #endif
+#endif
     }
 
     public void OnSignIn(GoogleSignInUser user)
@@ -152,6 +150,7 @@ public class Bootstrap : MonoBehaviour
 
     private void SignInFireBase(GoogleSignInUser user)
     {
+        Debug.Log("SignInFireBase " + user);
 #if !UNITY_SERVER
         if (user == null)
         {
@@ -165,6 +164,7 @@ public class Bootstrap : MonoBehaviour
 
         void CallBack(FirebasePlayerData result)
         {
+            Debug.Log("CallBack: " + result);
             _global.IsSignIn = true;
             if (result == null)//TODO WTF
             {
@@ -172,12 +172,7 @@ public class Bootstrap : MonoBehaviour
             }
             else
             {
-                _global.FirestoreManager.SetPlayerData(result);
-                var historyIDs = result.HistoryMatchIDs;
-                _global.FirestoreManager.GetAllHistory(historyIDs, list =>
-                {
-                    _global.FirestoreManager.PlayerData.SetHistoryMatches(list);
-                });
+                _global.FirestoreManager.Login(result);
             }
         }
 #endif

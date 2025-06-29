@@ -1,9 +1,6 @@
 #if !UNITY_SERVER
 
-using System.Collections;
-using UI.Test;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 namespace UI
@@ -24,8 +21,8 @@ namespace UI
         [SerializeField] private GameObject gameModeSelectorPanel;
         
         [SerializeField] private NotificationPanel notificationPanel;
-        [SerializeField] private TestInvite testInvite;
         [SerializeField] private GameModeSelector gameModeSelector;
+        [SerializeField] private HistoryPanel historyPanelUI;
         
         
         public void Init()
@@ -39,8 +36,8 @@ namespace UI
         {
 #if !UNITY_SERVER
             notificationPanel.Init();
-            testInvite.Init();
             gameModeSelector.Init();
+            historyPanelUI.Init();
 #endif
         }
 
@@ -58,6 +55,18 @@ namespace UI
             
             if (defaultUI != null) defaultUI.SetActive(true);
         }
+
+        #region BackButtonAndroid
+
+        private void Update()
+        {
+            if (Input.GetKeyDown(KeyCode.Escape))
+            {
+                ShowMainMenuPanel();
+            }
+        }
+
+        #endregion
 
         public void ShowHistoryPanel()
         {

@@ -35,7 +35,7 @@ namespace Board
                     MovingPlayerId = 1,
                     Player1 = new PlayerData
                     {
-                        Arrangement = null,
+                        StartArrangement = null,
                         FirebasePlayer = null,
                         IsRotate = historyMatchData.Player1Id != _global.FirestoreManager.PlayerData.ID,
                         PlayerId = 1,
@@ -45,7 +45,7 @@ namespace Board
                     },
                     Player2 = new PlayerData
                     {
-                        Arrangement = null,
+                        StartArrangement = null,
                         FirebasePlayer = null,
                         IsRotate = historyMatchData.Player2Id != _global.FirestoreManager.PlayerData.ID,
                         PlayerId = 2,
@@ -87,8 +87,47 @@ namespace Board
             }
             else
             {
+                _matchData = new MatchData
+                {
+                    MovingPlayerId = 1,
+                    Player1 = new PlayerData
+                    {
+                        StartArrangement = _global.MyArrangements.ToArray(),
+                        FirebasePlayer = null,
+                        IsRotate = false,
+                        PlayerId = 1,
+                        TimeToMove = -1,
+                        IsMoving = true,
+                        IsWhite = true,
+                    },
+                    Player2 = new PlayerData
+                    {
+                        StartArrangement = _global.MyArrangements.ToArray(),
+                        FirebasePlayer = null,
+                        IsRotate = true,
+                        PlayerId = 2,
+                        TimeToMove = -1,
+                        IsMoving = false,
+                        IsWhite = false,
+                    },
+
+                };
+                ArrangeFigures(new MatchBootstrap.PlayerBootstrapData(
+                    _matchData.Player1.PlayerId,
+                    null,
+                    _matchData.Player1.StartArrangement,
+                    _matchData.Player1.IsRotate,
+                    _matchData.Player1.IsWhite));
+                ArrangeFigures(new MatchBootstrap.PlayerBootstrapData(
+                    _matchData.Player2.PlayerId,
+                    null,
+                    _matchData.Player2.StartArrangement,
+                    _matchData.Player2.IsRotate,
+                    _matchData.Player2.IsWhite));
                 
+                _selectedHistory = MoveHistory;
             }
+
             return;
             
             void SetPlayerUI(FirebasePlayerData playerData, bool isEnemyPlayer)

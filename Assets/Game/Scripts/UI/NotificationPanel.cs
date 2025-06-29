@@ -22,7 +22,7 @@ public class NotificationPanel : MonoBehaviour
 
     public void Init()
     {
-        _global.FirestoreManager.OnLogin.AddListener(() => { Subscribe(); });
+        _global.FirestoreManager.OnLogin.AddListener(Subscribe);
     }
 
     private void Subscribe()

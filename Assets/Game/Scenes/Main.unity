@@ -2341,14 +2341,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 2ad2ffea048647819b507f017c4a69e0, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  create: {fileID: 0}
-  connect: {fileID: 0}
-  id: 
-  playerId: 
-  ip: 
-  port: 0
-  mainMenu: {fileID: 0}
-  clientMatchmaker: {fileID: 0}
 --- !u!1001 &275574074
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -2580,10 +2572,10 @@ GameObject:
   - component: {fileID: 291858239}
   - component: {fileID: 291858240}
   - component: {fileID: 291858247}
-  - component: {fileID: 291858243}
   - component: {fileID: 291858245}
   - component: {fileID: 291858246}
   - component: {fileID: 291858248}
+  - component: {fileID: 291858243}
   m_Layer: 0
   m_Name: Global
   m_TagString: Untagged
@@ -2618,7 +2610,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a37d7f174ab44645a989fdbbf6643f15, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clientMatchmaker: {fileID: 291858243}
+  advancedMatchmaking: {fileID: 1216486095}
   signIn: {fileID: 291858245}
   mainMenu: {fileID: 291858246}
   adsManager: {fileID: 291858247}
@@ -2634,14 +2626,11 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 291858237}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: f5a8b27d53e14dacbc0f5198af077e71, type: 3}
+  m_Script: {fileID: 11500000, guid: b74b234ce1414feb95b863838da7d5a1, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  statusText: {fileID: 1459947851}
-  cancelSearchMatchButton: {fileID: 1036428337}
-  mainMenu: {fileID: 291858246}
 --- !u!114 &291858245
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2680,8 +2669,8 @@ MonoBehaviour:
   profilePanel: {fileID: 1749870065}
   gameModeSelectorPanel: {fileID: 1007242966}
   notificationPanel: {fileID: 1752150193}
-  testInvite: {fileID: 275533198}
   gameModeSelector: {fileID: 291858248}
+  historyPanelUI: {fileID: 994189520}
 --- !u!114 &291858247
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -2706,7 +2695,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 9df6e093b83c48b0bcd9f787d9eba9d4, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  clientMatchmaker: {fileID: 291858243}
+  advancedMatchmaking: {fileID: 1216486095}
   mainMenu: {fileID: 291858246}
   oneMinutesButton: {fileID: 824550554}
   fiveMinutesButton: {fileID: 1457296059}
@@ -4450,7 +4439,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0.5, y: 0}
   m_AnchorMax: {x: 0.5, y: 0}
-  m_AnchoredPosition: {x: 50.63, y: 129.47}
+  m_AnchoredPosition: {x: 50.63, y: 129.47021}
   m_SizeDelta: {x: 331.5676, y: 120.8303}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &563604197
@@ -6511,7 +6500,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 101.599976, y: -16.456787}
+  m_AnchoredPosition: {x: 101.59985, y: -16.456543}
   m_SizeDelta: {x: 200, y: 50}
   m_Pivot: {x: 0, y: 1}
 --- !u!1 &737616350
@@ -7443,7 +7432,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 869.4003, y: -114.925}
+  m_AnchoredPosition: {x: 1026.8217, y: -114.925}
   m_SizeDelta: {x: 232.8538, y: 229.85}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!1 &824550550
@@ -11946,6 +11935,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 1216486094}
+  - component: {fileID: 1216486095}
   - component: {fileID: 1216486093}
   - component: {fileID: 1216486092}
   m_Layer: 0
@@ -12042,6 +12032,20 @@ Transform:
   m_Children: []
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &1216486095
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1216486091}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 1f6dac6f76a24c60878a1e6c8c1e5f77, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  transport: {fileID: 1216486092}
+  searchTimeText: {fileID: 1459947851}
 --- !u!1 &1229235971
 GameObject:
   m_ObjectHideFlags: 0
@@ -13651,7 +13655,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 1}
   m_AnchorMax: {x: 0, y: 1}
-  m_AnchoredPosition: {x: 542.91364, y: -114.925}
+  m_AnchoredPosition: {x: 621.62427, y: -114.925}
   m_SizeDelta: {x: 232.8538, y: 229.85}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1457296057
@@ -15729,7 +15733,7 @@ RectTransform:
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
   m_AnchorMin: {x: 0, y: 0}
   m_AnchorMax: {x: 1, y: 1}
-  m_AnchoredPosition: {x: 0, y: -112.38456}
+  m_AnchoredPosition: {x: 0, y: -112.384766}
   m_SizeDelta: {x: 0, y: -224.7692}
   m_Pivot: {x: 0.5, y: 0.5}
 --- !u!114 &1752150193
