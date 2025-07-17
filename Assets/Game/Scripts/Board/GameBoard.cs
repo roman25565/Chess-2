@@ -76,9 +76,9 @@ public class GameBoard : AbstractBoard
         remainingPlayerPieces = remainingPlayerPiecesList.ToArray();
     }
 
-    public override void UpdateClientId(ulong oldId, ulong clientId)
+    public override void UpdatePiecesId(ulong oldId, ulong clientId)
     {
-        var pieces = GetAllPiecesInBoardInCell();
+        var pieces = GetAllPiecesInCells();
         foreach (var cell in pieces)
         {
             if (cell.Piece.OwnerId == oldId)
@@ -88,7 +88,7 @@ public class GameBoard : AbstractBoard
         }
     }
 
-    private List<Cell> GetAllPiecesInBoardInCell()
+    private List<Cell> GetAllPiecesInCells()
     {
         var result = new List<Cell>();
 

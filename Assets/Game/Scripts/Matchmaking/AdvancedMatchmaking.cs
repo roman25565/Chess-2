@@ -295,9 +295,11 @@ public class AdvancedMatchmaking : MonoBehaviour
         return _matchData;
     }
     
-    public async Task MigrateHost(MatchData matchData)
+    public async Task MigrateHost(MatchData matchData, ulong oldId)
     {
         _matchData = matchData;
+     
+        Debug.Log($"MovingPlayerId {matchData.MovingPlayerId}");
         var player1 = matchData.Player1;
         var player2 = matchData.Player2;
         var whitePlayerId = player1.IsWhite ?  player1.PlayerId : player2.PlayerId;
@@ -307,7 +309,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         matchBootstrap.OnHostMigratedRpc(
             player1.PlayerId,player1.FirebasePlayer.ID, player1.StartArrangement, player1.TimeToMove,
             player2.PlayerId,player2.FirebasePlayer.ID, player2.StartArrangement, player2.TimeToMove,
-            whitePlayerId);
+            whitePlayerId, oldId, 0);
     }
 
     public async Task ReConnectToMatch(string relayJoinCode)

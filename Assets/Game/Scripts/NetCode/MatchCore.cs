@@ -131,12 +131,6 @@ public class MatchCore : NetworkBehaviour
         _enemyId = _myId == matchData.Player2.PlayerId ? matchData.Player1.PlayerId : matchData.Player2.PlayerId;
         Debug.Log("_myId" + _myId + "_enemyId" + _enemyId);
         _isInitialize = true;
-
-        if (OwnerClientId == 0)
-        {
-            _myId = matchData.Player1.PlayerId;
-            _enemyId = matchData.Player2.PlayerId;
-        }
 #if !UNITY_SERVER
         MatchUIManager.Instance.Init(_matchData.GetPlayerData(_enemyId), _matchData.GetPlayerData(_myId), this);
 
@@ -163,7 +157,19 @@ public class MatchCore : NetworkBehaviour
 
     public void TryMove(Vector2Int from, Vector2Int to)
     {
+        if (!IsSpawned) // Додайте перевірку
+        {
+            Debug.LogError("NetworkObject not spawned yet!");
+            return;
+        }
+
         TryMoveRpc(from, to);
+    }
+
+    public override void OnNetworkSpawn()
+    {
+        base.OnNetworkSpawn();
+        Debug.Log($"MatchCore spawned - IsServer: {IsServer}, IsClient: {IsClient}");
     }
 
     [Rpc(SendTo.ClientsAndHost)]
@@ -237,7 +243,7 @@ public class MatchCore : NetworkBehaviour
             _matchData.Player1.FirebasePlayer.Elo, scope1);
         player2Elo = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo,
             _matchData.Player2.FirebasePlayer.Elo, scope2);
-        
+
         Debug.Log($"new Elo P1 {player1Elo} P2 {player2Elo}");
     }
 #endif
@@ -303,6 +309,15 @@ public class MatchCore : NetworkBehaviour
         _matchData = matchData;
     }
 
+    public void UpdateServerData()
+    {
+       // GetMigratedMatchData();
+       var advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
+
+       _matchData = advancedMatchmaking.GetMigretedMatchData();
+       Debug.Log($"UpdateServerData Pl1 {_matchData.Player1.PlayerId}, Pl2 {_matchData.Player2.PlayerId} _matchData Null {_matchData == null}");
+    }
+
     public void SetServerCore(MatchCore serverCore)
     {
         _serverCore = serverCore;
@@ -329,7 +344,8 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void TryMoveRpc(Vector2Int from, Vector2Int to, RpcParams rpcParams = default)
     {
-        Debug.Log($"_serverCore is null { _serverCore == null}");
+        Debug.Log("TryMoveRpc");
+        Debug.Log($"_serverCore is null {_serverCore == null}");
         _serverCore.TryMoveServer(from, to, rpcParams);
     }
 
@@ -424,7 +440,7 @@ public class MatchCore : NetworkBehaviour
 
     private void SendToPlayersMove(Vector2Int from, Vector2Int to, ulong playerId)
     {
-        Debug.Log($"_allMatchCores count { _allMatchCores.Count}, {_allMatchCores[0].IsServerCore}");
+        Debug.Log($"_allMatchCores count {_allMatchCores.Count}, {_allMatchCores[0].IsServerCore}");
         foreach (var allMatchCore in _allMatchCores) allMatchCore.UseMoveCommandRpc(from, to, playerId);
     }
 
@@ -450,37 +466,50 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     public void OnClientReConnectRpc(ulong oldId, ulong clientId, string firestoreId)
     {
-        OnClientReConnect(oldId, clientId);
+        ChangeDataIP(oldId, clientId);
     }
 
-    public void OnClientReConnect(ulong oldId, ulong clientId)
+    public void ChangeDataIP(ulong oldId, ulong newClientId)
     {
         if (_gameEnded || !IsOwner) return;
+        Debug.Log($"MovingPlayerId {_matchData.MovingPlayerId}, OldId {oldId}, NewId {newClientId}");
+        if (oldId == newClientId && newClientId == 1)
+            oldId = 2;
 
-        ChangePlayerDataIP(oldId, clientId);
-        ChangeAllPieceIP(oldId, clientId);
+        if (oldId != _matchData.Player1.PlayerId && oldId != _matchData.Player2.PlayerId)
+        {
+            Debug.LogError($"PlayerID Not Found, IsServer{IsServer}, IsServerCore {IsServerCore}, IsHost{IsHost}, IsClient{IsClient} Pl1 {_matchData.Player1.PlayerId},  Pl2 {_matchData.Player2.PlayerId} OldId {oldId}, NewId {newClientId}, OwnerId {OwnerClientId}");
+            return;
+        }
+
+        ChangePlayerDataIP(oldId, newClientId);
+        ChangeAllPieceIP(oldId, newClientId);
 
         return;
 
-        void ChangePlayerDataIP(ulong oldId, ulong clientId)
+        void ChangePlayerDataIP(ulong oldId, ulong newId)
         {
             if (_matchData.MovingPlayerId == oldId)
-                _matchData.MovingPlayerId = clientId;
+                _matchData.MovingPlayerId = newId;
+            Debug.Log($"MovingPlayerId {_matchData.MovingPlayerId}");
             var oldPlayer = _matchData.Player1.PlayerId == oldId ? _matchData.Player1 : _matchData.Player2;
-            oldPlayer.PlayerId = clientId;
+            oldPlayer.PlayerId = newId;
         }
 
-        void ChangeAllPieceIP(ulong oldId, ulong clientId)
+        void ChangeAllPieceIP(ulong oldId, ulong newId)
         {
-            _gameData.ActiveBoard.UpdateClientId(oldId, clientId);
+            _gameData.ActiveBoard.UpdatePiecesId(oldId, newId);
         }
     }
+
 
     public void GetReconnectData(ulong connectedPlayerId, ulong remainingPlayerId, out float connectedTimeToMove,
         out float remainingTimeToMove, out ulong movingPlayerId, out ulong whitePlayerId,
         out ArrangementEntry[] connectedArrangement,
         out ArrangementEntry[] hostArrangement)
     {
+        Debug.Log($"_matchData is null {_matchData == null}, connectedPlayerId  {connectedPlayerId}, remainingPlayerId {remainingPlayerId}");
+        Debug.Log($"Pl1 {_matchData.Player1.PlayerId}, Pl2 {_matchData.Player2.PlayerId}");
         var connectedPlayer = _matchData.GetPlayerData(connectedPlayerId);
         var hostPlayer = _matchData.GetPlayerData(remainingPlayerId);
         connectedTimeToMove = connectedPlayer.TimeToMove;
@@ -549,10 +578,12 @@ public class MatchCore : NetworkBehaviour
     {
         throw new NotImplementedException();
     }
+
     public void AcceptAnotherPlayerWantsDrawRpc()
     {
         throw new NotImplementedException();
     }
+
     #endregion
 
     public ulong GetMovingPlayerId()
@@ -562,9 +593,10 @@ public class MatchCore : NetworkBehaviour
 
     public void DestroyDisconnectedCore()
     {
-        Debug.Log($"core id 1 {_allMatchCores[0].OwnerClientId}, 2 {_allMatchCores[1].OwnerClientId} , {_allMatchCores[0].IsServerCore}, {_allMatchCores[1].IsServerCore}");
-        var disconnectedCore = _allMatchCores[0].IsServerCore ?  _allMatchCores[1] : _allMatchCores[0];
-        
+        Debug.Log(
+            $"core id 1 {_allMatchCores[0].OwnerClientId}, 2 {_allMatchCores[1].OwnerClientId} , {_allMatchCores[0].IsServerCore}, {_allMatchCores[1].IsServerCore}");
+        var disconnectedCore = _allMatchCores[0].IsServerCore ? _allMatchCores[1] : _allMatchCores[0];
+
         _allMatchCores.Remove(disconnectedCore);
         NetworkObject networkObject = disconnectedCore.GetComponent<NetworkObject>();
         networkObject.Despawn();
@@ -576,7 +608,7 @@ public class MatchCore : NetworkBehaviour
 
         _matchData.Player1.IsMoving = false;
         _matchData.Player2.IsMoving = false;
-        
+
         _matchData.GetPlayerData(movingPlayerId).IsMoving = true;
     }
 
@@ -585,32 +617,29 @@ public class MatchCore : NetworkBehaviour
         Debug.Log($"SetTimeControl host {hostTimeToMove}, my {myTimeToMove}");
         _matchData.GetAnotherPlayerData(_myId).TimeToMove = hostTimeToMove;
         _matchData.GetPlayerData(_myId).TimeToMove = myTimeToMove;
-        
+
         MatchUIManager.Instance.SetTime(hostTimeToMove, true);
         MatchUIManager.Instance.SetTime(myTimeToMove, true);
-        
-    }
-    
-    [Rpc(SendTo.ClientsAndHost)]
-    public void OnHostMigratedRpc()
-    {
-        if (!IsLocalPlayer) return;
 
-        _serverCore = this;
-        SetServerCoreRpc();
-        _allMatchCores = new List<MatchCore>();
-        _allMatchCores.Add(this);
-    
+    }
+
+    [Rpc(SendTo.ClientsAndHost)]
+    public void OnHostMigratedRpc(ulong oldId, ulong newId)
+    {
+        var matchData = GetMigratedMatchData();
+        Init(matchData);
+        Debug.Log($"MovingPlayerId {matchData.MovingPlayerId}, OldId {oldId}, NewId {newId}");
+    }
+
+    public MatchData GetMigratedMatchData()
+    {
         var advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
 
-        _matchData = advancedMatchmaking.GetMigretedMatchData();
-        _gameData.ActiveBoard.SetMatchCore(this);
-        Debug.Log("Core OnHostMigratedRpc");
-    }
-
-    [Rpc(SendTo.Server)]
-    private void SetServerCoreRpc()
-    {
-        _serverCore = this;
+        var matchData = advancedMatchmaking.GetMigretedMatchData();
+        Debug.Log($"Core OnHostMigratedRpc Pl1 {matchData.Player1.PlayerId}, Pl2 {matchData.Player2.PlayerId}");
+        _matchData = matchData;
+        ChangeDataIP(0, 2);
+        ChangeDataIP(1, 0);
+        return matchData;
     }
 }

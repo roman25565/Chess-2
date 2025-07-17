@@ -368,7 +368,7 @@ public abstract class AbstractBoard : MonoBehaviour
         throw new NotImplementedException();
     }
 
-    public virtual void UpdateClientId(ulong oldId, ulong clientId)
+    public virtual void UpdatePiecesId(ulong oldId, ulong clientId)
     {
         throw new NotImplementedException();
     }
