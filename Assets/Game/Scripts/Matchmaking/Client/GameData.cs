@@ -19,5 +19,5 @@ public class GameData
         ActiveBoard = activeBoard;
     }
     
-    public int TimeControl = 10; 
+    public float TimeControl = 10; 
 }

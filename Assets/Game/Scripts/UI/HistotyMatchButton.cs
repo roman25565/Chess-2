@@ -34,7 +34,7 @@ public class HistotyMatchButton : MonoBehaviour
     {
         try
         {
-            var iFirstPlayer = historyMatchData.Player1Id == _global.FirestoreManager.PlayerData.ID;
+            var iFirstPlayer = historyMatchData.FirestorePlayer1Id == _global.FirestoreManager.PlayerData.ID;
             SetPlayers(historyMatchData);
             SetScope(historyMatchData, iFirstPlayer);
         }
@@ -59,7 +59,7 @@ public class HistotyMatchButton : MonoBehaviour
             Draw();
         }
 
-        bool winFirstPlayer = historyMatchData.WinnerID == historyMatchData.Player1Id;
+        bool winFirstPlayer = historyMatchData.WinnerID == historyMatchData.FirestorePlayer1Id;
 
         if (winFirstPlayer == iFirstPlayer) Win();
         else Lose();

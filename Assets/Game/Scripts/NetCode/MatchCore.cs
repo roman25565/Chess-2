@@ -125,17 +125,15 @@ public class MatchCore : NetworkBehaviour
     public void Init(MatchData matchData)
     {
         _matchData = matchData;
-        Debug.Log(_matchData);
         _gameData.ActiveBoard.SetMatchCore(this);
         _myId = OwnerClientId;
         _enemyId = _myId == matchData.Player2.PlayerId ? matchData.Player1.PlayerId : matchData.Player2.PlayerId;
-        Debug.Log("_myId" + _myId + "_enemyId" + _enemyId);
+        Debug.Log("_myId" + _myId + "_enemyId" + _enemyId + "1" + matchData.Player1.PlayerId + "2" + matchData.Player2.PlayerId);
         _isInitialize = true;
 #if !UNITY_SERVER
         MatchUIManager.Instance.Init(_matchData.GetPlayerData(_enemyId), _matchData.GetPlayerData(_myId), this);
 
 #endif
-        Debug.Log("MatchCore.Inited");
     }
 
     public bool CanMove()
@@ -472,6 +470,8 @@ public class MatchCore : NetworkBehaviour
     public void ChangeDataIP(ulong oldId, ulong newClientId)
     {
         if (_gameEnded || !IsOwner) return;
+        if(oldId == newClientId) return;
+        if (oldId == 1) return;
         Debug.Log($"MovingPlayerId {_matchData.MovingPlayerId}, OldId {oldId}, NewId {newClientId}");
         if (oldId == newClientId && newClientId == 1)
             oldId = 2;
@@ -510,7 +510,8 @@ public class MatchCore : NetworkBehaviour
     {
         Debug.Log($"_matchData is null {_matchData == null}, connectedPlayerId  {connectedPlayerId}, remainingPlayerId {remainingPlayerId}");
         Debug.Log($"Pl1 {_matchData.Player1.PlayerId}, Pl2 {_matchData.Player2.PlayerId}");
-        var connectedPlayer = _matchData.GetPlayerData(connectedPlayerId);
+        
+        var connectedPlayer = _matchData.GetPlayerData(1);
         var hostPlayer = _matchData.GetPlayerData(remainingPlayerId);
         connectedTimeToMove = connectedPlayer.TimeToMove;
         remainingTimeToMove = hostPlayer.TimeToMove;
@@ -619,7 +620,7 @@ public class MatchCore : NetworkBehaviour
         _matchData.GetPlayerData(_myId).TimeToMove = myTimeToMove;
 
         MatchUIManager.Instance.SetTime(hostTimeToMove, true);
-        MatchUIManager.Instance.SetTime(myTimeToMove, true);
+        MatchUIManager.Instance.SetTime(myTimeToMove, false);
 
     }
 
@@ -640,6 +641,9 @@ public class MatchCore : NetworkBehaviour
         _matchData = matchData;
         ChangeDataIP(0, 2);
         ChangeDataIP(1, 0);
+        ChangeDataIP(2, 1);
+        Debug.Log("Server _myId" + _myId + "_enemyId" + _enemyId + "1" + matchData.Player1.PlayerId + "2" + matchData.Player2.PlayerId);
+        
         return matchData;
     }
 }

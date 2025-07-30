@@ -1,12 +1,16 @@
 #if !UNITY_SERVER
 
+using Setting;
+using TMPro;
 using UnityEngine;
 using UnityEngine.UI;
+using Zenject;
 
 namespace UI
 {
     public class MainMenu : MonoBehaviour
     {
+        [Inject] private Global _global;
         [SerializeField] private GameObject historyPanel;
         [SerializeField] private GameObject settingsPanel;
         [SerializeField] private GameObject arrangementPanel;
@@ -17,6 +21,7 @@ namespace UI
         [SerializeField] private GameObject defaultUI;
         [SerializeField] private GameObject findMatchPanel;
         [SerializeField] private Image profileImage;
+        [SerializeField] private TextMeshProUGUI profileImageText;
         [SerializeField] private GameObject profilePanel;
         [SerializeField] private GameObject gameModeSelectorPanel;
         
@@ -25,11 +30,14 @@ namespace UI
         [SerializeField] private HistoryPanel historyPanelUI;
         
         
-        public void Init()
+        public void Init(bool isSignIn = false)
         {
             DisableAllPanels();
             DisableFindMatchPanel();
             ShowSignInPanel();
+
+            if (isSignIn) SetProfileImageText(_global.FirestoreManager.PlayerData);
+            _global.FirestoreManager.OnLogin.AddListener(() => SetProfileImageText(_global.FirestoreManager.PlayerData));
         }
 
         public void InitUIComponents()
@@ -134,9 +142,20 @@ namespace UI
 
         public void SetProfileImage(Sprite image)
         {
+            if (image == null)
+            {
+                profileImage.sprite = null;
+                profileImage.color = new Color(255, 255, 255, 0);
+                return;
+            }
             Debug.Log("Set profile image");
             profileImage.sprite = image;
             profileImage.color = new Color(255, 255, 255, 255);
+        }
+
+        public void SetProfileImageText(FirebasePlayerData playerData)
+        {
+            profileImageText.text = $"{playerData.Name}\n({playerData.Elo})";;
         }
 
         private bool _notificationOpen;

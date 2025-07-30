@@ -52,15 +52,16 @@ public class Bootstrap : MonoBehaviour
     
     private async void Awake()
     {
-        Application.targetFrameRate = 60;
+        Application.targetFrameRate = 120;
 #if !UNITY_SERVER
         if (_global.IsSignIn)
         {
-            signIn.Init();
+            mainMenu.Init(true);
+            mainMenu.InitUIComponents();
+            signIn.Init(true);
             adsManager.TryStartAds();
             return;
         }
-        mainMenu.Init();
 #endif
         var isServer = Environment.GetCommandLineArgs().Any(arg => arg == "-port");
         // isServer = true;//TO Test
@@ -75,6 +76,7 @@ public class Bootstrap : MonoBehaviour
 #if !UNITY_SERVER
             mainMenu.InitUIComponents();
             signIn.Init();
+         mainMenu.Init();
             adsManager.Init();
             
             startOnlineMatch.onClick.AddListener(() =>
@@ -165,13 +167,13 @@ public class Bootstrap : MonoBehaviour
         void CallBack(FirebasePlayerData result)
         {
             Debug.Log("CallBack: " + result);
-            _global.IsSignIn = true;
             if (result == null)//TODO WTF
             {
                 _global.FirestoreManager.SingUp(user);
             }
             else
             {
+                _global.IsSignIn = true;
                 _global.FirestoreManager.Login(result);
             }
         }

@@ -61,12 +61,11 @@ public class NotificationPanel : MonoBehaviour
             count = _global.FirestoreManager.RealtimeDatabase.GetRequests.Count;
         if (count == 0)
         {
-            notificationCountPanel.SetActive(false);
+            // notificationCountPanel.SetActive(false);
         }
         else
         {
-            notificationCountPanel.SetActive(true);
-            notificationCountText.text = count.ToString();
+            // notificationCountPanel.SetActive(true);
         }
     }
 

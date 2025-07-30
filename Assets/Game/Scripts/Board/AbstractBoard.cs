@@ -19,8 +19,7 @@ public abstract class AbstractBoard : MonoBehaviour
     protected virtual bool IsRotated => MatchCore.IsRotated;
     private bool _gameEnded;
 
-    public virtual void ArrangeFigures(MatchBootstrap.PlayerBootstrapData player1,
-        MatchBootstrap.PlayerBootstrapData player2, bool needRotate = true)
+    public virtual void ArrangeFigures(MatchData matchData, bool needRotate = true)
     {
         throw new NotImplementedException();
     }
@@ -30,9 +29,9 @@ public abstract class AbstractBoard : MonoBehaviour
         throw new NotImplementedException();
     }
 
-    protected void ArrangeFigures(MatchBootstrap.PlayerBootstrapData playerBootstrapData, bool needRotate = true)
+    protected void ArrangeFigures(PlayerData playerBootstrapData, bool needRotate = true)
     {
-        foreach (var arrangementArrangement in playerBootstrapData.Arrangement)
+        foreach (var arrangementArrangement in playerBootstrapData.StartArrangement)
         {
             var row = arrangementArrangement.column;
             var column = arrangementArrangement.row;

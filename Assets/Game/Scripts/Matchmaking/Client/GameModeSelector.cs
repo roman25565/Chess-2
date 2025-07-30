@@ -15,7 +15,6 @@ public class GameModeSelector : MonoBehaviour
     [SerializeField] private Button fiveMinutesButton;
     [SerializeField] private Button tenMinutesButton;
 
-    public GameObject TestGameObject;
     
     public void Init()
     {
@@ -23,14 +22,12 @@ public class GameModeSelector : MonoBehaviour
         fiveMinutesButton.onClick.RemoveAllListeners();
         tenMinutesButton.onClick.RemoveAllListeners();
         
-        oneMinutesButton.onClick.AddListener(()=>ButtonOnClick(1));
-        fiveMinutesButton.onClick.AddListener(()=>ButtonOnClick(5));
-        tenMinutesButton.onClick.AddListener(()=>ButtonOnClick(10));
-        
-        TestGameObject.SetActive(true);
+        oneMinutesButton.onClick.AddListener(()=>ButtonOnClick(1 * 60f));
+        fiveMinutesButton.onClick.AddListener(()=>ButtonOnClick(5 * 60f));
+        tenMinutesButton.onClick.AddListener(()=>ButtonOnClick(10 * 60f));
     }
 
-    private void ButtonOnClick(int timeControl)
+    private void ButtonOnClick(float timeControl)
     {
         SelectGameMode(timeControl);
         FindMatch();
@@ -38,7 +35,7 @@ public class GameModeSelector : MonoBehaviour
     }
     
     
-    public void SelectGameMode(int timeControl)
+    public void SelectGameMode(float timeControl)
     {
         _gameData.TimeControl = timeControl;
     }

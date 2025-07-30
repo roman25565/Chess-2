@@ -7,11 +7,11 @@ namespace Board
 public class GameBoard : AbstractBoard
 {
     private bool _lastMoveIsFantom;
-    public override void ArrangeFigures(MatchBootstrap.PlayerBootstrapData player1, MatchBootstrap.PlayerBootstrapData player2, bool needRotate = true)
+    public override void ArrangeFigures(MatchData matchData, bool needRotate = true)
     {
         Debug.Log("ArrangeFigures 2:1");
-        ArrangeFigures(player1, needRotate);
-        ArrangeFigures(player2, needRotate);
+        ArrangeFigures(matchData.Player1, needRotate);
+        ArrangeFigures(matchData.Player2, needRotate);
     }
     
     

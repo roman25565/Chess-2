@@ -37,7 +37,7 @@ namespace Board
                     {
                         StartArrangement = null,
                         FirebasePlayer = null,
-                        IsRotate = historyMatchData.Player1Id != _global.FirestoreManager.PlayerData.ID,
+                        IsRotate = historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.PlayerData.ID,
                         PlayerId = 1,
                         TimeToMove = -1,
                         IsMoving = true,
@@ -47,36 +47,40 @@ namespace Board
                     {
                         StartArrangement = null,
                         FirebasePlayer = null,
-                        IsRotate = historyMatchData.Player2Id != _global.FirestoreManager.PlayerData.ID,
+                        IsRotate = historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.PlayerData.ID,
                         PlayerId = 2,
                         TimeToMove = -1,
                         IsMoving = false,
                         IsWhite = false,
                     }
                 };
-                Debug.Log($"Starting history match: {historyMatchData.Player1Id}, {historyMatchData.Player2Id}");
-                ArrangeFigures(new MatchBootstrap.PlayerBootstrapData(
-                    _matchData.Player1.PlayerId,
-                    historyMatchData.Player1Id,
-                    historyMatchData.Player1Arrangement,
-                    _matchData.Player1.IsRotate,
-                    _matchData.Player1.IsWhite));
-                ArrangeFigures(new MatchBootstrap.PlayerBootstrapData(
-                    _matchData.Player2.PlayerId,
-                    historyMatchData.Player2Id,
-                    historyMatchData.Player2Arrangement,
-                    _matchData.Player2.IsRotate,
-                    _matchData.Player2.IsWhite));
-                _global.FirestoreManager.GetIcon(historyMatchData.Player1Id, (Sprite sprite) =>
+                Debug.Log($"Starting history match: {historyMatchData.FirestorePlayer1Id}, {historyMatchData.FirestorePlayer2Id}");
+                ArrangeFigures(new PlayerData
                 {
-                    SetPlayerUI(new FirebasePlayerData(historyMatchData.Player1Id, historyMatchData.Player1Name,
-                        historyMatchData.Player1Elo, sprite, null, null,null), historyMatchData.Player1Id != _global.FirestoreManager.PlayerData.ID);
+                    PlayerId = _matchData.Player1.PlayerId,
+                    FirebasePlayer = new FirebasePlayerData(historyMatchData.FirestorePlayer1Id),
+                    StartArrangement = historyMatchData.Player1Arrangement,
+                    IsRotate = _matchData.Player1.IsRotate,
+                    IsWhite = _matchData.Player1.IsWhite
+                });
+                ArrangeFigures(new PlayerData
+                {
+                    PlayerId = _matchData.Player2.PlayerId,
+                    FirebasePlayer = new FirebasePlayerData(historyMatchData.FirestorePlayer2Id),
+                    StartArrangement = historyMatchData.Player2Arrangement,
+                    IsRotate = _matchData.Player2.IsRotate,
+                    IsWhite = _matchData.Player2.IsWhite
+                });
+                _global.FirestoreManager.GetIcon(historyMatchData.FirestorePlayer1Id, (Sprite sprite) =>
+                {
+                    SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer1Id, historyMatchData.Player1Name,
+                        historyMatchData.Player1Elo, sprite, null, null,null), historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.PlayerData.ID);
                 });
                 
-                _global.FirestoreManager.GetIcon(historyMatchData.Player2Id, (Sprite sprite) =>
+                _global.FirestoreManager.GetIcon(historyMatchData.FirestorePlayer2Id, (Sprite sprite) =>
                 {
-                    SetPlayerUI(new FirebasePlayerData(historyMatchData.Player2Id, historyMatchData.Player2Name,
-                        historyMatchData.Player2Elo, sprite, null, null,null), historyMatchData.Player2Id != _global.FirestoreManager.PlayerData.ID);
+                    SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer2Id, historyMatchData.Player2Name,
+                        historyMatchData.Player2Elo, sprite, null, null,null), historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.PlayerData.ID);
                 });
 
                 _internalMoveHistory = new MoveHistory(Move);
@@ -112,18 +116,7 @@ namespace Board
                     },
 
                 };
-                ArrangeFigures(new MatchBootstrap.PlayerBootstrapData(
-                    _matchData.Player1.PlayerId,
-                    null,
-                    _matchData.Player1.StartArrangement,
-                    _matchData.Player1.IsRotate,
-                    _matchData.Player1.IsWhite));
-                ArrangeFigures(new MatchBootstrap.PlayerBootstrapData(
-                    _matchData.Player2.PlayerId,
-                    null,
-                    _matchData.Player2.StartArrangement,
-                    _matchData.Player2.IsRotate,
-                    _matchData.Player2.IsWhite));
+                ArrangeFigures(_matchData);
                 
                 _selectedHistory = MoveHistory;
             }

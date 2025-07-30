@@ -29,7 +29,7 @@ public class SignIn : MonoBehaviour
     private const string SignTypeKey = "SignType";
     [SerializeField] private Bootstrap bootstrap;
     [SerializeField] private MainMenu mainMenu;
-    public void Init()
+    public void Init(bool isSignIn = false)
     {
         _configuration = new GoogleSignInConfiguration
         {
@@ -37,11 +37,11 @@ public class SignIn : MonoBehaviour
             UseGameSignIn = false,
             RequestEmail = true
         };
-        if(_global != null && _global.IsSignIn) //if return from Game Scene
+        if(isSignIn) //if return from Game Scene
         {
             mainMenu.DisableSignInPanel();
-            return;
-        }else if (LoadLastSignType(out var type) != SignTypes.None) // if ReLogin
+        }
+        else if (LoadLastSignType(out var type) != SignTypes.None) // if ReLogin
         {
             OnSignInGoogle();
             mainMenu.DisableSignInPanel();
@@ -162,7 +162,7 @@ public class SignIn : MonoBehaviour
             Debug.Log("Welcome: " + user.DisplayName + "!!!!!");
 
             mainMenu.DisableSignInPanel();
-
+            
             GlobalTools.LoadSprite(user.ImageUrl, (Sprite sprite) =>
             {
                 mainMenu.SetProfileImage(sprite);
