@@ -183,7 +183,7 @@ public class MatchUIManager : MonoBehaviour
 
         void OnAccept()
         {
-            _global.FirestoreManager.Statistic.ReportAnotherPlayer(_enemyPlayerData.FirebasePlayer.ID);
+            _global.FirestoreManager.StatisticManager.ReportAnotherPlayer(_enemyPlayerData.FirebasePlayer.ID);
         }
     }
 

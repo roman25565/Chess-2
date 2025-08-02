@@ -1,4 +1,3 @@
-#if !UNITY_SERVER
 using System;
 using System.Collections.Generic;
 using Setting;
@@ -13,8 +12,6 @@ namespace UI
         [SerializeField] private MainMenu mainMenu;
         [SerializeField] private Transform parentPanel;
         [Inject] private Global _global;
-
-        private bool _isInited;
         private string _targetPlayerId;
         
         
@@ -23,43 +20,35 @@ namespace UI
             var button = Instantiate(buttonPrefab, parentPanel);
             button.SetButton(historyMatchData, mainMenu);
         }
+<<<<<<< Updated upstream:Assets/Game/Scripts/UI/PlayerProfile/HistoryPanel.cs
+=======
         
         public void Init()
         {
-            _global.FirestoreManager.OnLogin.AddListener(OnLogin);
+            // _global.FirestoreManager.OnLogin.AddListener(OnLogin);
         }
 
         private void OnLogin()
         {
             SetTargetId(_global.FirestoreManager.PlayerData.ID);
         }
+>>>>>>> Stashed changes:Assets/Game/Scripts/UI/HistoryPanel.cs
 
         public void SetTargetId(string id)
         {
             _targetPlayerId = id;
-            _isInited = true;
         }
 
         public void OnEnable()
         {
             DestroyButtons();
-            if (!_isInited) return;
-
-            var result = _global.FirestoreManager.TryGetPlayerHistory(_targetPlayerId);
-            if (result == null || result.Count == 0)
-            {
-                _global.FirestoreManager.OnHistoryMatchesLoaded.AddListener(AddButtons);
-            }
-            else 
-            {
-                AddButtons(_targetPlayerId, result);
-            }
+            if (_targetPlayerId == null) return;
+            _global.FirestoreManager.LoadHistory(_targetPlayerId,AddButtons);
         }
         
         private void OnDisable()
         {
-            _global.FirestoreManager.OnLogin.RemoveListener(OnLogin);
-            _global.FirestoreManager.OnHistoryMatchesLoaded.RemoveListener(AddButtons);
+            _targetPlayerId = null;
         }
 
         private void AddButtons(string id, List<HistoryMatchData> historyMatches)
@@ -94,4 +83,3 @@ namespace UI
         }
     }
 }
-#endif

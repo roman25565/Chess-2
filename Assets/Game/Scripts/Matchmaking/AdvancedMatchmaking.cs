@@ -87,7 +87,6 @@ public class AdvancedMatchmaking : MonoBehaviour
 
             SubscribeToLobbyEvents(_connectedLobby);
 
-            Debug.Log("IsHost " + IsHost);
             if (!IsHost)
             {
                 var joinCode = _connectedLobby.Data[JoinCodeKey].Value;
@@ -124,7 +123,6 @@ public class AdvancedMatchmaking : MonoBehaviour
 
         async void OnLobbyChanged(ILobbyChanges changes)
         {
-            Debug.Log("IsHost " + IsHost);
             if (IsHost) return;
             Debug.Log($"[LobbyChanged] AvailableSlots: {changes.AvailableSlots}");
 

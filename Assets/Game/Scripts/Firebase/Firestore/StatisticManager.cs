@@ -4,17 +4,18 @@ using System.Threading.Tasks;
 using Firebase.Firestore;
 using Statistics;
 using UnityEngine;
+using UnityEngine.Events;
 
-public class FirestoreStatistic
+public class StatisticManager
 {
     private FirebaseFirestore _db;
     private const string CollectionName = "Statistics";
-    public FirestoreStatistic(FirebaseFirestore db)
+    public StatisticManager(FirebaseFirestore db)
     {
         _db = db;
     }
 
-    public async Task<PlayerStatistic> GetPlayerStatistic(string playerId)
+    public async void GetPlayerStatistic(string playerId, UnityAction<string, PlayerStatistic> callback = null)
     {
         try
         {
@@ -23,16 +24,15 @@ public class FirestoreStatistic
 
             if (snapshot.Exists)
             {
-                return snapshot.ConvertTo<PlayerStatistic>();
+                callback?.Invoke(playerId, snapshot.ConvertTo<PlayerStatistic>());
+                return;
             }
 
             Debug.LogWarning($"Statistics not found for player {playerId}");
-            return null;
         }
         catch (Exception e)
         {
             Debug.LogError($"Error getting player statistics: {e.Message}");
-            return null;
         }
     }
 

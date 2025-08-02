@@ -64,7 +64,6 @@ public class MatchBootstrap : NetworkBehaviour
             case GameMode.Offline:
             {
                 var id = OwnerClientId;
-                Debug.Log(NetworkManager.Singleton.GetInstanceID());
                 SendConnectedDataRpc(id, _global.FirestoreManager.PlayerData.ID, _gameData.TimeControl, arrangementEntryArray.ArrangementEntry);
                 break;
             }
@@ -77,6 +76,8 @@ public class MatchBootstrap : NetworkBehaviour
             case GameMode.Reconnect:
                 GetReConnectDataRpc(OwnerClientId, _global.FirestoreManager.PlayerData.ID);
                 break;
+            case GameMode.MigrateHost: 
+                break;
         }
 #endif
     }
@@ -85,10 +86,8 @@ public class MatchBootstrap : NetworkBehaviour
     private void SendConnectedDataRpc(ulong playerId, string firestoreId, float timeControl, ArrangementEntry[] arrangement,
         RpcParams rpcParams = default)
     {
-        Debug.Log(firestoreId);
         if (_player0 == null)
         {
-            Debug.Log("player0");
             _player0 = new ArrangementEntryArrayWithId
             {
                 ID = playerId,
@@ -98,7 +97,6 @@ public class MatchBootstrap : NetworkBehaviour
         }
         else if (_player1 == null)
         {
-            Debug.Log("player1");
             _player1 = new ArrangementEntryArrayWithId
             {
                 ID = playerId,
@@ -182,19 +180,18 @@ public class MatchBootstrap : NetworkBehaviour
             
             core.Init(matchData);
             LoadFirestoreRefreshUI(matchData, core);
-            Debug.Log("matchCore.Init(matchData);");
         }
     }
     
     private void LoadFirestoreRefreshUI(MatchData matchData, MatchCore core)
     {
-        _ = _global.FirestoreManager.GetPlayerData(matchData.Player1.FirebasePlayer.ID, result =>
+        _ = _global.FirestoreManager.PlayerDataManager.GetPlayerData(matchData.Player1.FirebasePlayer.ID, result =>
         {
             matchData.Player1.FirebasePlayer = result;
 
             core.RefreshPlayerUI(matchData.Player1.PlayerId, matchData.Player1.PlayerId != OwnerClientId);
         });
-        _ = _global.FirestoreManager.GetPlayerData(matchData.Player2.FirebasePlayer.ID, result =>
+        _ = _global.FirestoreManager.PlayerDataManager.GetPlayerData(matchData.Player2.FirebasePlayer.ID, result =>
         {
             matchData.Player2.FirebasePlayer = result;
             core.RefreshPlayerUI(matchData.Player2.PlayerId, matchData.Player2.PlayerId != OwnerClientId);
@@ -226,7 +223,6 @@ public class MatchBootstrap : NetworkBehaviour
         ulong playerId2, string firestoreId2, ArrangementEntry[] arrangement2, float timeControl2,
         ulong whitePlayerId)
     {
-        Debug.Log($"whitePlayerId: {whitePlayerId}");
         return new MatchData
         {
             MovingPlayerId = whitePlayerId,
@@ -265,29 +261,31 @@ public class MatchBootstrap : NetworkBehaviour
     
     private async void OnClientDisconnect(ulong clientId)//clientId not walid if is host disconnected and Equals OwnerClientId
     {
-        if (NetworkManager.Singleton.ShutdownInProgress)
+        if (NetworkManager.Singleton.ShutdownInProgress || !NetworkManager.Singleton.IsListening)
         {
             return;
         }
-        Debug.Log($"OnClientDisconnect clientId: {clientId}, {OwnerClientId}, IsHost {IsHost}, Count {NetworkManager.ConnectedClients.Count}");//TODO problem work on exit application
+        Debug.Log($"OnClientDisconnect clientId: {clientId}, {OwnerClientId}, IsHost {IsHost}, Count {NetworkManager.ConnectedClients.Count}");
         
-        Debug.Log($"OwnerId {OwnerClientId}");
         if (IsHost)
         {
-            if (clientId == OwnerClientId)
-            {
-                return;
-            }
+            if (clientId == OwnerClientId) return;
+            
             SendReConnectRequest(clientId);
             DestroyDisconnectedCoreRpc();
         }
         else
         {
-            var data = GetMyCore().GetMatchData();
+            _gameData.Mode = GameMode.MigrateHost;
+            var data = GetMyCoreOnHostMigrate().GetMatchData();
+            Debug.Log($"[Host Migrating] Player Data:\n" +
+                      $"P1: NetworkID={data.Player1.PlayerId} | FirebaseID={data.Player1.FirebasePlayer?.ID ?? "null"} | IsMoving={data.Player1.IsMoving} | Color={(data.Player1.IsWhite ? "White" : "Black")}\n" +
+                      $"P2: NetworkID={data.Player2.PlayerId} | FirebaseID={data.Player2.FirebasePlayer?.ID ?? "null"} | IsMoving={data.Player2.IsMoving} | Color={(data.Player2.IsWhite ? "White" : "Black")}\n" +
+                      $"Current Moving Player: {(data.MovingPlayerId == data.Player1.PlayerId ? "P1" : "P2")}\n" +
+                      $"Time Remaining: P1={data.Player1.TimeToMove:F1}s | P2={data.Player2.TimeToMove:F1}s");
             _advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
             await _advancedMatchmaking.MigrateHost(data, OwnerClientId);
-            var anotherPlayerId = data.GetAnotherPlayerData(0).PlayerId;
-            Debug.Log($"anotherPlayerId {anotherPlayerId}, Pl1 {data.Player1.PlayerId}, Pl2 {data.Player2.PlayerId}");
+            var anotherPlayerId = data.GetAnotherPlayerData(0).PlayerId; // 0 is host id
             SendReConnectRequest(anotherPlayerId);
         }
     }
@@ -302,9 +300,6 @@ public class MatchBootstrap : NetworkBehaviour
             playerId, firestoreId, arrangement, timeControl,
             playerId2, firestoreId2, arrangement2, timeControl2,
             whitePlayerId);
-
-        _matchData.Player1.TimeToMove = timeControl;
-        _matchData.Player2.TimeToMove = timeControl2;
         
         var hostId = OwnerClientId == playerId ? playerId : playerId2;
         
@@ -318,7 +313,6 @@ public class MatchBootstrap : NetworkBehaviour
     
     private void SendReConnectRequest(ulong clientId)
     {
-        Debug.Log("SendReConnectRequest" + IsServer);
         var enemyPlayerId = _matchData.GetPlayerData(clientId).FirebasePlayer.ID;
         _ = _global.FirestoreManager.RealtimeDatabase.ReConnectRequestsManager.SendReConnectRequest(enemyPlayerId, _gameData.RelayJoinCode);
     }
@@ -350,15 +344,12 @@ public class MatchBootstrap : NetworkBehaviour
         var matchBootstraps = FindObjectsByType<MatchBootstrap>((FindObjectsSortMode)FindObjectsInactive.Exclude);
         var connectedPlayerBootstrap =
             matchBootstraps[0].OwnerClientId == connectedPlayerId ? matchBootstraps[0] : matchBootstraps[1];
-        connectedPlayerBootstrap.NetworkObject.ChangeOwnership(1);
+        if(connectedPlayerBootstrap.OwnerClientId != connectedPlayerId)
+            connectedPlayerBootstrap.NetworkObject.ChangeOwnership(connectedPlayerId);
         var serverCore = GetServerCore();
         var hostPlayerFirestoreId = serverCore.GetFirestoreId(hostPlayerId);
 
-        Debug.Log("vars Complete");
-
-        // 8. Виконання логіки реконекту
-        foreach (var core in matchCores)
-            core.OnClientReConnectRpc(connectedPlayerOldId, connectedPlayerId, connectedFirestoreId);
+        hostPlayerCore.ChangeDataIPRpc(connectedPlayerOldId, connectedPlayerId, connectedFirestoreId);
         
         if (!serverCore.AddCore(connectedPlayerCore))
         {
@@ -366,9 +357,8 @@ public class MatchBootstrap : NetworkBehaviour
             Destroy(connectedPlayerCore);
             return;
         }
-
+        
         var netObj = connectedPlayerCore.GetComponent<NetworkObject>();
-
         netObj.SpawnWithOwnership(connectedPlayerId);
         connectedPlayerCore.SetServerCore(serverCore);
 
@@ -470,13 +460,30 @@ public class MatchBootstrap : NetworkBehaviour
     private MatchCore GetMyCore()
     {
         var matchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
-
         foreach (var core in matchCores)
         {
+            Debug.Log("OwnerClientId " + OwnerClientId + core.IsServerCore);
             if (core.OwnerClientId == OwnerClientId)
             {
                 return core;
             }
+        }
+
+        return null;
+    }
+    private MatchCore GetMyCoreOnHostMigrate()
+    {
+        var matchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
+        Debug.Log($"1 {matchCores[0].IsServerCore} 2 {matchCores[1].IsServerCore}" +
+                  $"{(matchCores[0].GetMatchData() == null)} 2 {(matchCores[1].GetMatchData() == null)}");
+        
+        foreach (var core in matchCores)
+        {
+            if (core.GetMatchData() == null)
+            {
+                continue;
+            }
+            return core;
         }
 
         return null;

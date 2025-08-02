@@ -84,7 +84,6 @@ public abstract class AbstractBoard : MonoBehaviour
 
     protected virtual void OnEnable()
     {
-        Debug.Log("Board Enabled");
         _gameData.SetActiveBoard(this);
     }
 

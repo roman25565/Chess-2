@@ -11,7 +11,6 @@ namespace UI
     public class MainMenu : MonoBehaviour
     {
         [Inject] private Global _global;
-        [SerializeField] private GameObject historyPanel;
         [SerializeField] private GameObject settingsPanel;
         [SerializeField] private GameObject arrangementPanel;
         [SerializeField] private GameObject editBoard;
@@ -22,12 +21,11 @@ namespace UI
         [SerializeField] private GameObject findMatchPanel;
         [SerializeField] private Image profileImage;
         [SerializeField] private TextMeshProUGUI profileImageText;
-        [SerializeField] private GameObject profilePanel;
         [SerializeField] private GameObject gameModeSelectorPanel;
         
+        [SerializeField] private PlayerProfileController profilePanel;
         [SerializeField] private NotificationPanel notificationPanel;
         [SerializeField] private GameModeSelector gameModeSelector;
-        [SerializeField] private HistoryPanel historyPanelUI;
         
         
         public void Init(bool isSignIn = false)
@@ -45,17 +43,15 @@ namespace UI
 #if !UNITY_SERVER
             notificationPanel.Init();
             gameModeSelector.Init();
-            historyPanelUI.Init();
 #endif
         }
 
         private void DisableAllPanels()
         {
-            if (historyPanel != null) historyPanel.gameObject.SetActive(false);
             if (settingsPanel != null) settingsPanel.SetActive(false);
             if (arrangementPanel != null) arrangementPanel.SetActive(false);
             if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
-            if (profilePanel != null) profilePanel.SetActive(false);
+            if (profilePanel != null) profilePanel.gameObject.SetActive(false);
             if (editBoard != null) editBoard.SetActive(false);
             if (signInPanel != null) mainMenuPanel.SetActive(false);
             if (notificationPanel != null) notificationPanel.gameObject.SetActive(false);
@@ -76,15 +72,6 @@ namespace UI
 
         #endregion
 
-        public void ShowHistoryPanel()
-        {
-            DisableAllPanels();
-            if (historyPanel != null)
-            {
-                historyPanel.gameObject.SetActive(true);
-            }
-        }
-
         public void ShowSettingsPanel()
         {
             DisableAllPanels();
@@ -104,10 +91,12 @@ namespace UI
             if (mainMenuPanel != null) mainMenuPanel.SetActive(true);
         }
 
-        public void ShowProfilePanel()
+        public void ShowProfilePanelAsThisPlayer()
         {
+            if (profilePanel == null) return;
             DisableAllPanels();
-            if (profilePanel != null) profilePanel.SetActive(true);
+            profilePanel.SetTargetId(_global.FirestoreManager.PlayerData.ID);
+            profilePanel.gameObject.SetActive(true);
         }
         
         public void ShowEditBoard()

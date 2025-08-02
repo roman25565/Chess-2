@@ -5,7 +5,8 @@ public enum GameMode
     Online,
     Reconnect,
     Offline,
-    Test
+    Test,
+    MigrateHost
 }
 
 public class GameData

@@ -22,7 +22,6 @@ public class Bootstrap : MonoBehaviour
     [Inject] private GameData _gameData;
     [Inject] private Global _global;
     
-#if !UNITY_SERVER
 #if UNITY_EDITOR
     private void OnValidate()
     {
@@ -42,76 +41,67 @@ public class Bootstrap : MonoBehaviour
     [SerializeReference] private AdvancedMatchmaking advancedMatchmaking;
     [SerializeReference] private SignIn signIn;
     [SerializeReference] private MainMenu mainMenu;
+    [SerializeReference] private SoundManager soundManager;
     [SerializeReference] private ADSManager adsManager;
-#endif
     [SerializeField] private Button startOnlineMatch;
     [SerializeField] private Button startLocalMatch;
     [SerializeField] private Button startTestMatch;
     [SerializeField] private Button hostLocalMatch;
     [SerializeField] private Button settingsButton;
-    
+
     private async void Awake()
     {
         Application.targetFrameRate = 120;
-#if !UNITY_SERVER
-        if (_global.IsSignIn)
+        if (_global.IsSignIn)//Is Return To Main Menu
         {
             mainMenu.Init(true);
             mainMenu.InitUIComponents();
             signIn.Init(true);
             adsManager.TryStartAds();
+            soundManager.Init(true);
             return;
         }
-#endif
+
         var isServer = Environment.GetCommandLineArgs().Any(arg => arg == "-port");
         // isServer = true;//TO Test
         await LoadSettings(!isServer);
-        if (isServer)
+
+        mainMenu.InitUIComponents();
+        signIn.Init();
+        mainMenu.Init();
+        soundManager.Init(true);
+        adsManager.Init();
+
+        startOnlineMatch.onClick.AddListener(() => { mainMenu.ShowGameModeSelectorPanel(); });
+        startLocalMatch.onClick.AddListener(() =>
         {
-            Debug.Log("Starting server");
-            SceneManager.LoadScene(Server);
-        }
-        else
+            DisableButtons();
+            _gameData.Mode = GameMode.Offline;
+            NetworkManager.Singleton.StartClient();
+        });
+        startTestMatch.onClick.AddListener(() =>
         {
-#if !UNITY_SERVER
-            mainMenu.InitUIComponents();
-            signIn.Init();
-         mainMenu.Init();
-            adsManager.Init();
-            
-            startOnlineMatch.onClick.AddListener(() =>
-            {
-                mainMenu.ShowGameModeSelectorPanel();
-            });
-            startLocalMatch.onClick.AddListener(() =>
-            {
-                DisableButtons();
-                _gameData.Mode = GameMode.Offline;
-                NetworkManager.Singleton.StartClient();
-            });
-            startTestMatch.onClick.AddListener(() =>
-            {
-                DisableButtons();
+            DisableButtons();
 
-                _gameData.Mode = GameMode.Test;
-                SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+            _gameData.Mode = GameMode.Test;
+            SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
 
-                SceneManager.sceneLoaded += OnSceneLoaded;
-                void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
-                {
-                    NetworkManager.Singleton.StartHost();
+            SceneManager.sceneLoaded += OnSceneLoaded;
 
-                    SceneManager.sceneLoaded -= OnSceneLoaded;
-                }
-            });
-            hostLocalMatch.onClick.AddListener(() =>
+            void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
             {
-                DisableButtons();
-                SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-                NetworkManager.Singleton.StartServer();
-            });
-#endif
-        }
+                NetworkManager.Singleton.StartHost();
+
+                SceneManager.sceneLoaded -= OnSceneLoaded;
+            }
+        });
+        hostLocalMatch.onClick.AddListener(() =>
+        {
+            DisableButtons();
+            SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+            NetworkManager.Singleton.StartServer();
+        });
+
     }
 
     private async Task LoadSettings(bool isClient)
@@ -127,7 +117,6 @@ public class Bootstrap : MonoBehaviour
         if (cellStates == null)
             Debug.LogError("CellStates not found");
         
-#if !UNITY_SERVER
         var firestore = new FirestoreManager(advancedMatchmaking);
         if (isClient)
         {
@@ -135,9 +124,6 @@ public class Bootstrap : MonoBehaviour
         }
 
         _global.Init(arrangement, piecesData, cellStates, firestore);
-#else
-        _global.Init(arrangement, piecesData, cellStates);
-#endif
     }
 
     public void OnSignIn(GoogleSignInUser user)
@@ -156,11 +142,11 @@ public class Bootstrap : MonoBehaviour
 #if !UNITY_SERVER
         if (user == null)
         {
-            _global.FirestoreManager.SingUp(user.UserId);
+            _global.FirestoreManager.PlayerDataManager.SingUp(user.UserId);
             return;
         }
 
-        _ = _global.FirestoreManager.GetPlayerData(user.UserId, CallBack);
+        _ = _global.FirestoreManager.PlayerDataManager.GetPlayerData(user.UserId, CallBack);
         
         return;
 
@@ -169,7 +155,7 @@ public class Bootstrap : MonoBehaviour
             Debug.Log("CallBack: " + result);
             if (result == null)//TODO WTF
             {
-                _global.FirestoreManager.SingUp(user);
+                _global.FirestoreManager.PlayerDataManager.SingUp(user);
             }
             else
             {

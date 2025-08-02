@@ -71,13 +71,13 @@ namespace Board
                     IsRotate = _matchData.Player2.IsRotate,
                     IsWhite = _matchData.Player2.IsWhite
                 });
-                _global.FirestoreManager.GetIcon(historyMatchData.FirestorePlayer1Id, (Sprite sprite) =>
+                _global.FirestoreManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer1Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer1Id, historyMatchData.Player1Name,
                         historyMatchData.Player1Elo, sprite, null, null,null), historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.PlayerData.ID);
                 });
                 
-                _global.FirestoreManager.GetIcon(historyMatchData.FirestorePlayer2Id, (Sprite sprite) =>
+                _global.FirestoreManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer2Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer2Id, historyMatchData.Player2Name,
                         historyMatchData.Player2Elo, sprite, null, null,null), historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.PlayerData.ID);

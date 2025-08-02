@@ -101,14 +101,12 @@ public class MatchCore : NetworkBehaviour
 
     public bool IsMyId(ulong id)
     {
-        Debug.Log($"Piece Id {id} _myId {_myId}");
         return id == _myId;
     }
 
     public void RefreshPlayerUI(ulong playerId, bool isEnemyPlayer)
     {
 #if !UNITY_SERVER
-        Debug.Log("playerId" + playerId + "isEnemyPlayer" + isEnemyPlayer);
         if (playerId == _matchData.Player1.PlayerId)
         {
             Debug.Log("UpdateFirebasePlayerData");
@@ -167,6 +165,7 @@ public class MatchCore : NetworkBehaviour
     public override void OnNetworkSpawn()
     {
         base.OnNetworkSpawn();
+        if(!IsOwner) return; 
         Debug.Log($"MatchCore spawned - IsServer: {IsServer}, IsClient: {IsClient}");
     }
 
@@ -217,8 +216,8 @@ public class MatchCore : NetworkBehaviour
 
         if (!IsWhite) return;
 
-        _global.FirestoreManager.BdSetElo(_matchData.Player1.FirebasePlayer.ID, player1Elo);
-        _global.FirestoreManager.BdSetElo(_matchData.Player2.FirebasePlayer.ID, player2Elo);
+        _global.FirestoreManager.PlayerDataManager.BdSetElo(_matchData.Player1.FirebasePlayer.ID, player1Elo);
+        _global.FirestoreManager.PlayerDataManager.BdSetElo(_matchData.Player2.FirebasePlayer.ID, player2Elo);
 
         var player1 = _matchData.GetPlayerData(_myId); //player1 always White
         var player2 = _matchData.GetPlayerData(_enemyId);
@@ -311,9 +310,7 @@ public class MatchCore : NetworkBehaviour
     {
        // GetMigratedMatchData();
        var advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
-
        _matchData = advancedMatchmaking.GetMigretedMatchData();
-       Debug.Log($"UpdateServerData Pl1 {_matchData.Player1.PlayerId}, Pl2 {_matchData.Player2.PlayerId} _matchData Null {_matchData == null}");
     }
 
     public void SetServerCore(MatchCore serverCore)
@@ -323,7 +320,6 @@ public class MatchCore : NetworkBehaviour
         if (IsServerCore)
         {
             _allMatchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude).ToList();
-            Debug.Log("Cores Count " + _allMatchCores.Count);
         }
     }
 
@@ -399,6 +395,7 @@ public class MatchCore : NetworkBehaviour
                 break;
             case PieceType.Kings:
                 _oneKingDead = true;
+                //TODO перевірити чи у ворога є фігури якими він може походити якщо ні перемогти завершити матч
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -462,7 +459,7 @@ public class MatchCore : NetworkBehaviour
 
 
     [Rpc(SendTo.ClientsAndHost)]
-    public void OnClientReConnectRpc(ulong oldId, ulong clientId, string firestoreId)
+    public void ChangeDataIPRpc(ulong oldId, ulong clientId, string firestoreId)
     {
         ChangeDataIP(oldId, clientId);
     }
@@ -471,10 +468,8 @@ public class MatchCore : NetworkBehaviour
     {
         if (_gameEnded || !IsOwner) return;
         if(oldId == newClientId) return;
-        if (oldId == 1) return;
-        Debug.Log($"MovingPlayerId {_matchData.MovingPlayerId}, OldId {oldId}, NewId {newClientId}");
-        if (oldId == newClientId && newClientId == 1)
-            oldId = 2;
+        if (oldId == newClientId) return;
+        Debug.Log($"ChangeDataIP, OldId {oldId}, NewId {newClientId}");
 
         if (oldId != _matchData.Player1.PlayerId && oldId != _matchData.Player2.PlayerId)
         {
@@ -491,7 +486,6 @@ public class MatchCore : NetworkBehaviour
         {
             if (_matchData.MovingPlayerId == oldId)
                 _matchData.MovingPlayerId = newId;
-            Debug.Log($"MovingPlayerId {_matchData.MovingPlayerId}");
             var oldPlayer = _matchData.Player1.PlayerId == oldId ? _matchData.Player1 : _matchData.Player2;
             oldPlayer.PlayerId = newId;
         }
@@ -511,7 +505,7 @@ public class MatchCore : NetworkBehaviour
         Debug.Log($"_matchData is null {_matchData == null}, connectedPlayerId  {connectedPlayerId}, remainingPlayerId {remainingPlayerId}");
         Debug.Log($"Pl1 {_matchData.Player1.PlayerId}, Pl2 {_matchData.Player2.PlayerId}");
         
-        var connectedPlayer = _matchData.GetPlayerData(1);
+        var connectedPlayer = _matchData.GetPlayerData(connectedPlayerId);
         var hostPlayer = _matchData.GetPlayerData(remainingPlayerId);
         connectedTimeToMove = connectedPlayer.TimeToMove;
         remainingTimeToMove = hostPlayer.TimeToMove;
@@ -528,13 +522,11 @@ public class MatchCore : NetworkBehaviour
         return _matchData;
     }
 
-    public string GetFirestoreId(ulong remainingPlayerId)
+    public string GetFirestoreId(ulong PlayerId)
     {
         Debug.Log("GetFirestoreId");
-        Debug.Log(remainingPlayerId);
-        Debug.Log(_matchData.Player1.FirebasePlayer.ID);
-        Debug.Log(_matchData.Player2.FirebasePlayer.ID);
-        return _matchData.Player1.PlayerId == remainingPlayerId
+        Debug.Log(PlayerId);
+        return _matchData.Player1.PlayerId == PlayerId
             ? _matchData.Player1.FirebasePlayer.ID
             : _matchData.Player2.FirebasePlayer.ID;
     }
@@ -627,21 +619,39 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     public void OnHostMigratedRpc(ulong oldId, ulong newId)
     {
-        var matchData = GetMigratedMatchData();
+        var matchData = GetMigratedMatchData(oldId, newId);
         Init(matchData);
-        Debug.Log($"MovingPlayerId {matchData.MovingPlayerId}, OldId {oldId}, NewId {newId}");
+        Debug.Log($"[Host Migrated] Player Data:\n" +
+                  $"P1: NetworkID={matchData.Player1.PlayerId} | FirebaseID={matchData.Player1.FirebasePlayer?.ID ?? "null"} | IsMoving={matchData.Player1.IsMoving} | Color={(matchData.Player1.IsWhite ? "White" : "Black")}\n" +
+                  $"P2: NetworkID={matchData.Player2.PlayerId} | FirebaseID={matchData.Player2.FirebasePlayer?.ID ?? "null"} | IsMoving={matchData.Player2.IsMoving} | Color={(matchData.Player2.IsWhite ? "White" : "Black")}\n" +
+                  $"Current Moving Player: {(matchData.MovingPlayerId == matchData.Player1.PlayerId ? "P1" : "P2")}\n" +
+                  $"Time Remaining: P1={matchData.Player1.TimeToMove:F1}s | P2={matchData.Player2.TimeToMove:F1}s");
+        LogOnHostMigratedRpc();
     }
 
-    public MatchData GetMigratedMatchData()
+    [Rpc(SendTo.Server)]
+    private void LogOnHostMigratedRpc()
+    {
+        Debug.Log($"[Host Migrated Server] Player Data:\n" +
+                  $"P1: NetworkID={_matchData.Player1.PlayerId} | FirebaseID={_matchData.Player1.FirebasePlayer?.ID ?? "null"} | IsMoving={_matchData.Player1.IsMoving} | Color={(_matchData.Player1.IsWhite ? "White" : "Black")}\n" +
+                  $"P2: NetworkID={_matchData.Player2.PlayerId} | FirebaseID={_matchData.Player2.FirebasePlayer?.ID ?? "null"} | IsMoving={_matchData.Player2.IsMoving} | Color={(_matchData.Player2.IsWhite ? "White" : "Black")}\n" +
+                  $"Current Moving Player: {(_matchData.MovingPlayerId == _matchData.Player1.PlayerId ? "P1" : "P2")}\n" +
+                  $"Time Remaining: P1={_matchData.Player1.TimeToMove:F1}s | P2={_matchData.Player2.TimeToMove:F1}s");
+    }
+
+    public MatchData GetMigratedMatchData(ulong oldId, ulong newId)
     {
         var advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
 
         var matchData = advancedMatchmaking.GetMigretedMatchData();
         Debug.Log($"Core OnHostMigratedRpc Pl1 {matchData.Player1.PlayerId}, Pl2 {matchData.Player2.PlayerId}");
         _matchData = matchData;
-        ChangeDataIP(0, 2);
-        ChangeDataIP(1, 0);
-        ChangeDataIP(2, 1);
+        
+        ChangeDataIP(0, 404);   //404 random big temporary value at the time of migration
+        ChangeDataIP(oldId, 0); //0 new Host Id
+        ChangeDataIP(404, 1);   //1 new client Id
+        _myId = OwnerClientId;
+        _enemyId = matchData.GetAnotherPlayerData(_myId).PlayerId;
         Debug.Log("Server _myId" + _myId + "_enemyId" + _enemyId + "1" + matchData.Player1.PlayerId + "2" + matchData.Player2.PlayerId);
         
         return matchData;

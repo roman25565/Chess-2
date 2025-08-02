@@ -1,6 +1,4 @@
-﻿#if !UNITY_SERVER
-
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -11,31 +9,33 @@ using Firebase;
 using Firebase.Extensions;
 using Firebase.Firestore;
 using Firebase.RealtimeDatabase;
+using Game.Scripts.Firebase.Firestore;
 using Google;
+using Statistics;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 
 public class FirestoreManager
 {
+    private const string PlayersDataCollectionName = "Players";
+    private const string NameKey = "Name";
+    
     private FirebaseFirestore _db;
     private AdvancedMatchmaking _advancedMatchmaking;
-    
-    private CancellationTokenSource _cancellationTokenSource;
 
     public FirebasePlayerData PlayerData;
-    public FirestoreStatistic Statistic;
+    public StatisticManager StatisticManager;
+    public HistoryManager HistoryManager;
+    public PlayerDataManager PlayerDataManager;
     public RealtimeDatabase RealtimeDatabase;
     public readonly UnityEvent OnLogin = new UnityEvent();
-    public UnityEvent<string,List<HistoryMatchData>> OnHistoryMatchesLoaded = new ();
-
     public FirestoreManager(AdvancedMatchmaking advancedMatchmaking)
     {
         _advancedMatchmaking = advancedMatchmaking;
-        _cancellationTokenSource = new CancellationTokenSource();
 
     }
-    
+
     public async Task Init()
     {
         try
@@ -54,7 +54,9 @@ public class FirestoreManager
                 Debug.LogError("Could not resolve all Firebase dependencies: " + dependencyStatus);
             }
             
-            Statistic = new FirestoreStatistic(_db);
+            StatisticManager = new StatisticManager(_db);
+            HistoryManager = new HistoryManager(_db, this);
+            PlayerDataManager = new PlayerDataManager(_db, this, PlayersDataCollectionName, NameKey, PlayerData.ID);;
             
             await Task.Yield();
         }
@@ -66,126 +68,42 @@ public class FirestoreManager
         }
     }
     
-    public List<HistoryMatchData> TryGetPlayerHistory(string targetPlayerId)
-    {
-        if (PlayerData == null) return null;
-        if (PlayerData.HistoryMatches == null && PlayerData.HistoryMatchesLoading == false)
-        {
-            PlayerData.HistoryMatchesLoading = true;
-            _ = LoadAllHistory(PlayerData.HistoryMatchIDs, list =>
-            {
-                PlayerData.HistoryMatches = list;
-                PlayerData.HistoryMatchesLoading = false;
-                OnHistoryMatchesLoaded?.Invoke(targetPlayerId, list);
-            });
-        }
-        if (PlayerData.HistoryMatches == null) return null;
-
-        else
-        {
-            return PlayerData.HistoryMatches;
-        }
-    }
-
-    #region PlayersData
-
-    private const string PlayersDataCollectionName = "Players";
-
-    private const string IDKey = "ID";
-    private const string NameKey = "Name";
-    private const string EloKey = "Elo";
-    private const string IconURLKey = "IconURL";
-    private const string EmailKey = "Email";
-    private const string HistoryIDsKey = "HistoryIDs";
-    private const string FriendIdsKey = "FriendIds";
-
-    public delegate void GetPlayerDataCallBack(FirebasePlayerData result);
-
-    public void Login(FirebasePlayerData playerData)
-    {
-        PlayerData = playerData;
-        RealtimeDatabase = new RealtimeDatabase(playerData.ID, AddFriend, _advancedMatchmaking);
-        OnLogin?.Invoke();
-    }
     
-    private void AddFriend(string friendId)
+    private Dictionary<string, SavedPlayerData> _savedPlayers = new();
+
+    private SavedPlayerData GetSavedPlayer(string targetPlayerId)
     {
-        var docRef = _db.Collection(PlayersDataCollectionName).Document(PlayerData.ID);
+        if (_savedPlayers[targetPlayerId] != null) return _savedPlayers[targetPlayerId];
         
-        docRef.UpdateAsync(FriendIdsKey, FieldValue.ArrayUnion(friendId))
-            .ContinueWithOnMainThread(task =>
+        var newSavedPlayer = new SavedPlayerData(StatisticManager.GetPlayerStatistic, PlayerDataManager.GetPlayerData, HistoryManager.LoadHistory);
+        _savedPlayers.Add(targetPlayerId, newSavedPlayer);
+        return newSavedPlayer;
+    }
+
+    public void LoadHistory(string targetPlayerId, UnityAction<string, List<HistoryMatchData>> callback)
+    {
+        var player = GetSavedPlayer(targetPlayerId);
+
+        player.History.Load(targetPlayerId, callback);
+    }
+
+
+
+
+    public void SaveMatchHistory(string winnerID,
+        string player1ID, int player1Elo, ArrangementEntry[] arrangement1,
+        string player2ID, int player2Elo, ArrangementEntry[] arrangement2,
+        List<Move> moveHistory)
+    {
+        HistoryManager.SaveMatchHistory(winnerID, player1ID, player1Elo, arrangement1, player2ID, player2Elo, arrangement2, moveHistory,
+            (string id) =>
             {
-                if (task.IsCompleted)
-                    Debug.Log("HistoryMatchIDs updated successfully.");
-                else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
+                PlayerDataManager.BdAddHistoryId(player1ID,id);
+                PlayerDataManager.BdAddHistoryId(player2ID,id);
             });
     }
-
-    public async Task<FirebasePlayerData> GetPlayerData(string playerId, GetPlayerDataCallBack callback)
-    {
-        Debug.Log("Get Player Data: " + playerId);
-        FirebasePlayerData result = null;
-        try
-        {
-            var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
-            var snapshot = await docRef.GetSnapshotAsync();
-
-            if (snapshot.Exists)
-            {
-                Debug.Log("snapshot.Exists: ");
-                var existingName = snapshot.GetValue<string>(NameKey);
-                var existingElo = snapshot.GetValue<int>(EloKey);
-                var imageURL = snapshot.GetValue<string>(IconURLKey);
-                await Task.Yield(); //Optimization
-                var email = snapshot.GetValue<string>(EmailKey);
-                var historyIds = snapshot.GetValue<List<string>>(HistoryIDsKey);
-                var friendIds = snapshot.GetValue<List<string>>(FriendIdsKey);
-
-                Debug.Log("Load From DB");
-                GlobalTools.LoadSprite(new Uri(imageURL), sprite =>
-                {
-                    result = new FirebasePlayerData(playerId, existingName, existingElo, sprite, email, historyIds, friendIds);
-                    callback(result);
-                });
-            }
-            else
-            {
-                Debug.Log("snapshot NOT.Exists:");
-                callback(null);
-                return null;
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(playerId + e);
-            throw;
-        }
-        return result;
-    }
     
-    public async void GetIcon(string playerId, Action<Sprite> action)
-    {
-        try
-        {
-            Debug.Log("Get Icon");
-            var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
-            var snapshot = await docRef.GetSnapshotAsync();
-
-            if (snapshot.Exists)
-            {
-                var imageURL = snapshot.GetValue<string>(IconURLKey);
-                GlobalTools.LoadSprite(new Uri(imageURL), action.Invoke);
-            }
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e);
-            Console.WriteLine(e);
-            throw;
-        }
-    }
-
-    private async Task<string> GetPlayerName(string playerId)
+    public async Task<string> GetPlayerName(string playerId)
     {
         string result = null;
         try
@@ -201,375 +119,11 @@ public class FirestoreManager
 
         return result;
     }
-
-    public void SingUp(string testId)
-    {
-        var player = new Dictionary<string, object>
-        {
-            { IDKey, testId },
-            { NameKey, "BUGAGAGA" },
-            { EloKey, 500 },
-            {
-                IconURLKey,
-                "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no"
-            },
-            { EmailKey, "test@gmail.com" },
-            {HistoryIDsKey, new object[]{} },
-            {FriendIdsKey, new object[]{} }
-        };
-
-        SingUp(player, testId);
-    }
-
-
-    public void SingUp(GoogleSignInUser user)
-    {
-        Debug.LogError($"user.DisplayName: {user.DisplayName}, user.Email: {user.Email}, user.UserId: {user.UserId}, user.ImageUrl: {user.ImageUrl}");
-
-        var player = new Dictionary<string, object>
-        {
-            { IDKey, user.UserId },
-            { NameKey, user.DisplayName },
-            { EloKey, 500 },
-            { IconURLKey, user.ImageUrl.ToString() },
-            { EmailKey, user.Email },
-            { HistoryIDsKey, new object[] { } },
-            { FriendIdsKey, new object[] { } }
-        };
-        SingUp(player, user.UserId);
-    }
-
-    private void SingUp(Dictionary<string, object> playerData, string playerId)
-    {
-        var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
-        docRef.SetAsync(playerData).ContinueWithOnMainThread(setTask =>
-        {
-            if (setTask.IsFaulted)
-            {
-                Debug.LogError("Failed to SingUp player: " + setTask.Exception);
-            }
-            else
-            {
-                GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()), sprite =>
-                {
-                    Debug.Log("Player SingUp successfully.");
-                    var firebasePlayerData = new FirebasePlayerData
-                    (
-                        playerData[IDKey].ToString(),
-                        playerData[NameKey].ToString(),
-                        int.Parse(playerData[EloKey].ToString()),
-                        sprite,
-                        playerData[EmailKey].ToString(),
-                        new List<string>(),
-                        new List<string>()
-                    );
-                    Login(firebasePlayerData);
-                });
-            }
-
-            return Task.CompletedTask;
-        });
-    }
-
-    public void BdSetElo(string playerId, int newElo)
-    {
-        var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
-
-        var updates = new Dictionary<string, object>
-        {
-            { EloKey, newElo }
-        };
-
-        docRef.UpdateAsync(updates).ContinueWithOnMainThread(task =>
-        {
-            if (task.IsCompleted)
-                Debug.Log("Document updated successfully.");
-            else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
-        });
-    }
-
-    private void BdAddHistoryId(string playerId, string historyId)
-    {
-        Debug.Log("playerId: " + playerId);
-        var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
-        
-        docRef.UpdateAsync(HistoryIDsKey, FieldValue.ArrayUnion(historyId))
-            .ContinueWithOnMainThread(task =>
-            {
-                if (task.IsCompleted)
-                    Debug.Log("HistoryMatchIDs updated successfully.");
-                else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
-            });
-    }
-
-    #endregion
-
-    #region MatchData
-
-    private const string MatchesDataCollectionName = "Matches";
-
-    private const string WinnerID = "WinnerID";
-    private const string Date = "Date";
-    private const string Player1ID = "Player1ID";
-    private const string Player1Elo = "Player1Elo";
-    private const string Player2ID = "Player2ID";
-    private const string Player2Elo = "Player2Elo";
-    private const string ArrangementList1 = "ArrangementList1";
-    private const string ArrangementList2 = "ArrangementList2";
-    private const string MoveHistory = "MoveHistory";
-
-    private const string Row = "Row";
-    private const string Column = "Column";
-    private const string PieceType = "PieceType";
-
-    public void SaveMatchHistory(string winnerID,
-        string player1ID, int player1Elo, ArrangementEntry[] arrangement1,
-        string player2ID, int player2Elo, ArrangementEntry[] arrangement2,
-        List<Move> moveHistory)
-    {
-        var collectionRef = _db.Collection(MatchesDataCollectionName);
-
-        var arrangementList1 = ConvertArrangement(arrangement1);
-        var arrangementList2 = ConvertArrangement(arrangement2);
-        var history = ConvertMoveList(moveHistory);
-        var matchData = new Dictionary<string, object>
-        {
-            { WinnerID, winnerID },
-            { Date, DateTime.UtcNow },
-            { Player1ID, player1ID },
-            { Player1Elo, player1Elo },
-            { ArrangementList1, arrangementList1 },
-            { Player2ID, player2ID },
-            { Player2Elo, player2Elo },
-            { ArrangementList2, arrangementList2 },
-            { MoveHistory, history }
-        };
-        Debug.Log(matchData);
-        collectionRef.AddAsync(matchData).ContinueWithOnMainThread(task =>
-        {
-            if (task.IsCompleted)
-            {
-                var docRef = task.Result;
-                Debug.Log("matchData Added successfully. " + docRef.Id );
-                BdAddHistoryId(player1ID, docRef.Id);
-                BdAddHistoryId(player2ID, docRef.Id);
-            }
-            else if (task.IsFaulted)
-            {
-                Debug.LogError("Error updating document: " + task.Exception);
-            }
-        });
-        Debug.Log("Match saved");
-    }
-
-    private List<Dictionary<string, object>> ConvertMoveList(List<Move> moveHistory)
-    {
-        var result = new List<Dictionary<string, object>>();
-
-        foreach (var move in moveHistory)
-        {
-            var dict = new Dictionary<string, object>
-            {
-                {
-                    "From", new Dictionary<string, object>
-                    {
-                        { Row, move.From.Row },
-                        { Column, move.From.Column }
-                    }
-                },
-                {
-                    "To", new Dictionary<string, object>
-                    {
-                        { Row, move.To.Row },
-                        { Column, move.To.Column }
-                    }
-                }
-            };
-            result.Add(dict);
-        }
-
-        return result;
-    }
-
-    private Dictionary<string, object> ConvertArrangement(ArrangementEntry[] arrangement)
-    {
-        var result = new Dictionary<string, object>();
-
-        for (var i = 0; i < arrangement.Length; i++)
-        {
-            var entry = arrangement[i];
-            var dict = new Dictionary<string, object>
-            {
-                { Row, entry.row },
-                { Column, entry.column },
-                { PieceType, entry.pieceType.ToString() }
-            };
-
-            // Add the entry to the result dictionary with a key like "0", "1", "2", etc.
-            result[i.ToString()] = dict;
-        }
-
-        return result;
-    }
-
-    public async Task LoadAllHistory(List<string> historyIDs, Action<List<HistoryMatchData>> callback)
-    {
-        if (historyIDs == null)
-            return;
-
-        await GetAllHistoryTask(historyIDs).ContinueWithOnMainThread(task =>
-        {
-            if (!task.IsCompleted || task.IsFaulted)
-            {
-                Debug.LogError("Error getting history: " + task.Exception);
-            }
-            else
-            {
-                var historyMatches = task.Result;
-                callback?.Invoke(historyMatches);
-            }
-        });
-        
-        return;
-        
-        async Task<List<HistoryMatchData>> GetAllHistoryTask(List<string> list)
-        {
-            var tasks = list.Select(historyID => GetHistory(historyID));
-            var results = await Task.WhenAll(tasks);
-
-            return results.Where(match => match != null).ToList();
-        }
-
-    }
-
-    private async Task<HistoryMatchData> GetHistory(string historyID)
-    {
-        try
-        {
-            var docRef = _db.Collection(MatchesDataCollectionName).Document(historyID);
-            var snapshot = await docRef.GetSnapshotAsync();
-
-
-            if (snapshot.Exists)
-            {
-                await Task.Yield(); //Optimization
-                // Парсинг даних із документа
-                var winnerID = snapshot.GetValue<string>(WinnerID);
-                var date = snapshot.GetValue<DateTime>(Date);
-                var player1ID = snapshot.GetValue<string>(Player1ID);
-                var player1Elo = snapshot.GetValue<int>(Player1Elo);
-                var arrangementList1 =
-                    ParseArrangement(snapshot.GetValue<Dictionary<string, object>>(ArrangementList1));
-                var player2ID = snapshot.GetValue<string>(Player2ID);
-                var player2Elo = snapshot.GetValue<int>(Player2Elo);
-                var arrangementList2 =
-                    ParseArrangement(snapshot.GetValue<Dictionary<string, object>>(ArrangementList2));
-
-                var moveHistory =
-                    ParseMoveList(snapshot.GetValue<List<Dictionary<string, object>>>(MoveHistory));
-                var player1Name = await GetPlayerName(player1ID);
-                var player2Name = await GetPlayerName(player2ID);
-                var historyMatchData = new HistoryMatchData
-                (
-                    snapshot.Id,
-                    winnerID,
-                    date,
-                    player1ID,
-                    player1Elo,
-                    player1Name,
-                    arrangementList1,
-                    player2ID,
-                    player2Elo,
-                    player2Name,
-                    arrangementList2,
-                    moveHistory
-                );
-                return historyMatchData;
-            }
-            else
-            {
-                Debug.LogError($"Документ із ID {historyID} не знайдено.");
-                return null;
-            }
-        }
-        catch (Exception ex)
-        {
-            Debug.LogError($"Error in GetHistory for ID {historyID}: {ex.Message}");
-        }
-        return null;
-    }
-
-
-    private ArrangementEntry[] ParseArrangement(Dictionary<string, object> arrangementData)
-    {
-        var result = new List<ArrangementEntry>();
-
-        foreach (var item in arrangementData)
-        {
-            var entryData = item.Value as Dictionary<string, object>;
-
-            if (entryData != null)
-            {
-                var arrangementEntry = new ArrangementEntry
-                {
-                    row = Convert.ToInt32(entryData[Row]),
-                    column = Convert.ToInt32(entryData[Column]),
-                    pieceType = Enum.Parse<PieceType>(entryData[PieceType].ToString())
-                };
-
-                result.Add(arrangementEntry);
-            }
-            else
-            {
-                Debug.LogError($"Помилка парсингу розстановки: невірний формат даних для ключа {item.Key}");
-            }
-        }
-
-        return result.ToArray();
-    }
-
-    private List<int4> ParseMoveList(List<Dictionary<string, object>> moveData)
-    {
-        var result = new List<int4>();
-
-        foreach (var moveDict in moveData)
-        {
-            var fromData = moveDict["From"] as Dictionary<string, object>;
-            var toData = moveDict["To"] as Dictionary<string, object>;
-
-            if (fromData != null && toData != null)
-            {
-                var move = new int4
-                {
-                    x = Convert.ToInt32(fromData[Row]),
-                    y = Convert.ToInt32(fromData[Column]),
-                    z = Convert.ToInt32(toData[Row]),
-                    w = Convert.ToInt32(toData[Column])
-                };
-
-                result.Add(move);
-            }
-            else
-            {
-                Debug.LogError("Помилка розбору руху: формат даних неправильний.");
-            }
-        }
-
-        return result;
-    }
-
-    public void Dispose()
-    {
-        if (_cancellationTokenSource != null && !_cancellationTokenSource.IsCancellationRequested)
-        {
-            _cancellationTokenSource.Cancel();
-            _cancellationTokenSource.Dispose();
-            _cancellationTokenSource = null;
-        }
-        Debug.Log("FirestoreManager tasks canceled and disposed.");
-    }
-
-    #endregion
     
+    public void Login(FirebasePlayerData playerData)
+    {
+        PlayerData = playerData;
+        RealtimeDatabase = new RealtimeDatabase(playerData.ID, PlayerDataManager.AddFriend, _advancedMatchmaking);
+        OnLogin?.Invoke();
+    }
 }
-#endif

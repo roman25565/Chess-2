@@ -20,19 +20,14 @@ public class Global : IDisposable
 {
     public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";
     public CellStates CellStates;
-#if !UNITY_SERVER
     public FirestoreManager FirestoreManager;
-#endif
     public List<ArrangementEntry> MyArrangements;
     public Dictionary<PieceType, PieceData> Pieces;
+    public Sound Sound;
 
     public bool IsSignIn;
     public EndGameType EndGameType;
-    public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates
-#if !UNITY_SERVER 
-, FirestoreManager firestoreManager
-#endif
-)
+    public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates, FirestoreManager firestoreManager)
     {
         MyArrangements = RepackingArrangement(arrangement);
         CellStates = cellStates;

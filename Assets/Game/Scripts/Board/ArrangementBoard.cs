@@ -117,7 +117,6 @@ public class ArrangementBoard : AbstractBoard
         foreach (var vector2Int in _allPoints)
         {
             var cell = GetCell(vector2Int.x, vector2Int.y);
-            Debug.Log("x" + vector2Int.x);
             if (cell.Piece != null)
             {
                 arrangements.Add(new ArrangementEntry{row = cell.Row, column = cell.Column, pieceType = cell.Piece.PieceType});

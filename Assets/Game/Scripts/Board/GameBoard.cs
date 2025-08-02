@@ -9,7 +9,6 @@ public class GameBoard : AbstractBoard
     private bool _lastMoveIsFantom;
     public override void ArrangeFigures(MatchData matchData, bool needRotate = true)
     {
-        Debug.Log("ArrangeFigures 2:1");
         ArrangeFigures(matchData.Player1, needRotate);
         ArrangeFigures(matchData.Player2, needRotate);
     }
@@ -66,7 +65,6 @@ public class GameBoard : AbstractBoard
         ForEachCell(cell =>
         {
             if (cell.Piece == null) return;
-            Debug.Log(cell.Piece.OwnerId);
             if (cell.Piece.OwnerId == connectedPlayerId)
                 connectedPlayerPiecesList.Add(new ArrangementEntry { row = cell.Row, column = cell.Column, pieceType = cell.Piece.PieceType });
             else if (cell.Piece.OwnerId == remainingPlayerId)
