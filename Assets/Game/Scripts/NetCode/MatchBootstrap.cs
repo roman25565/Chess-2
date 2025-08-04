@@ -107,7 +107,7 @@ public class MatchBootstrap : NetworkBehaviour
 
         if (_player1 != null && _player0 != null)
         {
-            _advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
+            _advancedMatchmaking = FindAnyObjectByType<AdvancedMatchmaking>();
             _advancedMatchmaking.CancelMatchmaking(false);
             
             var whitePlayerId = GetWhitePlayerId(_player0.ID, _player1.ID);
@@ -283,7 +283,7 @@ public class MatchBootstrap : NetworkBehaviour
                       $"P2: NetworkID={data.Player2.PlayerId} | FirebaseID={data.Player2.FirebasePlayer?.ID ?? "null"} | IsMoving={data.Player2.IsMoving} | Color={(data.Player2.IsWhite ? "White" : "Black")}\n" +
                       $"Current Moving Player: {(data.MovingPlayerId == data.Player1.PlayerId ? "P1" : "P2")}\n" +
                       $"Time Remaining: P1={data.Player1.TimeToMove:F1}s | P2={data.Player2.TimeToMove:F1}s");
-            _advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
+            _advancedMatchmaking = FindAnyObjectByType<AdvancedMatchmaking>();
             await _advancedMatchmaking.MigrateHost(data, OwnerClientId);
             var anotherPlayerId = data.GetAnotherPlayerData(0).PlayerId; // 0 is host id
             SendReConnectRequest(anotherPlayerId);

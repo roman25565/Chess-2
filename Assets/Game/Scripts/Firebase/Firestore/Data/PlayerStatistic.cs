@@ -57,8 +57,8 @@ namespace Statistics
         
 
         // Методи для роботи з датами
-        public DateTime GetRegistrationDate() => RegistrationDate.ToDateTime();
-        public DateTime GetLastPlayedDate() => LastPlayedDate.ToDateTime();
+        public DateTime GetRegistrationDate() => RegistrationDate.ToDateTime().ToLocalTime();
+        public DateTime GetLastPlayedDate() => LastPlayedDate.ToDateTime().ToLocalTime();
         public void SetRegistrationDate(DateTime date) => RegistrationDate = Timestamp.FromDateTime(date);
         public void SetLastPlayedDate(DateTime date) => LastPlayedDate = Timestamp.FromDateTime(date);
     }

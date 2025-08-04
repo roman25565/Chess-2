@@ -1,5 +1,5 @@
-using System;
 using System.Collections.Generic;
+using Game.Scripts.UI.PlayerProfile;
 using Setting;
 using UnityEngine;
 using Zenject;
@@ -8,54 +8,45 @@ namespace UI
 {
 public class FriendsPanel : MonoBehaviour
 {
-    [SerializeField] private HistotyMatchButton buttonPrefab;
+    [SerializeField] private FriendsButton buttonPrefab;
     [SerializeField] private MainMenu mainMenu;
     [SerializeField] private Transform parentPanel;
     [Inject] private Global _global;
     private string _targetPlayerId;
         
-        
-    private void AddButton(HistoryMatchData historyMatchData)
-    {
-        var button = Instantiate(buttonPrefab, parentPanel);
-        button.SetButton(historyMatchData, mainMenu);
-    }
-
+    private List<Notification> _notifications = new();
+    
     public void SetTargetId(string id)
     {
         _targetPlayerId = id;
     }
-
-    public void OnEnable()
+    public void ReloadUI()
     {
         DestroyButtons();
         if (_targetPlayerId == null) return;
-        _global.FirestoreManager.LoadHistory(_targetPlayerId,AddButtons);
+        _global.FirestoreManager.LoadPlayerData(_targetPlayerId,(arg, player) =>
+        {
+            player.FriendIds.ForEach(id =>
+            {
+                _global.FirestoreManager.LoadPlayerData(id, AddButton);
+            });
+        });
     }
+    
+    private void AddButton(string id, FirebasePlayerData player)
+    {
+        Debug.Log($"AddButton {id}, {player == null}");
+        if (player == null) return;
+        
+        var button = Instantiate(buttonPrefab, parentPanel);
+        ProjectContext.Instance.Container.InjectGameObject(button.gameObject);
+        button.SetButton(player, mainMenu, transform, _notifications);
+    }
+
         
     private void OnDisable()
     {
         _targetPlayerId = null;
-    }
-
-    private void AddButtons(string id, List<HistoryMatchData> historyMatches)
-    {
-        if (id != _targetPlayerId) return;
-        if (historyMatches.Count == 0)
-        {
-            OnEmpty();
-            return;
-        }
-            
-        foreach (var historyMatchData in historyMatches)
-        {
-            AddButton(historyMatchData);
-        }
-    }
-
-    private void OnEmpty()
-    {
-        throw new NotImplementedException();
     }
 
 

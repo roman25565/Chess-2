@@ -111,6 +111,11 @@ public class FriendRequestsManager
             throw;
         }
     }
+
+    public async void DeleteFriendRequest(string myId, string friendId)
+    {
+        
+    }
     
     private void GetReceivedFriendRequests()
     {

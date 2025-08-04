@@ -20,30 +20,20 @@ public class HistotyMatchButton : MonoBehaviour
     [SerializeField] private Sprite scopeDraw;
     [SerializeField] private Image scopeImage;
     
-    [SerializeField] private TextMeshProUGUI player1Name;
-    [SerializeField] private TextMeshProUGUI player1Elo;
-    [SerializeField] private TextMeshProUGUI player2Name;
-    [SerializeField] private TextMeshProUGUI player2Elo;
+    [SerializeField] private TextMeshProUGUI player1NameAndElo;
+    [SerializeField] private TextMeshProUGUI player2NameAndElo;
     
     private void Awake()
     {
         ProjectContext.Instance.Container.InjectGameObject(gameObject);
     }
-    
-    public void SetButton(HistoryMatchData historyMatchData, MainMenu mainMenu)
+
+    public void SetButton(HistoryMatchData historyMatchData, MainMenu mainMenu, string targetPlayerId)
     {
-        try
-        {
-            var iFirstPlayer = historyMatchData.FirestorePlayer1Id == _global.FirestoreManager.PlayerData.ID;
-            SetPlayers(historyMatchData);
-            SetScope(historyMatchData, iFirstPlayer);
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e);
-            Console.WriteLine(e);
-            throw;
-        }
+        var iFirstPlayer = historyMatchData.FirestorePlayer1Id == targetPlayerId;
+        SetPlayers(historyMatchData);
+        SetScope(historyMatchData, iFirstPlayer);
+
         button.onClick.AddListener(() =>
         {
             mainMenu.ShowEditBoard();
@@ -81,11 +71,8 @@ public class HistotyMatchButton : MonoBehaviour
 
     private void SetPlayers(HistoryMatchData historyMatchData)
     {
-        player1Name.text = historyMatchData.Player1Name;
-        player1Elo.text = $"({historyMatchData.Player1Elo.ToString()})";
-        
-        player2Name.text = historyMatchData.Player2Name;
-        player2Elo.text = $"({historyMatchData.Player2Elo.ToString()})";
+        player1NameAndElo.text = $"{historyMatchData.Player1Name} ({historyMatchData.Player1Elo})";
+        player2NameAndElo.text = $"{historyMatchData.Player2Name} ({historyMatchData.Player2Elo})";
     }
 #endif
 }

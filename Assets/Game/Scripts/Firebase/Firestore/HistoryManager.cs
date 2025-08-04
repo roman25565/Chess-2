@@ -73,7 +73,7 @@ public class HistoryManager
         catch (Exception ex)
         {
             Debug.LogError($"Error in GetHistory for ID {historyID}: {ex.Message}");
-        
+            callback?.Invoke(null);
         }
     }
 

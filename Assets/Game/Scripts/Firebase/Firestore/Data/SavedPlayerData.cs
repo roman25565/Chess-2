@@ -81,7 +81,7 @@ public class PlayerHistoryLoader : SavedPlayerDataLoader<List<HistoryMatchData>>
         Action<string, UnityAction<HistoryMatchData>> loadHistoryMethod)
         : base(null)
     {
-        thisData = thisData;
+        _thisData = thisData;
         _loadHistoryMethod = loadHistoryMethod;
     }
     public override void Load(string playerId, UnityAction<string, List<HistoryMatchData>> callback)
@@ -108,7 +108,7 @@ public class PlayerHistoryLoader : SavedPlayerDataLoader<List<HistoryMatchData>>
                     if (history.Count == playerData.HistoryMatchIDs.Count)
                     {
                         IsLoading = false;
-                        OnLoaded.RemoveListener(callback);
+                        OnLoaded?.RemoveListener(callback);
                     }
                 }));
             }

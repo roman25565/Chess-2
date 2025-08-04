@@ -53,11 +53,7 @@ public class FirestoreManager
             {
                 Debug.LogError("Could not resolve all Firebase dependencies: " + dependencyStatus);
             }
-            
-            StatisticManager = new StatisticManager(_db);
-            HistoryManager = new HistoryManager(_db, this);
-            PlayerDataManager = new PlayerDataManager(_db, this, PlayersDataCollectionName, NameKey, PlayerData.ID);;
-            
+
             await Task.Yield();
         }
         catch (Exception e)
@@ -66,14 +62,19 @@ public class FirestoreManager
             Console.WriteLine(e);
             throw;
         }
+
+        StatisticManager = new StatisticManager(_db);
+        HistoryManager = new HistoryManager(_db, this);
+        PlayerDataManager = new PlayerDataManager(_db, this, PlayersDataCollectionName, NameKey);
+
     }
-    
-    
+
+
     private Dictionary<string, SavedPlayerData> _savedPlayers = new();
 
     private SavedPlayerData GetSavedPlayer(string targetPlayerId)
     {
-        if (_savedPlayers[targetPlayerId] != null) return _savedPlayers[targetPlayerId];
+        if (_savedPlayers.TryGetValue(targetPlayerId, out var player)) return player;
         
         var newSavedPlayer = new SavedPlayerData(StatisticManager.GetPlayerStatistic, PlayerDataManager.GetPlayerData, HistoryManager.LoadHistory);
         _savedPlayers.Add(targetPlayerId, newSavedPlayer);
@@ -87,8 +88,19 @@ public class FirestoreManager
         player.History.Load(targetPlayerId, callback);
     }
 
+    public void LoadPlayerData(string targetPlayerId, UnityAction<string, FirebasePlayerData> callback)
+    {
+        var player = GetSavedPlayer(targetPlayerId);
+        
+        player.PlayerData.Load(targetPlayerId, callback);
+    }
 
-
+    public void LoadStatistic(string targetPlayerId, UnityAction<string, PlayerStatistic> callback)
+    {
+        var player = GetSavedPlayer(targetPlayerId);
+        
+        player.Statistic.Load(targetPlayerId, callback);
+    }
 
     public void SaveMatchHistory(string winnerID,
         string player1ID, int player1Elo, ArrangementEntry[] arrangement1,
@@ -124,6 +136,7 @@ public class FirestoreManager
     {
         PlayerData = playerData;
         RealtimeDatabase = new RealtimeDatabase(playerData.ID, PlayerDataManager.AddFriend, _advancedMatchmaking);
+        PlayerDataManager.SetPlayerDataID(PlayerData.ID);
         OnLogin?.Invoke();
     }
 }

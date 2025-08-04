@@ -57,7 +57,7 @@ public class MatchCore : NetworkBehaviour
 
 
     public bool IsRotated => _matchData.GetPlayerData(_myId).IsRotate;
-    public bool IsWhite => _matchData.GetPlayerData(_myId).IsWhite;
+    private bool IsWhite => _matchData.GetPlayerData(_myId).IsWhite;
 
     private ulong GetWhitePlayerId =>
         _matchData.Player1.IsWhite ? _matchData.Player1.PlayerId : _matchData.Player2.PlayerId;
@@ -245,7 +245,7 @@ public class MatchCore : NetworkBehaviour
     }
 #endif
     [Rpc(SendTo.ClientsAndHost)]
-    public void UseMoveCommandRpc(Vector2Int from, Vector2Int to, ulong playerId)
+    private void UseMoveCommandRpc(Vector2Int from, Vector2Int to, ulong playerId)
     {
         Debug.Log("UseMoveCommandRpc");
         if (IsOwner && IsClient) UseMove(from, to, playerId);
@@ -309,7 +309,7 @@ public class MatchCore : NetworkBehaviour
     public void UpdateServerData()
     {
        // GetMigratedMatchData();
-       var advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
+       var advancedMatchmaking = FindAnyObjectByType<AdvancedMatchmaking>();
        _matchData = advancedMatchmaking.GetMigretedMatchData();
     }
 
@@ -464,7 +464,7 @@ public class MatchCore : NetworkBehaviour
         ChangeDataIP(oldId, clientId);
     }
 
-    public void ChangeDataIP(ulong oldId, ulong newClientId)
+    private void ChangeDataIP(ulong oldId, ulong newClientId)
     {
         if (_gameEnded || !IsOwner) return;
         if(oldId == newClientId) return;
@@ -522,11 +522,11 @@ public class MatchCore : NetworkBehaviour
         return _matchData;
     }
 
-    public string GetFirestoreId(ulong PlayerId)
+    public string GetFirestoreId(ulong playerId)
     {
         Debug.Log("GetFirestoreId");
-        Debug.Log(PlayerId);
-        return _matchData.Player1.PlayerId == PlayerId
+        Debug.Log(playerId);
+        return _matchData.Player1.PlayerId == playerId
             ? _matchData.Player1.FirebasePlayer.ID
             : _matchData.Player2.FirebasePlayer.ID;
     }
@@ -639,9 +639,9 @@ public class MatchCore : NetworkBehaviour
                   $"Time Remaining: P1={_matchData.Player1.TimeToMove:F1}s | P2={_matchData.Player2.TimeToMove:F1}s");
     }
 
-    public MatchData GetMigratedMatchData(ulong oldId, ulong newId)
+    private MatchData GetMigratedMatchData(ulong oldId, ulong newId)
     {
-        var advancedMatchmaking = FindObjectOfType<AdvancedMatchmaking>();
+        var advancedMatchmaking = FindAnyObjectByType<AdvancedMatchmaking>();
 
         var matchData = advancedMatchmaking.GetMigretedMatchData();
         Debug.Log($"Core OnHostMigratedRpc Pl1 {matchData.Player1.PlayerId}, Pl2 {matchData.Player2.PlayerId}");

@@ -303,7 +303,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         var whitePlayerId = player1.IsWhite ?  player1.PlayerId : player2.PlayerId;
 
         await HostMatch(null, false);
-        var matchBootstrap = FindObjectOfType<MatchBootstrap>();
+        var matchBootstrap = FindAnyObjectByType<MatchBootstrap>();
         matchBootstrap.OnHostMigratedRpc(
             player1.PlayerId,player1.FirebasePlayer.ID, player1.StartArrangement, player1.TimeToMove,
             player2.PlayerId,player2.FirebasePlayer.ID, player2.StartArrangement, player2.TimeToMove,

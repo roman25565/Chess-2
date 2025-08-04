@@ -10,7 +10,6 @@ public class FirebasePlayerData
     public FirebasePlayerData(string id){
         ID = id;
     }
-#if !UNITY_SERVER
     public int Elo;
     public string Email;
     public List<string> HistoryMatchIDs;
@@ -34,5 +33,4 @@ public class FirebasePlayerData
         Statistic = new PlayerStatistic();
         FriendIds = friendIds;
     }
-#endif
 }

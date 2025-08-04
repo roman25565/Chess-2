@@ -8,6 +8,7 @@ using Newtonsoft.Json;
 using Setting;
 using UI;
 using Unity.Netcode;
+using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 using UnityEngine.UI;
@@ -61,10 +62,8 @@ public class Bootstrap : MonoBehaviour
             soundManager.Init(true);
             return;
         }
-
-        var isServer = Environment.GetCommandLineArgs().Any(arg => arg == "-port");
-        // isServer = true;//TO Test
-        await LoadSettings(!isServer);
+        
+        await LoadSettings();
 
         mainMenu.InitUIComponents();
         signIn.Init();
@@ -104,7 +103,7 @@ public class Bootstrap : MonoBehaviour
 
     }
 
-    private async Task LoadSettings(bool isClient)
+    private async Task LoadSettings()
     {
         var arrangement = LoadArrangement();
 
@@ -118,10 +117,9 @@ public class Bootstrap : MonoBehaviour
             Debug.LogError("CellStates not found");
         
         var firestore = new FirestoreManager(advancedMatchmaking);
-        if (isClient)
-        {
-            await firestore.Init();
-        }
+        
+        await firestore.Init();
+        
 
         _global.Init(arrangement, piecesData, cellStates, firestore);
     }
@@ -131,20 +129,14 @@ public class Bootstrap : MonoBehaviour
         SignInFireBase(user);
     }
 
-    public void OnSignInDebug(string id)
+    public void OnSignInDebug(GoogleSignInUser user)
     {
-        SignInFireBase(new GoogleSignInUser { UserId = id });
+        SignInFireBase(user);
     }
 
     private void SignInFireBase(GoogleSignInUser user)
     {
         Debug.Log("SignInFireBase " + user);
-#if !UNITY_SERVER
-        if (user == null)
-        {
-            _global.FirestoreManager.PlayerDataManager.SingUp(user.UserId);
-            return;
-        }
 
         _ = _global.FirestoreManager.PlayerDataManager.GetPlayerData(user.UserId, CallBack);
         
@@ -152,10 +144,10 @@ public class Bootstrap : MonoBehaviour
 
         void CallBack(FirebasePlayerData result)
         {
-            Debug.Log("CallBack: " + result);
-            if (result == null)//TODO WTF
+            if (result == null)
             {
-                _global.FirestoreManager.PlayerDataManager.SingUp(user);
+                _global.FirestoreManager.PlayerDataManager.CreatePlayerData(user);
+                _ = _global.FirestoreManager.StatisticManager.CreatePlayerStatistics(user.UserId);
             }
             else
             {
@@ -163,7 +155,6 @@ public class Bootstrap : MonoBehaviour
                 _global.FirestoreManager.Login(result);
             }
         }
-#endif
     }
 
 

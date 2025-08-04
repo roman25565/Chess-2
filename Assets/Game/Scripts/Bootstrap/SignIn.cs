@@ -59,60 +59,64 @@ public class SignIn : MonoBehaviour
     
     public void OnSignInDebug()
     {
-        bootstrap.OnSignInDebug("001");
-        UpdateUI(new GoogleSignInUser{UserId = "001", ImageUrl = new Uri("https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no")});
+        var user = new GoogleSignInUser
+        {
+            UserId = "001",
+            ImageUrl = new Uri(
+                "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no"),
+            Email = "<EMAIL>", DisplayName = "Alpha",
+        }; 
+        bootstrap.OnSignInDebug(user);
+        UpdateUI(user);
     }
     
     public void OnSignInDebug2()
     {
         var user = new GoogleSignInUser
         {
-            UserId = "1039908",
-            Email = "testttt@gmail.com", DisplayName = "halddtura0*//",
-        };
-        
-        string defaultImageUrl =
-            "https://lh3.googleusercontent.com/a/ACg8ocL4wCFqm80fhBx6h117v0DUgjklmq84dmQf6ViCtsv01_y3W9zq";
-        if (user.ImageUrl == null)
-        {
-            Debug.LogError("user.ImageUrl is null");
-            user.ImageUrl = new Uri(defaultImageUrl);
-        }
-        
-        bootstrap.OnSignIn(user);
+            UserId = "002",
+            ImageUrl = new Uri(
+                "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no"),
+            Email = "<EMAIL>", DisplayName = "Beta",
+        }; 
+        bootstrap.OnSignInDebug(user);
         UpdateUI(user);
-        
     }
     
     public void OnSignInDebug3()
     {
         var user = new GoogleSignInUser
         {
-            UserId = "103990844753421114504",
-            Email = "halturach@gmail.com", DisplayName = "haltura0*//",
+            UserId = "003",
             ImageUrl = new Uri(
-                "https://lh3.googleusercontent.com/a/ACg8ocIjApkKKdmwnIjpScmQaPwOVEvC_PTAmgIWU8RmEf921fozJ91N")
-        };
-        bootstrap.OnSignIn(user);
+                "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no"),
+            Email = "<EMAIL>", DisplayName = "Omega",
+        }; 
+        bootstrap.OnSignInDebug(user);
         UpdateUI(user);
     }
     
     public void OnSignOut()
     {
 
-        try
-        {
-            mainMenu.EnableSignInPanel();
+            mainMenu.ShowSignInPanel();
             
+            LoadLastSignType(out var type);
             Debug.Log("Calling SignOut");
-            GoogleSignIn.DefaultInstance.SignOut();
+            if (type == SignTypes.Google)
+            {
+                try
+                {
+                    GoogleSignIn.DefaultInstance.SignOut();
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                    throw;
+                }
+            }
+            
             PlayerPrefs.SetString(SignTypeKey, SignTypes.None.ToString());
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e);
-            throw;
-        }
     }
 
 

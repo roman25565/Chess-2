@@ -31,12 +31,16 @@ public class PlayerDataManager
     private FirebaseFirestore _db;
     private FirestoreManager _firestoreManager;
     
-    public PlayerDataManager(FirebaseFirestore db, FirestoreManager firestoreManager ,string playersDataCollectionName, string nameKey, string myId)
+    public PlayerDataManager(FirebaseFirestore db, FirestoreManager firestoreManager ,string playersDataCollectionName, string nameKey)
     {
         _db = db;
         _firestoreManager = firestoreManager;
         PlayersDataCollectionName = playersDataCollectionName;
         NameKey = nameKey;
+    }
+    
+    public void SetPlayerDataID(string myId)
+    {
         _myId = myId;
     }
     
@@ -102,7 +106,7 @@ public class PlayerDataManager
             }
             else
             {
-                Debug.Log("snapshot NOT.Exists:");
+                Debug.Log($"snapshot NOT.Exists: {PlayersDataCollectionName}, {playerId}");
                 callback(null);
                 return null;
             }
@@ -137,7 +141,7 @@ public class PlayerDataManager
         }
     }
 
-    public void SingUp(string testId)
+    public void CreatePlayerData(string testId)
     {
         var player = new Dictionary<string, object>
         {
@@ -153,13 +157,13 @@ public class PlayerDataManager
             {FriendIdsKey, new object[]{} }
         };
 
-        SingUp(player, testId);
+        CreatePlayerData(player, testId);
     }
 
 
-    public void SingUp(GoogleSignInUser user)
+    public void CreatePlayerData(GoogleSignInUser user)
     {
-        Debug.LogError($"user.DisplayName: {user.DisplayName}, user.Email: {user.Email}, user.UserId: {user.UserId}, user.ImageUrl: {user.ImageUrl}");
+        Debug.Log($"CreatePlayerData user.DisplayName: {user.DisplayName}, user.Email: {user.Email}, user.UserId: {user.UserId}, user.ImageUrl: {user.ImageUrl}");
 
         var player = new Dictionary<string, object>
         {
@@ -171,10 +175,10 @@ public class PlayerDataManager
             { HistoryIDsKey, new object[] { } },
             { FriendIdsKey, new object[] { } }
         };
-        SingUp(player, user.UserId);
+        CreatePlayerData(player, user.UserId);
     }
 
-    private void SingUp(Dictionary<string, object> playerData, string playerId)
+    private void CreatePlayerData(Dictionary<string, object> playerData, string playerId)
     {
         var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
         docRef.SetAsync(playerData).ContinueWithOnMainThread(setTask =>
@@ -185,24 +189,29 @@ public class PlayerDataManager
             }
             else
             {
-                GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()), sprite =>
-                {
-                    Debug.Log("Player SingUp successfully.");
-                    var firebasePlayerData = new FirebasePlayerData
-                    (
-                        playerData[IDKey].ToString(),
-                        playerData[NameKey].ToString(),
-                        int.Parse(playerData[EloKey].ToString()),
-                        sprite,
-                        playerData[EmailKey].ToString(),
-                        new List<string>(),
-                        new List<string>()
-                    );
-                    _firestoreManager.Login(firebasePlayerData);
-                });
+                OnPlayerDataCreated(playerData);
             }
 
             return Task.CompletedTask;
+        });
+    }
+
+    private void OnPlayerDataCreated(Dictionary<string, object> playerData)
+    {
+        GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()), sprite =>
+        {
+            Debug.Log("Player SingUp successfully.");
+            var firebasePlayerData = new FirebasePlayerData
+            (
+                playerData[IDKey].ToString(),
+                playerData[NameKey].ToString(),
+                int.Parse(playerData[EloKey].ToString()),
+                sprite,
+                playerData[EmailKey].ToString(),
+                new List<string>(),
+                new List<string>()
+            );
+            _firestoreManager.Login(firebasePlayerData);
         });
     }
 

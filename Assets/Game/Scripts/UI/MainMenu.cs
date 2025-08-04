@@ -26,6 +26,8 @@ namespace UI
         [SerializeField] private PlayerProfileController profilePanel;
         [SerializeField] private NotificationPanel notificationPanel;
         [SerializeField] private GameModeSelector gameModeSelector;
+        [SerializeField] private HistoryPanel historyPanel;
+        [SerializeField] private FriendsPanel friendsPanel;
         
         
         public void Init(bool isSignIn = false)
@@ -51,11 +53,13 @@ namespace UI
             if (settingsPanel != null) settingsPanel.SetActive(false);
             if (arrangementPanel != null) arrangementPanel.SetActive(false);
             if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
-            if (profilePanel != null) profilePanel.gameObject.SetActive(false);
             if (editBoard != null) editBoard.SetActive(false);
             if (signInPanel != null) mainMenuPanel.SetActive(false);
             if (notificationPanel != null) notificationPanel.gameObject.SetActive(false);
             if (gameModeSelectorPanel != null) gameModeSelectorPanel.SetActive(false);
+            if (profilePanel != null) profilePanel.gameObject.SetActive(false);
+            if (historyPanel != null) historyPanel.gameObject.SetActive(false);
+            if (friendsPanel != null) friendsPanel.gameObject.SetActive(false);
             
             if (defaultUI != null) defaultUI.SetActive(true);
         }
@@ -99,6 +103,14 @@ namespace UI
             profilePanel.gameObject.SetActive(true);
         }
         
+        public void ShowProfilePanel(string playerID)
+        {
+            if (profilePanel == null) return;
+            DisableAllPanels();
+            profilePanel.SetTargetId(playerID);
+            profilePanel.gameObject.SetActive(true);
+        }
+        
         public void ShowEditBoard()
         {
             DisableAllPanels();
@@ -106,10 +118,12 @@ namespace UI
         }
         public void ShowSignInPanel()
         {
+            if (signInPanel == null) return;
+            
             DisableAllPanels();
-            if (signInPanel != null) signInPanel.SetActive(true);
+            signInPanel.SetActive(true);
         }
-
+        
         public void EnableFindMatchPanel()
         {
             if (findMatchPanel != null) findMatchPanel.SetActive(true);
@@ -117,11 +131,6 @@ namespace UI
         public void DisableFindMatchPanel()
         {
             if (findMatchPanel != null) findMatchPanel.SetActive(false);
-        }
-        
-        public void EnableSignInPanel()
-        {
-            if (signInPanel != null) signInPanel.SetActive(true);
         }
         public void DisableSignInPanel()
         {
@@ -180,6 +189,36 @@ namespace UI
         public void HideGameModeSelectorPanel()
         {
             if (gameModeSelectorPanel != null) gameModeSelectorPanel.SetActive(false);
+        }
+        
+        public void HideHistoryPanel()
+        {
+            if (historyPanel != null)
+            {
+                historyPanel.gameObject.SetActive(false);
+            }
+        }
+        public void ShowHistoryPanel()
+        {
+            if (historyPanel != null)
+            {
+                historyPanel.gameObject.SetActive(true);
+            }
+        }
+
+        public void HideFriendsPanel()
+        {
+            if (friendsPanel != null)
+            {
+                friendsPanel.gameObject.SetActive(false);
+            }
+        }
+        public void ShowFriendsPanel()
+        {
+            if (friendsPanel != null)
+            {
+                friendsPanel.gameObject.SetActive(true);
+            }
         }
     }
 }
