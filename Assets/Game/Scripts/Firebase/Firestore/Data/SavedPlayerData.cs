@@ -29,6 +29,8 @@ public abstract class SavedPlayerDataLoader<T>
     public bool IsLoading { get; protected set; }
     public UnityEvent<string, T> OnLoaded { get; } = new();
     public T Data { get; protected set; }
+
+    public bool IsOutdated;
     
     protected SavedPlayerDataLoader(Action<string, UnityAction<string, T>> loadMethod)
     {
@@ -37,12 +39,11 @@ public abstract class SavedPlayerDataLoader<T>
 
     protected bool TryGet(string playerId, UnityAction<string, T> callback)
     {
-        if (Data != null)
-        {
-            callback?.Invoke(playerId, Data);
-            return true;
-        }
-        return false;
+        if (IsOutdated) return false;
+        if (Data == null) return false;
+        
+        callback?.Invoke(playerId, Data);
+        return true;
     }
 
     public virtual void Load(string playerId, UnityAction<string, T> callback)
@@ -61,6 +62,7 @@ public abstract class SavedPlayerDataLoader<T>
         {
             Data = result;
             IsLoading = false;
+            IsOutdated = false;
             OnLoaded?.Invoke(id, result);
         });
     }

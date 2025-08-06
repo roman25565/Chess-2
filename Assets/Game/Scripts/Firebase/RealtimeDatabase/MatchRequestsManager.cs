@@ -30,7 +30,6 @@ public class MatchRequestsManager
     {
         _database = database;
         _currentUserId = currentUserId;
-        Debug.Log($"Current user id: {_currentUserId}");
         _onChangedRequests = onChangedRequests;
         _advancedMatchmaking = advancedMatchmaking;
 

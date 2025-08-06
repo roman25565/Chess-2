@@ -28,15 +28,15 @@ public class FriendsButton : MonoBehaviour
         _notifications = notifications;
         try
         {
-            Debug.Log($"{_global?.FirestoreManager?.PlayerData.Name}, {_global?.FirestoreManager?.PlayerData.ID}, {playerData.Name}, {playerData.ID}");
-            if (_global?.FirestoreManager?.PlayerData == null) 
+            Debug.Log($"{_global?.FirestoreManager?.MyData.Name}, {_global?.FirestoreManager?.MyData.ID}, {playerData.Name}, {playerData.ID}");
+            if (_global?.FirestoreManager?.MyData == null) 
             {
                 Debug.LogError("PlayerData is not initialized");
                 return;
             }
             
-            var myName = _global.FirestoreManager.PlayerData.Name;
-            var myId = _global.FirestoreManager.PlayerData.ID;
+            var myName = _global.FirestoreManager.MyData.Name;
+            var myId = _global.FirestoreManager.MyData.ID;
 
             playerIcon.color = new Color(255, 255, 255, 255);
             playerIcon.sprite = playerData.Icon;
@@ -45,7 +45,7 @@ public class FriendsButton : MonoBehaviour
 
             toProfileButton.onClick.AddListener(() => { mainMenu.ShowProfilePanel(playerData.ID); });
             sendMatchRequest.onClick.AddListener(() => OnSendMatchRequest(playerData.ID, myName, notificationParent));
-            var isMyFriend = _global.FirestoreManager.PlayerData.FriendIds.Contains(playerData.ID);
+            var isMyFriend = _global.FirestoreManager.MyData.FriendIdsContains(playerData.ID);
             if (isMyFriend)
             {
                 sendDeleteFriendRequest.onClick.AddListener(() => { OnsendDeleteFriendRequest(myId, playerData.ID, notificationParent); });

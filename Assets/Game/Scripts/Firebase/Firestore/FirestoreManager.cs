@@ -16,6 +16,37 @@ using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
 
+public class MyData
+{
+    public readonly string ID;
+    public Sprite Icon;
+    public readonly string Name;
+    public UnityEvent OnIconLoaded = new ();
+
+    public void GetElo(UnityAction<int> callback)
+    {
+        _firestoreManager.LoadPlayerData(ID, (arg0, arg1) =>
+        {
+            callback.Invoke(arg1.Elo);
+        });
+    }
+    
+    
+    private readonly FirestoreManager _firestoreManager; 
+    public MyData(string id, string name, Sprite icon,FirestoreManager firestoreManager)
+    {
+        ID = id;
+        Name = name;
+        Icon = icon;
+        _firestoreManager = firestoreManager;
+    }
+
+    public bool FriendIdsContains(string playerDataID)
+    {
+       var myData = _firestoreManager.GetSavedPlayer(ID);
+       return myData.PlayerData.Data.FriendIds.Contains(playerDataID);
+    }
+}
 public class FirestoreManager
 {
     private const string PlayersDataCollectionName = "Players";
@@ -23,8 +54,10 @@ public class FirestoreManager
     
     private FirebaseFirestore _db;
     private AdvancedMatchmaking _advancedMatchmaking;
-
-    public FirebasePlayerData PlayerData;
+    
+    public MyData MyData;
+    
+    
     public StatisticManager StatisticManager;
     public HistoryManager HistoryManager;
     public PlayerDataManager PlayerDataManager;
@@ -63,21 +96,21 @@ public class FirestoreManager
             throw;
         }
 
-        StatisticManager = new StatisticManager(_db);
+        StatisticManager = new StatisticManager(_db, this);
         HistoryManager = new HistoryManager(_db, this);
         PlayerDataManager = new PlayerDataManager(_db, this, PlayersDataCollectionName, NameKey);
 
     }
 
 
-    private Dictionary<string, SavedPlayerData> _savedPlayers = new();
+    private readonly Dictionary<string, SavedPlayerData> _savedPlayersData = new();
 
-    private SavedPlayerData GetSavedPlayer(string targetPlayerId)
+    public SavedPlayerData GetSavedPlayer(string targetPlayerId)
     {
-        if (_savedPlayers.TryGetValue(targetPlayerId, out var player)) return player;
+        if (_savedPlayersData.TryGetValue(targetPlayerId, out var player)) return player;
         
         var newSavedPlayer = new SavedPlayerData(StatisticManager.GetPlayerStatistic, PlayerDataManager.GetPlayerData, HistoryManager.LoadHistory);
-        _savedPlayers.Add(targetPlayerId, newSavedPlayer);
+        _savedPlayersData.Add(targetPlayerId, newSavedPlayer);
         return newSavedPlayer;
     }
 
@@ -134,9 +167,39 @@ public class FirestoreManager
     
     public void Login(FirebasePlayerData playerData)
     {
-        PlayerData = playerData;
+        MyData = new MyData(playerData.ID, playerData.Name, playerData.Icon, this);
+        var myID = MyData.ID;
+        LoadHistory(myID, (arg0, arg1) => { });;
+        LoadStatistic(myID, (arg0, arg1) => { });
+        LoadPlayerData(myID, (arg0, firebasePlayerData) =>
+        {
+            MyData.Icon = firebasePlayerData.Icon;
+        });;
         RealtimeDatabase = new RealtimeDatabase(playerData.ID, PlayerDataManager.AddFriend, _advancedMatchmaking);
-        PlayerDataManager.SetPlayerDataID(PlayerData.ID);
         OnLogin?.Invoke();
+    }
+
+    public void ForEachSavedData()
+    {
+        foreach (KeyValuePair<string, SavedPlayerData> data in _savedPlayersData)
+        {
+            if (data.Value.PlayerData.IsOutdated)
+            {
+                LoadPlayerData(data.Key, (arg0, arg1) =>
+                {
+                });
+            }
+
+            if (data.Value.Statistic.IsOutdated)
+            {
+                LoadStatistic(data.Key, (arg0, arg1) => { });
+            }
+            
+            if (data.Value.History.IsOutdated)
+            {
+                LoadHistory(data.Key, (arg0, arg1) => { });
+            }
+        }
+        
     }
 }

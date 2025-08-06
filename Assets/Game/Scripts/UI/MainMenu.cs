@@ -36,16 +36,29 @@ namespace UI
             DisableFindMatchPanel();
             ShowSignInPanel();
 
-            if (isSignIn) SetProfileImageText(_global.FirestoreManager.PlayerData);
-            _global.FirestoreManager.OnLogin.AddListener(() => SetProfileImageText(_global.FirestoreManager.PlayerData));
+            if (isSignIn) SetProfileImageText(_global.FirestoreManager.MyData);
+            if (isSignIn) SetProfileImage(_global.FirestoreManager.MyData.Icon);
+            _global.FirestoreManager.OnLogin.AddListener(OnLogin);
+
+            void OnLogin()
+            {
+                SetProfileImageText(_global.FirestoreManager.MyData);
+                if (_global.FirestoreManager.MyData.Icon != null)
+                {
+                    SetProfileImage(_global.FirestoreManager.MyData.Icon);
+                }
+                else
+                {
+                    _global.FirestoreManager.MyData.OnIconLoaded.AddListener(() =>
+                        SetProfileImage(_global.FirestoreManager.MyData.Icon));
+                }
+            }
         }
 
         public void InitUIComponents()
         {
-#if !UNITY_SERVER
             notificationPanel.Init();
             gameModeSelector.Init();
-#endif
         }
 
         private void DisableAllPanels()
@@ -99,7 +112,7 @@ namespace UI
         {
             if (profilePanel == null) return;
             DisableAllPanels();
-            profilePanel.SetTargetId(_global.FirestoreManager.PlayerData.ID);
+            profilePanel.SetTargetId(_global.FirestoreManager.MyData.ID);
             profilePanel.gameObject.SetActive(true);
         }
         
@@ -151,15 +164,17 @@ namespace UI
             profileImage.color = new Color(255, 255, 255, 255);
         }
 
-        public void SetProfileImageText(FirebasePlayerData playerData)
+        public void SetProfileImageText(MyData myData)
         {
-            profileImageText.text = $"{playerData.Name}\n({playerData.Elo})";;
+            myData.GetElo((elo =>
+            {
+                profileImageText.text = $"{myData.Name}\n({elo})";;
+            }));
         }
 
         private bool _notificationOpen;
         public void NotificationOnClick()
         {
-#if !UNITY_SERVER
             if (notificationPanel == null) return;
             
             if (_notificationOpen)
@@ -173,7 +188,6 @@ namespace UI
                 notificationPanel.OnOpen();
                 _notificationOpen = true;
             }
-#endif
         }
 
         public void DisableNotificationPanel()

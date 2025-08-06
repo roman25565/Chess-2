@@ -88,16 +88,16 @@ public class PlayerProfileController : MonoBehaviour
         sb.AppendLine($"<size=25><b>Time Played</b></size>");
         sb.AppendLine($"Total Play Time: <b>{FormatTimeSpan(statistic.TotalPlayTime)}</b>");
         sb.AppendLine(
-            $"Average Game Duration: <b>{FormatTimeSpan(TimeSpan.FromSeconds(statistic.TotalPlayTimeSeconds / Math.Max(1, statistic.TotalMatchesPlayed)))}</b>");
+            $"Average Game Duration: <b>{FormatTimeSpan(TimeSpan.FromSeconds(statistic.TotalPlayTimeHours / Math.Max(1, statistic.TotalMatchesPlayed)))}</b>");
         sb.AppendLine();
 
         // Play Style
         sb.AppendLine($"<size=25><b>Play Style</b></size>");
         sb.AppendLine(
-            $"Checkmates Given: <b>{statistic.CheckmatesGiven}</b> | Received: <b>{statistic.CheckmatesReceived}</b>");
+            $"Checkmates Given: <b>{statistic.KingsDefeated}</b> | Received: <b>{statistic.KingsLost}</b>");
         sb.AppendLine($"Resignations: <b>{statistic.Resignations}</b> | Timeouts: <b>{statistic.Timeouts}</b>");
         sb.AppendLine(
-            $"Draws: By Agreement <b>{statistic.DrawsByAgreement}</b>, By Repetition <b>{statistic.DrawsByRepetition}</b>, By Stalemate <b>{statistic.DrawsByStalemate}</b>");
+            $"Draws: <b>{statistic.DrawsByAgreement}</b>");
         sb.AppendLine();
 
         // Streaks

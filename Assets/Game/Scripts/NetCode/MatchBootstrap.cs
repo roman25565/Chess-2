@@ -64,17 +64,17 @@ public class MatchBootstrap : NetworkBehaviour
             case GameMode.Offline:
             {
                 var id = OwnerClientId;
-                SendConnectedDataRpc(id, _global.FirestoreManager.PlayerData.ID, _gameData.TimeControl, arrangementEntryArray.ArrangementEntry);
+                SendConnectedDataRpc(id, _global.FirestoreManager.MyData.ID, _gameData.TimeControl, arrangementEntryArray.ArrangementEntry);
                 break;
             }
             case GameMode.Test:
-                SendConnectedDataRpc(OwnerClientId, _global.FirestoreManager.PlayerData.ID, _gameData.TimeControl,
+                SendConnectedDataRpc(OwnerClientId, _global.FirestoreManager.MyData.ID, _gameData.TimeControl,
                     arrangementEntryArray.ArrangementEntry);
                 SendConnectedDataRpc(2, "002", _gameData.TimeControl,
                     arrangementEntryArray.ArrangementEntry);
                 break;
             case GameMode.Reconnect:
-                GetReConnectDataRpc(OwnerClientId, _global.FirestoreManager.PlayerData.ID);
+                GetReConnectDataRpc(OwnerClientId, _global.FirestoreManager.MyData.ID);
                 break;
             case GameMode.MigrateHost: 
                 break;
@@ -115,7 +115,7 @@ public class MatchBootstrap : NetworkBehaviour
             _matchData = CreateMatchData(
                 _player0.ID, firestoreId, _player0.Arrangement.ArrangementEntry, timeControl,
                 _player1.ID, firestoreId, _player1.Arrangement.ArrangementEntry, timeControl,
-                whitePlayerId);
+                whitePlayerId, timeControl);;
             _gameData.ActiveBoard.ArrangeFigures(_matchData);
             
             _ = StartMatchServer(_matchData);
@@ -133,7 +133,8 @@ public class MatchBootstrap : NetworkBehaviour
                     _player1.FirestoreId,
                     _player1.Arrangement.ArrangementEntry,
                     timeControl,
-                    whitePlayerId);
+                    whitePlayerId,
+                    timeControl);
         }
     }
 
@@ -156,14 +157,14 @@ public class MatchBootstrap : NetworkBehaviour
     private void SendToClientPlayerBootstrapDataRpc(
         ulong playerId, string firestoreId, ArrangementEntry[] arrangement, float timeControl,
         ulong playerId2, string firestoreId2, ArrangementEntry[] arrangement2, float timeControl2,
-        ulong whitePlayerId)
+        ulong whitePlayerId, float startTimeControl)
     {
         if (!IsLocalPlayer) return;
 
         _matchData = CreateMatchData(
             playerId, firestoreId, arrangement, timeControl,
             playerId2, firestoreId2, arrangement2, timeControl2,
-            whitePlayerId);
+            whitePlayerId, startTimeControl);
 
         InitCore(_matchData);
         TryArrangeFigures(_matchData);
@@ -221,7 +222,7 @@ public class MatchBootstrap : NetworkBehaviour
     private MatchData CreateMatchData(
         ulong playerId, string firestoreId, ArrangementEntry[] arrangement, float timeControl,
         ulong playerId2, string firestoreId2, ArrangementEntry[] arrangement2, float timeControl2,
-        ulong whitePlayerId)
+        ulong whitePlayerId, float startTimeControl)
     {
         return new MatchData
         {
@@ -234,7 +235,8 @@ public class MatchBootstrap : NetworkBehaviour
                 IsRotate = playerId != whitePlayerId,
                 IsWhite = playerId == whitePlayerId,
                 StartArrangement = arrangement,
-                TimeToMove = timeControl
+                TimeToMove = timeControl,
+                StartTimeToMove = startTimeControl
             },
             Player2 = new PlayerData
             {
@@ -244,7 +246,8 @@ public class MatchBootstrap : NetworkBehaviour
                 IsRotate = playerId2 != whitePlayerId,
                 IsWhite = playerId2 == whitePlayerId,
                 StartArrangement = arrangement2,
-                TimeToMove = timeControl2
+                TimeToMove = timeControl2,
+                StartTimeToMove = startTimeControl
             }
         };
     }
@@ -294,12 +297,12 @@ public class MatchBootstrap : NetworkBehaviour
     public void OnHostMigratedRpc(
         ulong playerId, string firestoreId, ArrangementEntry[] arrangement, float timeControl,
         ulong playerId2, string firestoreId2, ArrangementEntry[] arrangement2, float timeControl2,
-        ulong whitePlayerId, ulong oldId, ulong newId, RpcParams rpcParams = default)
+        ulong whitePlayerId, ulong oldId, ulong newId, float startTimeControl, RpcParams rpcParams = default)
     {
         _matchData = CreateMatchData(
             playerId, firestoreId, arrangement, timeControl,
             playerId2, firestoreId2, arrangement2, timeControl2,
-            whitePlayerId);
+            whitePlayerId, startTimeControl);
         
         var hostId = OwnerClientId == playerId ? playerId : playerId2;
         
@@ -365,13 +368,16 @@ public class MatchBootstrap : NetworkBehaviour
         serverCore.GetReconnectData(connectedPlayerId, hostPlayerId,
             out float connectedTimeToMove,
             out float hostTimeToMove,
+            out float startTimeControl,
             out ulong movingPlayerId,
             out ulong whitePlayerId,
             out ArrangementEntry[] connectedArrangement,
             out ArrangementEntry[] hostArrangement);
 
 
-        connectedPlayerBootstrap.SendToClientPlayerBootstrapDataRpc(hostPlayerId, hostPlayerFirestoreId, hostArrangement, 10, connectedPlayerId, connectedFirestoreId, connectedArrangement, 10, whitePlayerId);
+        connectedPlayerBootstrap.SendToClientPlayerBootstrapDataRpc(hostPlayerId, hostPlayerFirestoreId, hostArrangement, 10,
+            connectedPlayerId, connectedFirestoreId, connectedArrangement, 10,
+            whitePlayerId, startTimeControl);;
         
         Debug.Log($"whitePlayerId {whitePlayerId} remainingPlayerId {hostPlayerId}");
 

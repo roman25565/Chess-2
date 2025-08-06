@@ -53,6 +53,7 @@ public class Bootstrap : MonoBehaviour
     private async void Awake()
     {
         Application.targetFrameRate = 120;
+        SetupMatchButtonListeners();
         if (_global.IsSignIn)//Is Return To Main Menu
         {
             mainMenu.Init(true);
@@ -71,6 +72,10 @@ public class Bootstrap : MonoBehaviour
         soundManager.Init(true);
         adsManager.Init();
 
+    }
+
+    private void SetupMatchButtonListeners()
+    {
         startOnlineMatch.onClick.AddListener(() => { mainMenu.ShowGameModeSelectorPanel(); });
         startLocalMatch.onClick.AddListener(() =>
         {
@@ -100,7 +105,6 @@ public class Bootstrap : MonoBehaviour
             SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
             NetworkManager.Singleton.StartServer();
         });
-
     }
 
     private async Task LoadSettings()
@@ -148,6 +152,7 @@ public class Bootstrap : MonoBehaviour
             {
                 _global.FirestoreManager.PlayerDataManager.CreatePlayerData(user);
                 _ = _global.FirestoreManager.StatisticManager.CreatePlayerStatistics(user.UserId);
+                _global.IsSignIn = true;
             }
             else
             {

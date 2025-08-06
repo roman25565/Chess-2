@@ -66,9 +66,11 @@ public class AdvancedMatchmaking : MonoBehaviour
 
     public void SearchMatch(GameData gameData)
     {
-        var elo = _global.FirestoreManager.PlayerData.Elo;
-        var timeControl = gameData.TimeControl;
-        StartMatchmaking(elo, timeControl.ToString());
+        _global.FirestoreManager.MyData.GetElo(elo =>
+        {
+            var timeControl = gameData.TimeControl;
+            StartMatchmaking(elo, timeControl.ToString());
+        });
     }
 
     private async void StartMatchmaking(int playerElo, string timeControl)
@@ -307,7 +309,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         matchBootstrap.OnHostMigratedRpc(
             player1.PlayerId,player1.FirebasePlayer.ID, player1.StartArrangement, player1.TimeToMove,
             player2.PlayerId,player2.FirebasePlayer.ID, player2.StartArrangement, player2.TimeToMove,
-            whitePlayerId, oldId, 0);
+            whitePlayerId, oldId, 0, player1.StartTimeToMove);
     }
 
     public async Task ReConnectToMatch(string relayJoinCode)
@@ -356,10 +358,9 @@ public class AdvancedMatchmaking : MonoBehaviour
             NetworkManager.Singleton.StartHost();
             callback?.Invoke(joinCode);
         }
-
-        // LobbyService.Instance.DeleteLobbyAsync(_connectedLobby.Id);
-        // _connectedLobby = null;
-
+        
+        return;
+        
         void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
         {
             SceneManager.sceneLoaded -= OnSceneLoaded;
@@ -424,6 +425,7 @@ public class AdvancedMatchmaking : MonoBehaviour
             if (NetworkManager.Singleton.IsHost)
             {
                 LobbyService.Instance.DeleteLobbyAsync(_connectedLobby.Id);
+                Debug.Log("DeleteLobbyAsync");
                 if (needDisconnect)
                 {
                     NetworkManager.Singleton.Shutdown();
@@ -433,7 +435,7 @@ public class AdvancedMatchmaking : MonoBehaviour
             {
                 LobbyService.Instance.RemovePlayerAsync(_connectedLobby.Id, AuthenticationService.Instance.PlayerId);
             }
-
+            LobbyService.Instance.DeleteLobbyAsync(_connectedLobby.Id);
             _connectedLobby = null;
         }
 

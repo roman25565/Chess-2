@@ -23,8 +23,6 @@ public class PlayerDataManager
 
     private string PlayersDataCollectionName;
     private string NameKey;
-    
-    private string _myId;
     public delegate void GetPlayerDataCallBack(FirebasePlayerData result);
 
     
@@ -39,14 +37,9 @@ public class PlayerDataManager
         NameKey = nameKey;
     }
     
-    public void SetPlayerDataID(string myId)
-    {
-        _myId = myId;
-    }
-    
     public void AddFriend(string friendId)
     {
-        var docRef = _db.Collection(PlayersDataCollectionName).Document(_myId);
+        var docRef = _db.Collection(PlayersDataCollectionName).Document(_firestoreManager.MyData.ID);
         
         docRef.UpdateAsync(FriendIdsKey, FieldValue.ArrayUnion(friendId))
             .ContinueWithOnMainThread(task =>
@@ -93,14 +86,13 @@ public class PlayerDataManager
                 var existingElo = snapshot.GetValue<int>(EloKey);
                 var imageURL = snapshot.GetValue<string>(IconURLKey);
                 await Task.Yield(); //Optimization
-                var email = snapshot.GetValue<string>(EmailKey);
                 var historyIds = snapshot.GetValue<List<string>>(HistoryIDsKey);
                 var friendIds = snapshot.GetValue<List<string>>(FriendIdsKey);
 
                 Debug.Log("Load From DB");
                 GlobalTools.LoadSprite(new Uri(imageURL), sprite =>
                 {
-                    result = new FirebasePlayerData(playerId, existingName, existingElo, sprite, email, historyIds, friendIds);
+                    result = new FirebasePlayerData(playerId, existingName, existingElo, sprite, historyIds, friendIds);
                     callback(result);
                 });
             }
@@ -164,7 +156,7 @@ public class PlayerDataManager
     public void CreatePlayerData(GoogleSignInUser user)
     {
         Debug.Log($"CreatePlayerData user.DisplayName: {user.DisplayName}, user.Email: {user.Email}, user.UserId: {user.UserId}, user.ImageUrl: {user.ImageUrl}");
-
+        
         var player = new Dictionary<string, object>
         {
             { IDKey, user.UserId },
@@ -207,7 +199,6 @@ public class PlayerDataManager
                 playerData[NameKey].ToString(),
                 int.Parse(playerData[EloKey].ToString()),
                 sprite,
-                playerData[EmailKey].ToString(),
                 new List<string>(),
                 new List<string>()
             );
@@ -215,8 +206,14 @@ public class PlayerDataManager
         });
     }
 
-    public void BdSetElo(string playerId, int newElo)
+    public void BdSetMyElo(string playerId, int newElo)
     {
+        if (playerId != _firestoreManager.MyData.ID)
+        {
+            Debug.LogError("Invalid attempt to update statistics, user unavailable for this action");
+            return;
+        }
+        
         var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
 
         var updates = new Dictionary<string, object>
@@ -227,7 +224,10 @@ public class PlayerDataManager
         docRef.UpdateAsync(updates).ContinueWithOnMainThread(task =>
         {
             if (task.IsCompleted)
+            {
                 Debug.Log("Document updated successfully.");
+                _firestoreManager.GetSavedPlayer(playerId).PlayerData.IsOutdated = true;
+            }
             else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
         });
     }

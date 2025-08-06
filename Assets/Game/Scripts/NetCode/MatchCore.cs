@@ -8,6 +8,21 @@ using Unity.Netcode;
 using UnityEngine;
 using Zenject;
 
+public enum EndGameType
+{
+    Null,
+    Won,
+    Lose,
+    Draw,
+    Canceled
+}
+
+public enum WonReason
+{
+    Surrender,
+    Timeouts,
+    Null,
+}
 public class MatchData
 {
     public ulong MovingPlayerId;
@@ -40,6 +55,7 @@ public class PlayerData
     public bool IsWhite;
     public ulong PlayerId;
     public float TimeToMove;
+    public float StartTimeToMove;
 }
 
 public class MatchCore : NetworkBehaviour
@@ -84,7 +100,7 @@ public class MatchCore : NetworkBehaviour
                 {
                     var anotherPlayer = _matchData.GetAnotherPlayerData(_matchData.MovingPlayerId);
                     var winerId = anotherPlayer.PlayerId;
-                    LosePlayer(winerId);
+                    WonPlayer(winerId, WonReason.Timeouts);;
                 }
             }
 #if !UNITY_SERVER
@@ -197,34 +213,43 @@ public class MatchCore : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    private void LosePlayerClientRpc(ulong winnerId)
+    private void WonPlayerClientRpc(ulong winnerId, WonReason wonReason)
     {
+        var endGameType = winnerId == _myId ? EndGameType.Won : EndGameType.Lose;
+        HandleEndGameLogic(winnerId, endGameType, wonReason);
+    }
 
+    private void HandleEndGameLogic(ulong winnerId, EndGameType endGameType, WonReason wonReason)
+    {
 #if !UNITY_SERVER
         if (!IsOwner) return;
 
         Debug.Log("LosePlayerClientRpc");
-        _gameEnded = true;
-        _gameData.ActiveBoard.EndGame();
 
-        CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
         var isFirstPlayer = _matchData.Player1.PlayerId == _myId;
-        var isWon = winnerId == _myId;
-        _global.EndGameType = isWon ? EndGameType.Won : EndGameType.Lose;
+        var myId = _global.FirestoreManager.MyData.ID;
+        var myPlayer = _matchData.GetPlayerData(_myId); //player1 always White
+        var board = _gameData.ActiveBoard;
+        var history = board.GetHistory();
+        
+        _global.EndGameType = endGameType;
+        CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
+        var myNewElo = isFirstPlayer ? player1Elo : player2Elo;
         MatchUIManager.Instance.EndGame(_global.EndGameType, isFirstPlayer ? player1Elo : player2Elo,
             isFirstPlayer ? player2Elo : player1Elo);
+        _gameEnded = true;
+        board.EndGame();
 
+        
+        _global.FirestoreManager.PlayerDataManager.BdSetMyElo(myId, myNewElo);
+        _global.FirestoreManager.StatisticManager.UpdatePlayerStatistics(myId, myPlayer, history, endGameType, wonReason);
         if (!IsWhite) return;
 
-        _global.FirestoreManager.PlayerDataManager.BdSetElo(_matchData.Player1.FirebasePlayer.ID, player1Elo);
-        _global.FirestoreManager.PlayerDataManager.BdSetElo(_matchData.Player2.FirebasePlayer.ID, player2Elo);
-
-        var player1 = _matchData.GetPlayerData(_myId); //player1 always White
-        var player2 = _matchData.GetPlayerData(_enemyId);
+        var enemyPlayer = _matchData.GetPlayerData(_enemyId);
         _global.FirestoreManager.SaveMatchHistory(
             _matchData.GetPlayerData(winnerId).FirebasePlayer.ID,
-            player1.FirebasePlayer.ID, player1Elo, player1.StartArrangement,
-            player2.FirebasePlayer.ID, player2Elo, player2.StartArrangement,
+            myPlayer.FirebasePlayer.ID, player1Elo, myPlayer.StartArrangement,
+            enemyPlayer.FirebasePlayer.ID, player2Elo, enemyPlayer.StartArrangement,
             _gameData.ActiveBoard.GetHistory()
         );
 #endif
@@ -273,7 +298,7 @@ public class MatchCore : NetworkBehaviour
             }
             else
             {
-                LosePlayer(_matchData.MovingPlayerId);
+                WonPlayer(_matchData.MovingPlayerId, WonReason.Null);
             }
 
             return;
@@ -402,11 +427,15 @@ public class MatchCore : NetworkBehaviour
         }
     }
 
-    private void LosePlayer(ulong winnerId)
+    private void WonPlayer(ulong winnerId, WonReason wonReason)
     {
-        Debug.Log("win " + winnerId);
-        Debug.Log(IsHost.ToString() + IsServer);
-        foreach (var allMatchCore in _allMatchCores) allMatchCore.LosePlayerClientRpc(winnerId);
+        if (!IsServer)
+        {
+            Debug.LogError("WonPlayer called on client");
+            return;
+        }
+        
+        foreach (var allMatchCore in _allMatchCores) allMatchCore.WonPlayerClientRpc(winnerId, wonReason);;
     }
 
     private void Draw()
@@ -442,7 +471,7 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.Server)]
     public void TrySurrenderRpc(ulong winnerId)
     {
-        LosePlayer(winnerId);
+        WonPlayer(winnerId, WonReason.Surrender);
     }
 
 
@@ -498,7 +527,7 @@ public class MatchCore : NetworkBehaviour
 
 
     public void GetReconnectData(ulong connectedPlayerId, ulong remainingPlayerId, out float connectedTimeToMove,
-        out float remainingTimeToMove, out ulong movingPlayerId, out ulong whitePlayerId,
+        out float remainingTimeToMove,out float startTimeControl, out ulong movingPlayerId, out ulong whitePlayerId,
         out ArrangementEntry[] connectedArrangement,
         out ArrangementEntry[] hostArrangement)
     {
@@ -509,7 +538,7 @@ public class MatchCore : NetworkBehaviour
         var hostPlayer = _matchData.GetPlayerData(remainingPlayerId);
         connectedTimeToMove = connectedPlayer.TimeToMove;
         remainingTimeToMove = hostPlayer.TimeToMove;
-
+        startTimeControl = hostPlayer.StartTimeToMove;
         movingPlayerId = _matchData.MovingPlayerId;
         whitePlayerId = GetWhitePlayerId;
 

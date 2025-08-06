@@ -37,7 +37,7 @@ namespace Board
                     {
                         StartArrangement = null,
                         FirebasePlayer = null,
-                        IsRotate = historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.PlayerData.ID,
+                        IsRotate = historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.MyData.ID,
                         PlayerId = 1,
                         TimeToMove = -1,
                         IsMoving = true,
@@ -47,7 +47,7 @@ namespace Board
                     {
                         StartArrangement = null,
                         FirebasePlayer = null,
-                        IsRotate = historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.PlayerData.ID,
+                        IsRotate = historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.MyData.ID,
                         PlayerId = 2,
                         TimeToMove = -1,
                         IsMoving = false,
@@ -74,13 +74,13 @@ namespace Board
                 _global.FirestoreManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer1Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer1Id, historyMatchData.Player1Name,
-                        historyMatchData.Player1Elo, sprite, null, null,null), historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.PlayerData.ID);
+                        historyMatchData.Player1Elo, sprite, null, null), historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.MyData.ID);
                 });
                 
                 _global.FirestoreManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer2Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer2Id, historyMatchData.Player2Name,
-                        historyMatchData.Player2Elo, sprite, null, null,null), historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.PlayerData.ID);
+                        historyMatchData.Player2Elo, sprite, null, null), historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.MyData.ID);
                 });
 
                 _internalMoveHistory = new MoveHistory(Move);

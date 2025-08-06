@@ -161,22 +161,7 @@ public class SignIn : MonoBehaviour
     
     private void UpdateUI(GoogleSignInUser user)
     {
-        try
-        {
-            Debug.Log("Welcome: " + user.DisplayName + "!!!!!");
-
-            mainMenu.DisableSignInPanel();
-            
-            GlobalTools.LoadSprite(user.ImageUrl, (Sprite sprite) =>
-            {
-                mainMenu.SetProfileImage(sprite);
-            });
-        }
-        catch (Exception e)
-        {
-            Debug.LogError(e);
-            throw;
-        }
+        mainMenu.DisableSignInPanel();
     }
     
 

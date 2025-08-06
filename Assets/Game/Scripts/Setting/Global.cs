@@ -8,14 +8,6 @@ using UnityEngine;
 
 namespace Setting
 {
-public enum EndGameType
-{
-    Null,
-    Won,
-    Lose,
-    Draw,
-    Canceled
-}
 public class Global : IDisposable
 {
     public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";

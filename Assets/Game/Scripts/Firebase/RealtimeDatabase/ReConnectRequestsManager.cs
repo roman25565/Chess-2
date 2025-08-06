@@ -25,7 +25,6 @@ public class ReConnectRequestsManager
     {
         _database = database;
         _currentUserId = currentUserId;
-        Debug.Log($"Current user id: {_currentUserId}");
         _advancedMatchmaking = advancedMatchmaking;
 
         FetchRequests();
