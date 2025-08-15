@@ -13,7 +13,6 @@ using Zenject;
 public class MatchUIManager : MonoBehaviour
 {
 #if !UNITY_SERVER
-    [SerializeField] private EndGamePanel endGamePanel;
     [SerializeField] private PlayerPanel myPlayerPanel;
     [SerializeField] private PlayerPanel enemyPlayerPanel;
     
@@ -28,21 +27,10 @@ public class MatchUIManager : MonoBehaviour
 
     public void Init(PlayerData enemyPlayerData, PlayerData myPlayerData, MatchCore matchCore)
     {
-        _enemyPlayerData = enemyPlayerData;
-        _myPlayerData = myPlayerData;
         _matchCore = matchCore;
         
         SetTime(myPlayerData.TimeToMove, false);
         SetTime(enemyPlayerData.TimeToMove, true);
-    }
-    
-    public void EndGame(EndGameType type, int myNewElo = 0, int enemyNewElo = 0)
-    {
-        endGamePanel.EndGame();
-        if (type == EndGameType.Draw) return;
-        
-        myPlayerPanel.EndGame(myNewElo);
-        enemyPlayerPanel.EndGame(enemyNewElo);
     }
 
     public void SetPlayerUI(FirebasePlayerData playerData, bool isEnemyPlayer)
@@ -60,11 +48,8 @@ public class MatchUIManager : MonoBehaviour
 
     #region ButtonsHandlers
 
-    [Inject] Global _global;
+    [Inject] private Global _global;
     [SerializeField] private Button backButton;
-    [SerializeField] private Button inviteFriendButton;
-    [SerializeField] private Button inviteRematchButton;
-    [SerializeField] private Button reportButton;
     [SerializeField] private Button surrenderButton;
     [SerializeField] private Button offerDrawButton;
     [SerializeField] private Button cancelMatchButton;
@@ -73,51 +58,17 @@ public class MatchUIManager : MonoBehaviour
     
     private List<Button> _buttons;
     private PlayerData _enemyPlayerData;
-    private PlayerData _myPlayerData;
     private MatchCore _matchCore;
     
     
     private void InitButtons()
     {
         _buttons = new List<Button>();
-        // _buttons.Add(backButton);
-        // _buttons.Add(inviteFriendButton);
-        // _buttons.Add(inviteRematchButton);
-        // _buttons.Add(reportButton);
-        // _buttons.Add(surrenderButton);
-        // _buttons.Add(offerDrawButton);
-        // _buttons.Add(cancelMatchButton);
-        //
-        // backButton.onClick.AddListener(BackToMenu);
-        // inviteFriendButton.onClick.AddListener(InviteFriend);
-        // inviteRematchButton.onClick.AddListener(InviteRematch);
-        // reportButton.onClick.AddListener(ReportPlayer);
-        // surrenderButton.onClick.AddListener(Surrender);
-        // offerDrawButton.onClick.AddListener(OfferDraw);
-        // cancelMatchButton.onClick.AddListener(CancelMatch);
         
         if (backButton != null)
         {
             _buttons.Add(backButton);
             backButton.onClick.AddListener(BackToMenu);
-        }
-    
-        if (inviteFriendButton != null)
-        {
-            _buttons.Add(inviteFriendButton);
-            inviteFriendButton.onClick.AddListener(InviteFriend);
-        }
-    
-        if (inviteRematchButton != null)
-        {
-            _buttons.Add(inviteRematchButton);
-            inviteRematchButton.onClick.AddListener(InviteRematch);
-        }
-    
-        if (reportButton != null)
-        {
-            _buttons.Add(reportButton);
-            reportButton.onClick.AddListener(ReportPlayer);
         }
     
         if (surrenderButton != null)
@@ -147,32 +98,7 @@ public class MatchUIManager : MonoBehaviour
 
         void OnAccept()
         {
-            NetworkManager.Singleton.Shutdown();
-            SceneManager.LoadScene("Main", LoadSceneMode.Single);
-        }
-    }
-    
-    private void InviteFriend()
-    {
-        confirmation.Show("Invite friend to game?", OnAccept);
-        return;
-
-        void OnAccept()
-        {
-            _ = _global.FirestoreManager.RealtimeDatabase.FriendRequestsManager.SendFriendRequest(_enemyPlayerData.FirebasePlayer.ID,
-                _enemyPlayerData.FirebasePlayer.Name);
-        }
-    }
-
-    private void InviteRematch()
-    {
-        confirmation.Show("Request a rematch?", OnAccept);
-        return;
-
-        void OnAccept()
-        {
-            _ = _global.FirestoreManager.RealtimeDatabase.MatchRequestsManager.SendMatchRequest(_enemyPlayerData.FirebasePlayer.ID,
-                _enemyPlayerData.FirebasePlayer.Name);
+            _matchCore.TrySurrenderRpc();
         }
     }
 
@@ -194,7 +120,7 @@ public class MatchUIManager : MonoBehaviour
 
         void OnAccept()
         {
-            _matchCore.TrySurrenderRpc(_enemyPlayerData.PlayerId);
+            _matchCore.TrySurrenderRpc();
         }
     }
 
@@ -205,6 +131,7 @@ public class MatchUIManager : MonoBehaviour
 
         void OnAccept()
         {
+            Debug.Log("OfferDraw" + (_matchCore != null));
             _matchCore.TryOfferDrawRpc();
         }
     }
@@ -248,7 +175,7 @@ public class MatchUIManager : MonoBehaviour
 #endif
     public void OnAnotherPlayerWantsDrawRpc()
     {
-        confirmation.Show("Cancel current match?", OnAccept);
+        confirmation.Show("Accept for a draw", OnAccept);
         return;
 
         void OnAccept()

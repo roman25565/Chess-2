@@ -38,11 +38,10 @@ public abstract class AbstractPiece
     public readonly PieceType PieceType;
     public readonly int SelectedSkinIndex;
     public readonly List<Sprite> Skins;
-    public readonly List<PieceData.DirectionList> Steps;
 
     public PieceColor Color;
 
-    protected bool IsFirstMove = true;
+    public bool IsFirstMove = true;
     public bool IsRotated;
     public ulong OwnerId;
 
@@ -50,13 +49,7 @@ public abstract class AbstractPiece
     {
         PieceType = pieceData.pieceType;
         Skins = pieceData.skins;
-        SelectedSkinIndex = pieceData.selectedSkinIndex;
-        Steps = pieceData.steps;
-    }
-
-    public void Moved()
-    {
-        if (IsFirstMove) IsFirstMove = false;
+        SelectedSkinIndex = 0;//для скінів яких ніколи не буде
     }
 
     public bool IsValidMove(Cell from, Cell to)

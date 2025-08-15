@@ -9,6 +9,7 @@ public class GameBoard : AbstractBoard
     private bool _lastMoveIsFantom;
     public override void ArrangeFigures(MatchData matchData, bool needRotate = true)
     {
+        Debug.Log("ArrangeFigures " + matchData.Player1.StartArrangement.Length);
         ArrangeFigures(matchData.Player1, needRotate);
         ArrangeFigures(matchData.Player2, needRotate);
     }
@@ -22,9 +23,14 @@ public class GameBoard : AbstractBoard
             return;
         }
         MovePiece(from, to);
-        _lastMoveIsFantom  = true;
+        _lastMoveIsFantom = true;
         MatchCore.TryMove(new Vector2Int(from.Row, from.Column),
             new Vector2Int(to.Row, to.Column));
+    }
+
+    protected override bool IsFantom()
+    {
+        return _lastMoveIsFantom;
     }
 
     protected override bool IsConfirmation(Cell from, Cell to)

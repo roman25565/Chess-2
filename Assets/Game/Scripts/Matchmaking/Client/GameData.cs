@@ -11,6 +11,7 @@ public enum GameMode
 
 public class GameData
 {
+    public AdvancedMatchmaking Matchmaking;
     public AbstractBoard ActiveBoard;
     public GameMode Mode;
     public string RelayJoinCode;
@@ -20,5 +21,5 @@ public class GameData
         ActiveBoard = activeBoard;
     }
     
-    public float TimeControl = 10; 
+    public float TimeControl = 10 * 60; 
 }

@@ -69,11 +69,12 @@ public class PlayerStatistic
     {
         LastPlayedDate = Timestamp.FromDateTime(DateTime.UtcNow);
 
-        CurrentEloRating = 0; //TODO
-        PeakEloRating = PeakEloRating > CurrentEloRating ? CurrentEloRating : PeakEloRating;
-        ;
+        CurrentEloRating = playerData.FirebasePlayer.Elo;
+        PeakEloRating = PeakEloRating < CurrentEloRating ? CurrentEloRating : PeakEloRating;
         LowestEloRating = LowestEloRating > CurrentEloRating ? CurrentEloRating : LowestEloRating;
 
+        Debug.Log($"UpdateStatistics: {CurrentEloRating}, {PeakEloRating}, {LowestEloRating}");
+        
         switch (endGameType)
         {
             case EndGameType.Won:

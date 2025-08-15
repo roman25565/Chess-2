@@ -39,13 +39,14 @@ public class PlayerDataManager
     
     public void AddFriend(string friendId)
     {
+        Debug.Log("TryAdFriendId: " + friendId + "myId" + _firestoreManager.MyData.ID);
         var docRef = _db.Collection(PlayersDataCollectionName).Document(_firestoreManager.MyData.ID);
         
         docRef.UpdateAsync(FriendIdsKey, FieldValue.ArrayUnion(friendId))
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted)
-                    Debug.Log("HistoryMatchIDs updated successfully.");
+                    Debug.Log("Friend Added successfully.");
                 else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
             });
     }
@@ -85,9 +86,9 @@ public class PlayerDataManager
                 var existingName = snapshot.GetValue<string>(NameKey);
                 var existingElo = snapshot.GetValue<int>(EloKey);
                 var imageURL = snapshot.GetValue<string>(IconURLKey);
-                await Task.Yield(); //Optimization
                 var historyIds = snapshot.GetValue<List<string>>(HistoryIDsKey);
                 var friendIds = snapshot.GetValue<List<string>>(FriendIdsKey);
+                await Task.Yield(); //Optimization
 
                 Debug.Log("Load From DB");
                 GlobalTools.LoadSprite(new Uri(imageURL), sprite =>
@@ -133,23 +134,51 @@ public class PlayerDataManager
         }
     }
 
-    public void CreatePlayerData(string testId)
+    public void OnSignInAnonymously(string imageUrl, UnityAction<string> callback)
     {
         var player = new Dictionary<string, object>
         {
-            { IDKey, testId },
-            { NameKey, "BUGAGAGA" },
+            { IDKey, "<ID>" },
+            { NameKey, "<ID>" },
             { EloKey, 500 },
-            {
-                IconURLKey,
-                "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no"
-            },
-            { EmailKey, "test@gmail.com" },
+            { IconURLKey, imageUrl },
+            { EmailKey, "<EMAIL>" },
             {HistoryIDsKey, new object[]{} },
             {FriendIdsKey, new object[]{} }
         };
 
-        CreatePlayerData(player, testId);
+        _db.Collection(PlayersDataCollectionName).AddAsync(new Dictionary<string, object>()).ContinueWithOnMainThread((task =>
+        {
+            if (task.IsFaulted)
+            {
+                Debug.LogError("Failed to SingUp player: " + task.Exception);
+            }
+            else
+            {
+                var id = task.Result.Id;
+                var maxLength = id.Length / 2;
+                var name = id.Substring(0, maxLength);
+                
+                player[IDKey] = id;
+                player[NameKey] = name;
+                var docRef = _db.Collection(PlayersDataCollectionName).Document(id);
+                docRef.SetAsync(player).ContinueWithOnMainThread(updateTask =>
+                {
+                    if (updateTask.IsFaulted)
+                    {
+                        Debug.LogError("Failed to SingUp player: " + updateTask.Exception);
+                    }
+                    else
+                    {
+                        _ = _firestoreManager.StatisticManager.CreatePlayerStatistics(id);
+                        callback.Invoke(id);
+                    }
+
+                    return Task.CompletedTask;
+                });
+                
+            }
+        }));
     }
 
 
@@ -188,7 +217,7 @@ public class PlayerDataManager
         });
     }
 
-    private void OnPlayerDataCreated(Dictionary<string, object> playerData)
+    private void OnPlayerDataCreated(Dictionary<string, object> playerData, UnityAction<FirebasePlayerData> callback = null)
     {
         GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()), sprite =>
         {
@@ -202,6 +231,7 @@ public class PlayerDataManager
                 new List<string>(),
                 new List<string>()
             );
+            callback?.Invoke(firebasePlayerData);
             _firestoreManager.Login(firebasePlayerData);
         });
     }

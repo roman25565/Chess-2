@@ -23,6 +23,7 @@ public class MoveHistory
         if (InHistory && !isInternalHistoryMove) HistoryToReal();
 
         _history.Add(new Move { From = from, To = to, KilledPiece = to.Piece });
+        Debug.Log("add move Killed Piece: " + to.Piece);
         
         HistoryIndex = _history.Count;
     }

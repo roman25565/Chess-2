@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using Google;
 using Newtonsoft.Json;
 using Setting;
+using TMPro;
 using UI;
 using Unity.Netcode;
 using UnityEditor;
@@ -23,33 +24,21 @@ public class Bootstrap : MonoBehaviour
     [Inject] private GameData _gameData;
     [Inject] private Global _global;
     
-#if UNITY_EDITOR
-    private void OnValidate()
-    {
-        if (!Application.isPlaying)
-        {
-            signIn = GetComponent<SignIn>();
-            mainMenu = GetComponent<MainMenu>();
-            adsManager = GetComponent<ADSManager>();
-
-            if (advancedMatchmaking == null || signIn == null || mainMenu == null || adsManager == null)
-            {
-                Debug.LogWarning("Деякі компоненти відсутні на цьому GameObject", this);
-            }
-        }
-    }
-#endif
     [SerializeReference] private AdvancedMatchmaking advancedMatchmaking;
     [SerializeReference] private SignIn signIn;
     [SerializeReference] private MainMenu mainMenu;
     [SerializeReference] private SoundManager soundManager;
     [SerializeReference] private ADSManager adsManager;
+    [SerializeField] private ReconnectFetcher reconnectFetcher;
+    
     [SerializeField] private Button startOnlineMatch;
     [SerializeField] private Button startLocalMatch;
     [SerializeField] private Button startTestMatch;
     [SerializeField] private Button hostLocalMatch;
     [SerializeField] private Button settingsButton;
-
+    
+    [SerializeField] private GameObject networkManagerPrefab;
+    
     private async void Awake()
     {
         Application.targetFrameRate = 120;
@@ -58,25 +47,31 @@ public class Bootstrap : MonoBehaviour
         {
             mainMenu.Init(true);
             mainMenu.InitUIComponents();
-            signIn.Init(true);
             adsManager.TryStartAds();
             soundManager.Init(true);
+            _ = advancedMatchmaking.Init();
+            signIn.Init(true);
             return;
         }
         
+        if(NetworkManager.Singleton == null) Instantiate(networkManagerPrefab);
         await LoadSettings();
 
         mainMenu.InitUIComponents();
-        signIn.Init();
         mainMenu.Init();
         soundManager.Init(true);
         adsManager.Init();
-
+        _ = advancedMatchmaking.Init();
+        signIn.Init();
     }
 
     private void SetupMatchButtonListeners()
     {
         startOnlineMatch.onClick.AddListener(() => { mainMenu.ShowGameModeSelectorPanel(); });
+        advancedMatchmaking.onStateChanged.AddListener((state =>
+        {
+            startOnlineMatch.interactable = state == MatchmakingState.Cancelled ? true : false;
+        }));
         startLocalMatch.onClick.AddListener(() =>
         {
             DisableButtons();
@@ -105,6 +100,7 @@ public class Bootstrap : MonoBehaviour
             SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
             NetworkManager.Singleton.StartServer();
         });
+        
     }
 
     private async Task LoadSettings()
@@ -121,6 +117,11 @@ public class Bootstrap : MonoBehaviour
             Debug.LogError("CellStates not found");
         
         var firestore = new FirestoreManager(advancedMatchmaking);
+        firestore.OnLogin.AddListener((() =>
+        {
+            reconnectFetcher.StartFetching(() => firestore.RealtimeDatabase.ReConnectRequestsManager.FetchReConnectRequests());
+        }));
+        
         
         await firestore.Init();
         
@@ -128,14 +129,22 @@ public class Bootstrap : MonoBehaviour
         _global.Init(arrangement, piecesData, cellStates, firestore);
     }
 
-    public void OnSignIn(GoogleSignInUser user)
+    public void OnSignIn(GoogleSignInUser user, SignTypes signType)
     {
         SignInFireBase(user);
+        _ = advancedMatchmaking.OnSignIn(user.IdToken, signType);
     }
 
     public void OnSignInDebug(GoogleSignInUser user)
     {
         SignInFireBase(user);
+        _ = advancedMatchmaking.OnSignIn(user.UserId, SignTypes.None);;
+    }
+    
+    public void OnSignInAnonymously(GoogleSignInUser user)
+    {
+        SignInFireBase(user);
+        _ = advancedMatchmaking.OnSignIn(user.UserId, SignTypes.Anonymous);;
     }
 
     private void SignInFireBase(GoogleSignInUser user)

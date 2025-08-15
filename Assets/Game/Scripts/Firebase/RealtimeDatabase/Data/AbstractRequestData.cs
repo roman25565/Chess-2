@@ -14,9 +14,9 @@ public enum Type
 
 public class StatusKeys
 {
-    public readonly string PendingKey = "Pending"; 
-    public readonly string AcceptedKey = "Accepted"; 
-    public readonly string RejectedKey = "Rejected"; 
+    public const string PendingKey = "Pending";
+    public const string AcceptedKey = "Accepted";
+    public const string RejectedKey = "Rejected";
 }
 
 public abstract class AbstractRequestData

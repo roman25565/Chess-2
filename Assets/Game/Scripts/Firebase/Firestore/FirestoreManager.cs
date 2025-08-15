@@ -46,6 +46,16 @@ public class MyData
        var myData = _firestoreManager.GetSavedPlayer(ID);
        return myData.PlayerData.Data.FriendIds.Contains(playerDataID);
     }
+
+    public void SendFriendRequest(string recipientId)
+    {
+        _ = _firestoreManager.RealtimeDatabase.FriendRequestsManager.SendFriendRequest(recipientId, Name);
+    }
+
+    public void SendMatchRequest(string recipientId)
+    {
+        _ = _firestoreManager.RealtimeDatabase.MatchRequestsManager.SendMatchRequest(recipientId, Name);
+    }
 }
 public class FirestoreManager
 {
@@ -121,6 +131,13 @@ public class FirestoreManager
         player.History.Load(targetPlayerId, callback);
     }
 
+    public void LoadOneHistory(string targetPlayerId, string historyID, UnityAction<HistoryMatchData> callback)
+    {
+        var player = GetSavedPlayer(targetPlayerId);
+        
+        HistoryManager.LoadHistory(historyID, callback);
+    }
+
     public void LoadPlayerData(string targetPlayerId, UnityAction<string, FirebasePlayerData> callback)
     {
         var player = GetSavedPlayer(targetPlayerId);
@@ -138,13 +155,14 @@ public class FirestoreManager
     public void SaveMatchHistory(string winnerID,
         string player1ID, int player1Elo, ArrangementEntry[] arrangement1,
         string player2ID, int player2Elo, ArrangementEntry[] arrangement2,
-        List<Move> moveHistory)
+        List<Move> moveHistory, UnityAction<string> historyDocId)
     {
         HistoryManager.SaveMatchHistory(winnerID, player1ID, player1Elo, arrangement1, player2ID, player2Elo, arrangement2, moveHistory,
             (string id) =>
             {
                 PlayerDataManager.BdAddHistoryId(player1ID,id);
                 PlayerDataManager.BdAddHistoryId(player2ID,id);
+                historyDocId.Invoke(id);
             });
     }
     
@@ -175,7 +193,11 @@ public class FirestoreManager
         {
             MyData.Icon = firebasePlayerData.Icon;
         });;
-        RealtimeDatabase = new RealtimeDatabase(playerData.ID, PlayerDataManager.AddFriend, _advancedMatchmaking);
+        RealtimeDatabase = new RealtimeDatabase(playerData.ID, id =>
+        {
+            PlayerDataManager.AddFriend(id);
+            GetSavedPlayer(id).PlayerData.IsOutdated = true;
+        }, _advancedMatchmaking);
         OnLogin?.Invoke();
     }
 

@@ -9,10 +9,7 @@ namespace Setting
 public class PieceData : ScriptableObject
 {
     public PieceType pieceType;
-    public List<Sprite> skins;
-    public int selectedSkinIndex;
-
-    public List<DirectionList> steps = new();
+    public List<Sprite> skins;//0 white 1 Black Piece Sprite
 
     public int arrangementMin;
     public int arrangementMax;
@@ -25,12 +22,6 @@ public class PieceData : ScriptableObject
         arrangementMin = Mathf.Max(0, arrangementMin);
         arrangementMax = Mathf.Max(arrangementMin, arrangementMax);
         arrangementMax = Mathf.Max(0, arrangementMax);
-    }
-
-    [Serializable]
-    public class DirectionList
-    {
-        public List<Directions> directions = new();
     }
 }
 }

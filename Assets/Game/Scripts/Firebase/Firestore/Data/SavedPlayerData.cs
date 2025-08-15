@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Game.Scripts.Firebase.Firestore;
+using UnityEngine;
 using UnityEngine.Events;
 
 namespace Statistics
@@ -99,16 +100,18 @@ public class PlayerHistoryLoader : SavedPlayerDataLoader<List<HistoryMatchData>>
         IsLoading = true;
         _thisData.PlayerData.Load(playerId, (id, playerData) =>
         {
+            List<HistoryMatchData> history = new();
             foreach (var historyMatchID in playerData.HistoryMatchIDs)
             {
-                List<HistoryMatchData> history = new();
                 _loadHistoryMethod(historyMatchID, (data =>
                 {
                     history.Add(data);
                     Data = history;
                     OnLoaded?.Invoke(id, history);
+                    Debug.Log("History loaded" + history.Count + " / " + playerData.HistoryMatchIDs.Count);
                     if (history.Count == playerData.HistoryMatchIDs.Count)
                     {
+                        Debug.Log("History loaded Finish");
                         IsLoading = false;
                         OnLoaded?.RemoveListener(callback);
                     }

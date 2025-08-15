@@ -1,10 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Board.Piece;
 using Newtonsoft.Json;
 using Setting;
 using TMPro;
+using UI;
 using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
@@ -16,6 +18,7 @@ public class ArrangementBoard : AbstractBoard
     [SerializeField] private Cell extraCellPrefab;
     [SerializeField] private Transform extraCellParent;
     [SerializeField] private Button saveButton;
+    [SerializeField] private Button clearButton;
     private List<Vector2Int> _allPoints;
     public override bool IsMyId(ulong id) => true;
     protected override bool IsRotated => false;
@@ -43,14 +46,12 @@ public class ArrangementBoard : AbstractBoard
         
         return result;
     }
-#if !UNITY_SERVER
     private void OnDisable()
     {
         ClearBoard();
         saveButton.onClick.RemoveListener(SaveArrangement);
+        clearButton.onClick.RemoveListener(ClearArrangement);
     }
-
-#endif
     protected override void OnEnable()
     {
         base.OnEnable();
@@ -58,7 +59,7 @@ public class ArrangementBoard : AbstractBoard
         LoadArrangement();
         LoadExtraLine();
         saveButton.onClick.AddListener(SaveArrangement);
-
+        clearButton.onClick.AddListener(ClearArrangement);
     }
 
     private void SetUpPieceCount()
@@ -79,7 +80,6 @@ public class ArrangementBoard : AbstractBoard
             var pieceType = arrangement.pieceType;
             GetCell(row, column).SetPiece(Global.CreatePiece(pieceType));
             
-            _piecesCount[pieceType]++;
             SetPieceCount(pieceType, _piecesCount[pieceType] + 1);
         }
     }
@@ -97,7 +97,7 @@ public class ArrangementBoard : AbstractBoard
         
         var extraCells = new List<Cell>();
 
-        Debug.Log("Global.Pieces.Count: " + Global.Pieces.Count);
+        Debug.Log("LoadExtraLine PiecesCount: " + Global.Pieces.Count);
         for (int i = 0; i < Global.Pieces.Count; i++) {
             var item = Global.Pieces.ElementAt(i);
             
@@ -113,6 +113,7 @@ public class ArrangementBoard : AbstractBoard
 
     private void SaveArrangement()
     {
+        if (!CanSave()) return;
         var arrangements = new List<ArrangementEntry>();
         foreach (var vector2Int in _allPoints)
         {
@@ -120,14 +121,14 @@ public class ArrangementBoard : AbstractBoard
             if (cell.Piece != null)
             {
                 arrangements.Add(new ArrangementEntry{row = cell.Row, column = cell.Column, pieceType = cell.Piece.PieceType});
-                Debug.Log(cell.Row);
             }
         }
         Global.MyArrangements = arrangements;
-        SaveArrangementToJson(arrangements);
+        Debug.Log("SaveArrangement" + Global.MyArrangements.Count);
+        SaveToJson(arrangements);
     }
-
-    private void SaveArrangementToJson(List<ArrangementEntry> pieces)
+    
+    private void SaveToJson(List<ArrangementEntry> pieces)
     {
         string json = JsonConvert.SerializeObject(pieces, Formatting.Indented);
 
@@ -145,7 +146,7 @@ public class ArrangementBoard : AbstractBoard
 
     protected override bool IsValidMove(Cell from, Cell to)
     {
-        Debug.Log(to.Column);
+        if(to.Piece != null) return false;
         return to.Column > 4 && to.Column < 8;
     }
 
@@ -161,8 +162,7 @@ public class ArrangementBoard : AbstractBoard
         {
             var pieceType = from.Piece.PieceType;
             var min = Global.Pieces[pieceType].arrangementMin;
-            var a = SetPieceCount(pieceType, _piecesCount[pieceType] - 1);
-            Debug.Log(a);
+            SetPieceCount(pieceType, _piecesCount[pieceType] - 1);
             from.SetPiece(null);
             Deselect();
         }
@@ -170,56 +170,124 @@ public class ArrangementBoard : AbstractBoard
 
     protected override void OnDraggingStop(Cell from, Cell to)
     {
-        if (from == to)
-        {
-            return;
-        }
-        MovePiece(from, to);
+        TryMove(to, false);
     }
 
     protected override void Move(Cell from, Cell to)
     {
-        if (to.Piece != null)
-        {
-            MoveToOutScreen(to);
-        }
         var picetype = from.Piece.PieceType;
         var max = Global.Pieces[picetype].arrangementMax;
         if (_piecesCount[picetype] + 1 > max)
         {
             return;
-        }
+        };
 
-        if (SetPieceCount(from.Piece.PieceType, _piecesCount[picetype] + 1))
-        {
-            to.SetPiece(from.Piece);
-            Deselect();
-        }
-        
+        SetPieceCount(from.Piece.PieceType, _piecesCount[picetype] + 1);
+
+        to.SetPiece(from.Piece);
+        Deselect();
     }
-    
+
     #endregion
 
     [SerializeField] private TextMeshProUGUI piecesCostText;
-    private bool SetPieceCount(PieceType pieceType, int count)
+    [SerializeField] private TextMeshProUGUI errorText;
+    [SerializeField] private Color normalColor = Color.green;   // Зелений (30-50)
+    [SerializeField] private Color warningColor = Color.yellow; // Жовтий (<30)
+    [SerializeField] private Color dangerColor = Color.red;    // Червоний (>50)
+    [SerializeField] private ShakeManager shakeManager;
+    private void SetPieceCount(PieceType pieceType, int count)
+    {
+        Debug.Log("SetPieceCount" + pieceType + " " + count);
+        
+        _piecesCount[pieceType] = count;
+        var piecesCost = GetPiecesCost();
+        piecesCostText.text = piecesCost.ToString() + "/50";
+        UpdatePiecesCostText(piecesCost);
+    }
+    
+    void UpdatePiecesCostText(int piecesCost)
+    {
+        piecesCostText.text = $"{piecesCost}/50";
+    
+        if (piecesCost > 50)
+        {
+            piecesCostText.color = dangerColor;
+            shakeManager.ShakeObject(piecesCostText.transform);
+        }
+        else if (piecesCost < 30)
+        {
+            piecesCostText.color = warningColor;
+        }
+        else
+        {
+            piecesCostText.color = normalColor;
+        }
+    }
+
+    private int GetPiecesCost()
     {
         var piecesCost = 0;
         foreach (var pieceCount in _piecesCount)
         {
-            if (pieceCount.Key != pieceType)
-            {
-                var pieceCost = Global.Pieces[pieceCount.Key].arrangementCost;
-                piecesCost += pieceCost * pieceCount.Value; 
-            }
-        }
-        piecesCost += Global.Pieces[pieceType].arrangementCost * count;
 
-        if (piecesCost < 50)
-        {
-            _piecesCount[pieceType] = count;
-            piecesCostText.text = piecesCost.ToString() + "/50";
+            var pieceCost = Global.Pieces[pieceCount.Key].arrangementCost;
+            piecesCost += pieceCost * pieceCount.Value;
+
         }
-        return piecesCost < 50;
+
+        return piecesCost;
+    }
+
+    private bool CanSave()
+    {
+        string errorMessage = null;
+
+        var piecesCost = GetPiecesCost();
+        if (piecesCost < 0)
+        {
+            errorMessage = "wow You Cheater or my code too bad";
+        }
+
+        if (piecesCost > 50)
+        {
+            errorMessage = $"Maximum piece limit exceeded ({piecesCost}/50). Please remove some pieces.";
+            shakeManager.ShakeObject(piecesCostText.transform);
+        }
+
+        if (_piecesCount[PieceType.Kings] != 1)
+        {
+            errorMessage = "Your army must contain exactly 1 King\n(Current: " + 
+                           _piecesCount[PieceType.Kings] + ")";
+        }
+        
+        if (errorMessage == null) return true;
+        else
+        {
+#if ANDROID
+            Handheld.Vibrate();
+#endif
+            errorText.text = errorMessage;
+            shakeManager.ShakeObject(saveButton.transform);
+            shakeManager.ShakeObject(errorText.transform);
+            return false;
+        }
+    }
+
+    private void ClearArrangement()
+    {
+        ForEachCell(cell =>
+        {
+            if (cell.Row == 8) return;
+            cell.SetPiece(null);
+        });
+        
+        foreach (var pieceCount in _piecesCount.Keys.ToList())
+        {
+            _piecesCount[pieceCount] = 0;
+        }
+        var piecesCost = GetPiecesCost();
+        UpdatePiecesCostText(piecesCost);
     }
 }
 }

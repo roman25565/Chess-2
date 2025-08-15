@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Board;
+using Bootstrap;
 using Setting;
 using TMPro;
 using Unity.Netcode;
@@ -23,6 +24,11 @@ using UnityEngine.UI;
 using Zenject;
 using Random = UnityEngine.Random;
 
+public enum MatchmakingState
+{
+    Finding,
+    Cancelled,
+}
 public class AdvancedMatchmaking : MonoBehaviour
 {
     [Inject] private Global _global;
@@ -34,22 +40,44 @@ public class AdvancedMatchmaking : MonoBehaviour
     private float _searchTime;
     private bool _isSearching;
     private bool _initialized;
+    
+    private MatchmakingState _state;
+    public UnityEvent<MatchmakingState> onStateChanged = new();
 
-    private void Start()
-    {
-        _ = Initialize();
-    }
-
-    private async Task Initialize()
+    public async Task Init()
     {
         if (!_initialized)
         {
+            _gameData.Matchmaking = this;
+            transport = FindAnyObjectByType<UnityTransport>();
             await UnityServices.InitializeAsync();
             AuthenticationService.Instance.SwitchProfile(Random.Range(0, 1000000).ToString());
-            await AuthenticationService.Instance.SignInAnonymouslyAsync();
             _initialized = true;
         }
     }
+    
+    public async Task OnSignIn(string userIdToken, SignTypes anonymous)
+    {
+        Debug.Log("OnSignIn " + userIdToken + " " + anonymous);;
+        try
+        {
+            if (anonymous == SignTypes.Google)
+            {
+                await AuthenticationService.Instance.SignInWithGoogleAsync(userIdToken);
+            }
+            else
+            {
+                await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            }
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
     #region Lobby
     
     private Lobby _connectedLobby;
@@ -75,6 +103,9 @@ public class AdvancedMatchmaking : MonoBehaviour
 
     private async void StartMatchmaking(int playerElo, string timeControl)
     {
+        if (_isSearching) CancelMatchmaking();
+        
+        onStateChanged.Invoke(MatchmakingState.Finding);
         _isSearching = true;
         _searchTime = 0f;
         _searchTimerCoroutine = StartCoroutine(UpdateSearchTimer());
@@ -88,12 +119,6 @@ public class AdvancedMatchmaking : MonoBehaviour
                 return;
 
             SubscribeToLobbyEvents(_connectedLobby);
-
-            if (!IsHost)
-            {
-                var joinCode = _connectedLobby.Data[JoinCodeKey].Value;
-
-            }
         }
         catch (Exception e)
         {
@@ -126,7 +151,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         async void OnLobbyChanged(ILobbyChanges changes)
         {
             if (IsHost) return;
-            Debug.Log($"[LobbyChanged] AvailableSlots: {changes.AvailableSlots}");
+            Debug.Log($"[LobbyChanged] AvailableSlots: {changes.AvailableSlots.Value}");
 
             if (changes.Data.Value != null && changes.Data.Value.TryGetValue(JoinCodeKey, out var relayCodeUpdate))
             {
@@ -145,7 +170,16 @@ public class AdvancedMatchmaking : MonoBehaviour
                 _connectedLobby.Players.Count == MaxPlayers)
             {
                 Debug.Log("All players ready - starting game");
-                _ = HostMatch(joinCode => _ = SendRelayCode(_connectedLobby, joinCode));
+                try
+                { 
+                    _ = HostMatch(joinCode => _ = SendRelayCode(_connectedLobby, joinCode));
+                }
+                catch (Exception e)
+                {
+                    Debug.LogError(e);
+                    Console.WriteLine(e);
+                    throw;
+                }
             }
         }
 
@@ -180,12 +214,12 @@ public class AdvancedMatchmaking : MonoBehaviour
                 new QueryFilter(
                     field: QueryFilter.FieldOptions.N1,
                     op: QueryFilter.OpOptions.GT,
-                    value: (playerElo - 200).ToString()),
+                    value: (playerElo - 500).ToString()),
 
                 new QueryFilter(
                     field: QueryFilter.FieldOptions.N1,
                     op: QueryFilter.OpOptions.LT,
-                    value: (playerElo + 200).ToString())
+                    value: (playerElo + 500).ToString())
             };
 
             var quickJoinOptions = new QuickJoinLobbyOptions
@@ -199,7 +233,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         }
         catch (Exception e)
         {
-            Debug.LogError($"Error finding lobby: {e.Message}");
+            Debug.LogWarning($"Error finding lobby: {e.Message}");
         }
 
         return null;
@@ -271,6 +305,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         var delay = new WaitForSecondsRealtime(waitTimeSeconds);
         while (true)
         {
+            Debug.Log("Sending heartbeat");
             LobbyService.Instance.SendHeartbeatPingAsync(lobbyId);
             yield return delay;
         }
@@ -305,7 +340,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         var whitePlayerId = player1.IsWhite ?  player1.PlayerId : player2.PlayerId;
 
         await HostMatch(null, false);
-        var matchBootstrap = FindAnyObjectByType<MatchBootstrap>();
+        var matchBootstrap = FindAnyObjectByType<MatchStarter>();
         matchBootstrap.OnHostMigratedRpc(
             player1.PlayerId,player1.FirebasePlayer.ID, player1.StartArrangement, player1.TimeToMove,
             player2.PlayerId,player2.FirebasePlayer.ID, player2.StartArrangement, player2.TimeToMove,
@@ -335,52 +370,62 @@ public class AdvancedMatchmaking : MonoBehaviour
     
     public async Task HostMatch(Action<string> callback = null, bool needLoadGameScene = true)
     {
-        var allocation = await RelayService.Instance.CreateAllocationAsync(MaxPlayers);
-        var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
-        var ip = allocation.RelayServer.IpV4;
-        var port = (ushort)allocation.RelayServer.Port;
+        try
+        {
+            var allocation = await RelayService.Instance.CreateAllocationAsync(MaxPlayers);
+            var joinCode = await RelayService.Instance.GetJoinCodeAsync(allocation.AllocationId);
+            var ip = allocation.RelayServer.IpV4;
+            var port = (ushort)allocation.RelayServer.Port;
 
-        transport.SetHostRelayData(
-            ip,
-            port,
-            allocation.AllocationIdBytes,
-            allocation.Key,
-            allocation.ConnectionData);
-        _gameData.RelayJoinCode = joinCode;
+            transport.SetHostRelayData(
+                ip,
+                port,
+                allocation.AllocationIdBytes,
+                allocation.Key,
+                allocation.ConnectionData);
+            _gameData.RelayJoinCode = joinCode;
 
-        if (needLoadGameScene)
-        {
-            SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-            SceneManager.sceneLoaded += OnSceneLoaded;
+            if (needLoadGameScene)
+            {
+                SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
+                SceneManager.sceneLoaded += OnSceneLoaded;
+            }
+            else
+            {
+                NetworkManager.Singleton.StartHost();
+                callback?.Invoke(joinCode);
+            }
+
+            return;
+
+            void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
+            {
+                SceneManager.sceneLoaded -= OnSceneLoaded;
+                NetworkManager.Singleton.StartHost();
+                callback?.Invoke(joinCode);
+            }
         }
-        else
+        catch (Exception e)
         {
-            NetworkManager.Singleton.StartHost();
-            callback?.Invoke(joinCode);
-        }
-        
-        return;
-        
-        void OnSceneLoaded(Scene arg0, LoadSceneMode arg1)
-        {
-            SceneManager.sceneLoaded -= OnSceneLoaded;
-            NetworkManager.Singleton.StartHost();
-            callback?.Invoke(joinCode);
+            Debug.LogError(e);
+            Console.WriteLine(e);
+            throw;
         }
 
     }
+
     public async Task ConnectToMatch(string joinCode)
     {
-        _gameData.RelayJoinCode = joinCode;
+        if (joinCode == null) return;
+        
         Debug.Log("JoinCode " + joinCode);
-        if (joinCode != null)
-        {
-            var allocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
-            SetTransformAsClient(allocation);
-            NetworkManager.Singleton.StartClient();
-        }
+        _gameData.RelayJoinCode = joinCode;
+        var allocation = await RelayService.Instance.JoinAllocationAsync(joinCode: joinCode);
+        SetTransformAsClient(allocation);
+        NetworkManager.Singleton.StartClient();
+
     }
-    
+
     private void SetTransformAsClient(JoinAllocation allocation)
     {
         transport.SetClientRelayData(
@@ -396,6 +441,7 @@ public class AdvancedMatchmaking : MonoBehaviour
     {
         while (_isSearching)
         {
+            Debug.Log("UpdateSearchTimer");
             _searchTime += 1f;
             searchTimeText.text = $"Search time: {_searchTime}s";
             yield return new WaitForSeconds(1f);
@@ -406,6 +452,7 @@ public class AdvancedMatchmaking : MonoBehaviour
     {
         if (!_isSearching) return;
 
+        onStateChanged.Invoke(MatchmakingState.Cancelled);
         _isSearching = false;
 
         if (_searchTimerCoroutine != null)
@@ -433,14 +480,14 @@ public class AdvancedMatchmaking : MonoBehaviour
             }
             else
             {
+                Debug.Log("RemovePlayerAsyncLobby");
                 LobbyService.Instance.RemovePlayerAsync(_connectedLobby.Id, AuthenticationService.Instance.PlayerId);
             }
-            LobbyService.Instance.DeleteLobbyAsync(_connectedLobby.Id);
+            // LobbyService.Instance.DeleteLobbyAsync(_connectedLobby.Id);
             _connectedLobby = null;
         }
 
         searchTimeText.text = "Search cancelled";
+        Debug.Log("CancelMatchmaking");
     }
-
-    
 }

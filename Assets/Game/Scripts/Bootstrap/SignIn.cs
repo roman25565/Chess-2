@@ -8,6 +8,8 @@ using Firebase.Extensions;
 using Google;
 using Setting;
 using TMPro;
+using Unity.Services.Authentication;
+using UnityEngine.UI;
 using Zenject;
 
 namespace Bootstrap
@@ -23,12 +25,13 @@ public class SignIn : MonoBehaviour
     [Inject] private Global _global;
     
     private const string WebClientId = "492940055939-57m8n1fr0eu5cgis5kn94p1kj310cm4f.apps.googleusercontent.com";
-    
+    const string AnonymouslyIdKey = "AnonymousIdKey";
     
     private GoogleSignInConfiguration _configuration;
     private const string SignTypeKey = "SignType";
     [SerializeField] private Bootstrap bootstrap;
     [SerializeField] private MainMenu mainMenu;
+    
     public void Init(bool isSignIn = false)
     {
         _configuration = new GoogleSignInConfiguration
@@ -43,8 +46,21 @@ public class SignIn : MonoBehaviour
         }
         else if (LoadLastSignType(out var type) != SignTypes.None) // if ReLogin
         {
-            OnSignInGoogle();
-            mainMenu.DisableSignInPanel();
+            if (type == SignTypes.Google)
+            {
+                OnSignInGoogle();
+                mainMenu.DisableSignInPanel();
+            }
+            else if (type == SignTypes.Anonymous)
+            {
+                var id = PlayerPrefs.GetString(AnonymouslyIdKey);
+                var user = new GoogleSignInUser
+                {
+                    UserId = id,
+                };
+                bootstrap.OnSignInDebug(user);
+                UpdateUI(user);
+            }
         }
     }
     
@@ -95,32 +111,55 @@ public class SignIn : MonoBehaviour
         bootstrap.OnSignInDebug(user);
         UpdateUI(user);
     }
-    
+
+    public void OnSignUpAnonymously()
+    {
+        var url = GetRandomImageUrl();
+        _global.FirestoreManager.PlayerDataManager.OnSignInAnonymously(url, id =>
+        {
+            var user = new GoogleSignInUser
+            {
+                UserId = id,
+                ImageUrl = new Uri(url),
+                Email = "<EMAIL>", DisplayName = "Omega",
+            }; 
+            bootstrap.OnSignInAnonymously(user);
+            UpdateUI(user);
+            PlayerPrefs.SetString(SignTypeKey, SignTypes.Anonymous.ToString());
+            PlayerPrefs.SetString(AnonymouslyIdKey, id);
+        });
+    }
+
+    private string GetRandomImageUrl()
+    {
+        return "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no";
+    }
+
     public void OnSignOut()
     {
 
-            mainMenu.ShowSignInPanel();
-            
-            LoadLastSignType(out var type);
-            Debug.Log("Calling SignOut");
-            if (type == SignTypes.Google)
+        mainMenu.ShowSignInPanel();
+        AuthenticationService.Instance.SignOut();
+        LoadLastSignType(out var type);
+        Debug.Log("Calling SignOut");
+        if (type == SignTypes.Google)
+        {
+            try
             {
-                try
-                {
-                    GoogleSignIn.DefaultInstance.SignOut();
-                }
-                catch (Exception e)
-                {
-                    Debug.LogError(e);
-                    throw;
-                }
+                GoogleSignIn.DefaultInstance.SignOut();
             }
-            
-            PlayerPrefs.SetString(SignTypeKey, SignTypes.None.ToString());
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                throw;
+            }
+        }
+
+        PlayerPrefs.SetString(SignTypeKey, SignTypes.None.ToString());
     }
 
 
-    
+
     internal void OnAuthenticationFinished(Task<GoogleSignInUser> task)
     {
         if (task.IsFaulted)
@@ -152,8 +191,8 @@ public class SignIn : MonoBehaviour
             }
             
             UpdateUI(user);
-            bootstrap.OnSignIn(user);
             PlayerPrefs.SetString(SignTypeKey, SignTypes.Google.ToString());
+            bootstrap.OnSignIn(user, SignTypes.Google);
             Debug.Log("success");
         }
         Debug.Log("OnAuthenticationFinished?");
@@ -180,6 +219,7 @@ public class SignIn : MonoBehaviour
         }
 
         type = loadedSignType;
+        Debug.Log("LoadLastSignType " + loadedSignType);
         return loadedSignType;
     }
 }

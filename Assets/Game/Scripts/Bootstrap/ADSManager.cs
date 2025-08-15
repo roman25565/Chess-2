@@ -97,7 +97,7 @@ public class ADSManager : MonoBehaviour
 
     public void TryStartAds()
     {
-        var afterDefeat = _global.EndGameType == EndGameType.Lose;
+        var afterDefeat = _global.EndGameData.Type == EndGameType.Lose;
         var chance = 0.5f;
         if (Random.value <= chance && afterDefeat)
         {

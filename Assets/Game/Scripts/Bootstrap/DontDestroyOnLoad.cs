@@ -2,17 +2,17 @@ using UnityEngine;
 
 public class DontDestroyOnLoad : MonoBehaviour
 {
-    private static DontDestroyOnLoad instance;
+    public static DontDestroyOnLoad Instance;
 
     private void Start()
     {
-        if (instance != null)
+        if (Instance != null)
         {
             Destroy(gameObject);
             return;
         }
 
-        instance = this;
+        Instance = this;
         DontDestroyOnLoad(gameObject);
     }
 }

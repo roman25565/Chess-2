@@ -35,8 +35,6 @@ public class MatchRequestsManager
 
         SubscribeToStatusUpdates();
         ListenReceivedRequests();
-
-        // SendMatchRequest("002", "Alpha");
     }
 
     public async Task SendMatchRequest(string recipientId, string senderName)
@@ -73,7 +71,7 @@ public class MatchRequestsManager
             }
 
             var matchRequest = new MatchRequestData(snapshot);
-            matchRequest.Status = AbstractRequestData.StatusKeys.AcceptedKey;
+            matchRequest.Status = StatusKeys.AcceptedKey;
             await _advancedMatchmaking.HostMatch(joinCode =>
             {
                 matchRequest.SetConnectionInfo(joinCode);
@@ -103,7 +101,7 @@ public class MatchRequestsManager
 
 
             var matchRequest = new MatchRequestData(snapshot);
-            matchRequest.Status = AbstractRequestData.StatusKeys.RejectedKey;
+            matchRequest.Status = StatusKeys.RejectedKey;
 
             await requestRef.UpdateChildrenAsync(matchRequest.ToDictionary());
             Debug.Log($"Request {request.RequestId} status updated to rejected");
@@ -161,7 +159,7 @@ public class MatchRequestsManager
                 return;
             }
             var status = args.Snapshot.Child(AbstractRequestData.StatusKey)?.Value as string;
-            if (status != AbstractRequestData.StatusKeys.PendingKey)
+            if (status != StatusKeys.PendingKey)
                 return;
             
             _requests.Add(new MatchRequestData(args.Snapshot));
@@ -195,37 +193,44 @@ public class MatchRequestsManager
         }
         var newStatus = args.Snapshot.Child(AbstractRequestData.StatusKey)?.Value as string;
         var recipientId = args.Snapshot.Child(AbstractRequestData.RecipientIdKey)?.Value as string;
-        
-        if (!string.IsNullOrEmpty(newStatus))
-        {
-            Debug.Log($"Request to {recipientId} changed status to: {newStatus}");
 
-            switch (newStatus)
-            {
-                case "accepted":
-                    var matchRequest = new MatchRequestData(args.Snapshot);
-                    if (!string.IsNullOrEmpty(matchRequest.RelayJoinCode))
-                    {
-                        _ = _advancedMatchmaking.ConnectToMatch(matchRequest.RelayJoinCode);
-                    }
-                    break;
+        if (string.IsNullOrEmpty(newStatus)) return;
+        Debug.Log($"Request to {recipientId} changed status to: {newStatus}");
+
+        switch (newStatus)
+        {
+            case StatusKeys.AcceptedKey:
+                var matchRequest = new MatchRequestData(args.Snapshot);
+                if (string.IsNullOrEmpty(matchRequest.RelayJoinCode))
+                {
+                    Debug.LogError("Match request has no relay join code");
+                    return;
+                }
+                _ = _advancedMatchmaking.ConnectToMatch(matchRequest.RelayJoinCode);
+                RemoveMatchRequestById();
+                break;
                 
-                case "rejected":
-                    try 
-                    {
-                        var requestId = args.Snapshot.Key;
-                        _database.Child(MatchRequestData.CollectionName)
-                            .Child(requestId)
-                            .RemoveValueAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"Failed to remove request: {ex.Message}");
-                    }
-                    break;
-            }
+            case StatusKeys.RejectedKey:
+                try
+                {
+                    RemoveMatchRequestById();
+                }
+                catch (Exception ex)
+                {
+                    Debug.LogError($"Failed to remove request: {ex.Message}");
+                }
+                break;
+        }
+
+        void RemoveMatchRequestById()
+        {
+            var requestId = args.Snapshot.Key;
+            _database.Child(MatchRequestData.CollectionName)
+                .Child(requestId)
+                .RemoveValueAsync();
         }
     }
+
 }
 }
 #endif

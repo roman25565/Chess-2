@@ -105,26 +105,29 @@ public class NotificationPanel : MonoBehaviour
         var realtimeDatabase = _global.FirestoreManager.RealtimeDatabase;
         var notification = Instantiate(prefab, parent);
         notification.Init(
-            GetNotificationText(request.RequestType),
+            GetNotificationText(request.RequestType, request.SenderName),
             () =>
             {
                 _mainMenu.DisableNotificationPanel();
-                _mainMenu.EnableFindMatchPanel();
+                if (request.RequestType == Type.MatchRequest) _mainMenu.EnableFindMatchPanel();
                 realtimeDatabase.AcceptInvite(request);
             },
             () => realtimeDatabase.DeclineInvite(request));
     }
 
-    private string GetNotificationText(Type type)
+    private string GetNotificationText(Type type, string senderName)
     {
         var result = "";
         switch (type)
         {
             case Type.FriendRequest:
+                result = $"{senderName} sent you a friend request";
                 break;
             case Type.MatchRequest:
+                result = $"{senderName} wants to play a match with you";
                 break;
             default:
+                Debug.LogError("Unknown notification type");
                 break;
         }
 

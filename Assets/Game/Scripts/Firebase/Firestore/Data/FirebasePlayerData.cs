@@ -7,14 +7,14 @@ using UnityEngine.Events;
 public class FirebasePlayerData
 {
     public string ID;
+    public int Elo;
+    public Sprite Icon;
+    public string Name;
+    public List<string> HistoryMatchIDs;
+    public List<string> FriendIds;
     public FirebasePlayerData(string id){
         ID = id;
     }
-    public int Elo;
-    public List<string> HistoryMatchIDs;
-    public Sprite Icon;
-    public string Name;
-    public List<string> FriendIds;
 
     public FirebasePlayerData(string id, string name, int elo, Sprite icon, List<string> historyMatchIDs, List<string> friendIds)
     {

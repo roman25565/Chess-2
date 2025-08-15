@@ -78,7 +78,9 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
         SetAlpha(pieceImage, 1);
         var skinIndex = Piece.Color == PieceColor.Black ? Piece.SelectedSkinIndex + 1 : Piece.SelectedSkinIndex;
         pieceImage.sprite = abstractPiece.Skins[skinIndex];
-
+        
+        return;
+        
         void SetAlpha(Image image,float alpha)
         {
             var color = image.color;
@@ -105,7 +107,10 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     {
         if (Piece != null && Board.IsMyId(Piece.OwnerId) && Row != 8)
         {
-            transform.SetAsLastSibling();
+            if (Row != 8)//Need for ArrangementBoard
+            {
+                transform.SetAsLastSibling();
+            }
             Board.StartDragging(pieceImage.rectTransform);
         }
         if (!Board.IsSelectedCell(this))

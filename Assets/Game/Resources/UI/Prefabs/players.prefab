@@ -65,6 +65,30 @@ PrefabInstance:
       propertyPath: m_AnchoredPosition.y
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 414324386679625993, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: m_Name
+      value: NameAndElo
+      objectReference: {fileID: 0}
+    - target: {fileID: 487845464889735678, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: EloText
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 487845464889735678, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: NameText
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 2532161619093470588, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 2532161619093470588, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: m_isOrthographic
+      value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 2974117803193733442, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -0.000030517578
+      objectReference: {fileID: 0}
     - target: {fileID: 3074282907675827629, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
       propertyPath: m_Pivot.x
       value: 0.5
@@ -145,6 +169,14 @@ PrefabInstance:
       propertyPath: m_LocalEulerAnglesHint.z
       value: 0
       objectReference: {fileID: 0}
+    - target: {fileID: 3100513071011939152, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: m_Enabled
+      value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 3100513071011939152, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: m_isOrthographic
+      value: 1
+      objectReference: {fileID: 0}
     - target: {fileID: 4878576889599124139, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: -0.3022766
@@ -206,7 +238,9 @@ PrefabInstance:
       value: 1
       objectReference: {fileID: 0}
     m_RemovedComponents: []
-    m_RemovedGameObjects: []
+    m_RemovedGameObjects:
+    - {fileID: 626891135442737448, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+    - {fileID: 440362930621005720, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
     m_AddedGameObjects: []
     m_AddedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
@@ -242,6 +276,14 @@ PrefabInstance:
     - target: {fileID: 185696059313848148, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
       propertyPath: m_AnchoredPosition.y
       value: 0
+      objectReference: {fileID: 0}
+    - target: {fileID: 487845464889735678, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: NameText
+      value: 
+      objectReference: {fileID: 0}
+    - target: {fileID: 2974117803193733442, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
+      propertyPath: m_AnchoredPosition.y
+      value: -0.000030517578
       objectReference: {fileID: 0}
     - target: {fileID: 3074282907675827629, guid: 1672700de564fdb4f8050fe9bd01b06e, type: 3}
       propertyPath: m_Pivot.x

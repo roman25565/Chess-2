@@ -8,9 +8,8 @@ public class PlayerPanel : MonoBehaviour
 {
     [SerializeField] private TextMeshProUGUI timeText;
     
-    [SerializeField] private TextMeshProUGUI NameText;
-    [SerializeField] private TextMeshProUGUI EloText;
-    [SerializeField] private Image IconImage;
+    [SerializeField] private TextMeshProUGUI nameAndEloText;
+    [SerializeField] private Image iconImage;
 #if !UNITY_SERVER
     public void SetTime(float time)
     {
@@ -20,13 +19,8 @@ public class PlayerPanel : MonoBehaviour
     
     public void SetPlayerUI(FirebasePlayerData playerData)
     {
-        NameText.text = playerData.Name;
-        EloText.text = playerData.Elo.ToString();
-        IconImage.sprite = playerData.Icon;
+        nameAndEloText.text = $"{playerData.Name} + ({playerData.Elo})";
+        iconImage.sprite = playerData.Icon;
     }
 #endif
-    public void EndGame(int newElo)
-    {
-        EloText.text = newElo.ToString();
-    }
 }

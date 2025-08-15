@@ -20,7 +20,7 @@ public class FriendRequestsManager
     private readonly UnityEvent _onChangedRequests;
     private readonly DatabaseReference _database;
     private readonly string _currentUserId;
-    private UnityAction<string> _addFriend;
+    private readonly UnityAction<string> _addFriend;
 
     public IReadOnlyList<AbstractRequestData> GetRequestData()
     {
@@ -73,10 +73,10 @@ public class FriendRequestsManager
             }
             
             var friendRequest = new FriendRequestData(snapshot);
-            friendRequest.Status = AbstractRequestData.StatusKeys.AcceptedKey;;
+            friendRequest.Status = StatusKeys.AcceptedKey;;
 
             await requestRef.UpdateChildrenAsync(friendRequest.ToDictionary());
-            _addFriend?.Invoke(friendRequest.SenderId);
+            _addFriend.Invoke(friendRequest.SenderId);
         }
         catch (Exception e)
         {
@@ -100,7 +100,7 @@ public class FriendRequestsManager
 
 
             var friendRequest = new FriendRequestData(snapshot);
-            friendRequest.Status = AbstractRequestData.StatusKeys.RejectedKey;
+            friendRequest.Status = StatusKeys.RejectedKey;
 
             await requestRef.UpdateChildrenAsync(friendRequest.ToDictionary());
             Debug.Log($"Request {request.RequestId} status updated to rejected");
@@ -163,7 +163,7 @@ public class FriendRequestsManager
                 return;
             }
             var status = args.Snapshot.Child(AbstractRequestData.StatusKey)?.Value as string;
-            if (status != AbstractRequestData.StatusKeys.PendingKey)
+            if (status != StatusKeys.PendingKey)
                 return;
             
             _requests.Add(new FriendRequestData(args.Snapshot));
@@ -198,30 +198,36 @@ public class FriendRequestsManager
         
         var newStatus = args.Snapshot.Child(AbstractRequestData.StatusKey)?.Value as string;
         var recipientId = args.Snapshot.Child(AbstractRequestData.RecipientIdKey)?.Value as string;
-        
-        if (!string.IsNullOrEmpty(newStatus))
+
+        if (string.IsNullOrEmpty(newStatus)) return;
+        Debug.Log($"Request to {recipientId} changed status to: {newStatus}");
+        switch (newStatus)
         {
-            Debug.Log($"Request to {recipientId} changed status to: {newStatus}");
-            
-            switch (newStatus)
-            {
-                case "accepted":
-                    _addFriend?.Invoke(recipientId);
-                    break;
+            case StatusKeys.AcceptedKey:
+                Debug.Log($"Request to {recipientId} accepted");
+                _addFriend.Invoke(recipientId);
+                RemoveFriendRequestById();
+                break;
                 
-                case "rejected":
-                    try 
-                    {
-                        var requestId = args.Snapshot.Key;
-                        _database.Child(FriendRequestData.CollectionName)
-                            .Child(requestId)
-                            .RemoveValueAsync();
-                    }
-                    catch (Exception ex)
-                    {
-                        Debug.LogError($"Failed to remove request: {ex.Message}");
-                    }
-                    break;
+            case StatusKeys.RejectedKey:
+                RemoveFriendRequestById();
+                break;
+        }
+
+        return;
+
+        void RemoveFriendRequestById()
+        {
+            try
+            {
+                var requestId = args.Snapshot.Key;
+                _database.Child(FriendRequestData.CollectionName)
+                    .Child(requestId)
+                    .RemoveValueAsync();
+            }
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to remove request: {ex.Message}");
             }
         }
     }

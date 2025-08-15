@@ -142,20 +142,21 @@ public abstract class AbstractBoard : MonoBehaviour
 
     protected void MovePiece(Cell from, Cell to, MoveHistory moveHistory, bool isInternalHistoryMove = false)
     {
-#if !UNITY_SERVER
         if (IsConfirmation(from, to))
             return;
+        
+        var killedPiece = to.Piece != null && to.Piece.PieceType == PieceType.Kings ? to.Piece : null;
         
         moveHistory.AddMove(from, to, isInternalHistoryMove);
         SetSelectedState(ref _firstSelectedCell, from);
         SetSelectedState(ref _secondSelectedCell, to);
-#endif
-        if (from.Piece != null)
-        {
-            from.Piece.Moved();
-        }
-
+        if (from.Piece != null && from.Piece.IsFirstMove) from.Piece.IsFirstMove = false;
+        
         Move(from, to);
+    }
+    protected virtual bool IsFantom()
+    {
+        return false;
     }
 
     protected virtual bool IsConfirmation(Cell from, Cell to)
@@ -235,6 +236,7 @@ public abstract class AbstractBoard : MonoBehaviour
 
     protected virtual void Move(Cell from, Cell to)
     {
+        Debug.Log("MOVE");
         to.SetPiece(from.Piece);
         from.SetPiece(null);
     }

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using Board.Piece;
+using TMPro;
 #if !UNITY_SERVER
 using Firebase.RealtimeDatabase;
 #endif
@@ -8,6 +9,27 @@ using UnityEngine;
 
 namespace Setting
 {
+public class EndGameData
+{
+    public EndGameType Type;
+    public WonReason WonReason;
+    public PlayerData MyPlayerData;
+    public PlayerData EnemyPlayerData;
+    public int MyNewElo;
+    public int EnemyNewElo;
+    public string MatchId;
+
+    public EndGameData(EndGameType type, WonReason wonReason, PlayerData myPlayerData, PlayerData enemyPlayerData, int myNewElo, int enemyNewElo, string matchId)
+    {
+        Type = type;
+        WonReason = wonReason;
+        MyPlayerData = myPlayerData;
+        EnemyPlayerData = enemyPlayerData;
+        MyNewElo = myNewElo;
+        EnemyNewElo = enemyNewElo;
+        MatchId = matchId;
+    }
+}
 public class Global : IDisposable
 {
     public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";
@@ -18,7 +40,8 @@ public class Global : IDisposable
     public Sound Sound;
 
     public bool IsSignIn;
-    public EndGameType EndGameType;
+    public EndGameData EndGameData;
+
     public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates, FirestoreManager firestoreManager)
     {
         MyArrangements = RepackingArrangement(arrangement);

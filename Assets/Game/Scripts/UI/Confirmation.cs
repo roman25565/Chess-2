@@ -12,6 +12,7 @@ public class Confirmation : MonoBehaviour
     [SerializeField] private TextMeshProUGUI questionText;
     [SerializeField] private Button acceptButton;
     [SerializeField] private Button rejectButton;
+    [SerializeField] private Button closeBgButton;
     
     private bool _isShown;
 
@@ -36,6 +37,7 @@ public class Confirmation : MonoBehaviour
         acceptButton.onClick.AddListener(onAccept);
         acceptButton.onClick.AddListener(Hide);
         rejectButton.onClick.AddListener(Hide);
+        closeBgButton.onClick.AddListener(Hide);
     }
 
     private void Hide()
@@ -49,6 +51,7 @@ public class Confirmation : MonoBehaviour
     {
         acceptButton.onClick.RemoveAllListeners();
         rejectButton.onClick.RemoveAllListeners();
+        closeBgButton.onClick.RemoveAllListeners();
     }
 }
 }

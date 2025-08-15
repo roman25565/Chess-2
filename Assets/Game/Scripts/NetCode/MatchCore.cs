@@ -6,6 +6,8 @@ using Board.Piece;
 using Setting;
 using Unity.Netcode;
 using UnityEngine;
+using UnityEngine.Events;
+using UnityEngine.SceneManagement;
 using Zenject;
 
 public enum EndGameType
@@ -70,7 +72,8 @@ public class MatchCore : NetworkBehaviour
     private float _lastUpdateTime;
     private ulong _myId;
     private bool _oneKingDead;
-
+    
+    private AbstractPiece _lastKilledPiece;
 
     public bool IsRotated => _matchData.GetPlayerData(_myId).IsRotate;
     private bool IsWhite => _matchData.GetPlayerData(_myId).IsWhite;
@@ -100,7 +103,7 @@ public class MatchCore : NetworkBehaviour
                 {
                     var anotherPlayer = _matchData.GetAnotherPlayerData(_matchData.MovingPlayerId);
                     var winerId = anotherPlayer.PlayerId;
-                    WonPlayer(winerId, WonReason.Timeouts);;
+                    WonPlayerRpc(winerId, WonReason.Timeouts);;
                 }
             }
 #if !UNITY_SERVER
@@ -144,10 +147,20 @@ public class MatchCore : NetworkBehaviour
         _enemyId = _myId == matchData.Player2.PlayerId ? matchData.Player1.PlayerId : matchData.Player2.PlayerId;
         Debug.Log("_myId" + _myId + "_enemyId" + _enemyId + "1" + matchData.Player1.PlayerId + "2" + matchData.Player2.PlayerId);
         _isInitialize = true;
-#if !UNITY_SERVER
         MatchUIManager.Instance.Init(_matchData.GetPlayerData(_enemyId), _matchData.GetPlayerData(_myId), this);
+    }
 
-#endif
+    private MatchCore GetServerCore()
+    {
+        var matchCores = FindObjectsByType<MatchCore>((FindObjectsSortMode)FindObjectsInactive.Exclude);
+        foreach (var core in matchCores)
+        {
+            if (core.OwnerClientId == 0)
+                return core;
+        }
+
+        Debug.LogError("ServerCore not found");
+        return null;
     }
 
     public bool CanMove()
@@ -169,7 +182,7 @@ public class MatchCore : NetworkBehaviour
 
     public void TryMove(Vector2Int from, Vector2Int to)
     {
-        if (!IsSpawned) // Додайте перевірку
+        if (!IsSpawned)
         {
             Debug.LogError("NetworkObject not spawned yet!");
             return;
@@ -186,76 +199,80 @@ public class MatchCore : NetworkBehaviour
     }
 
     [Rpc(SendTo.ClientsAndHost)]
-    private void DrawClientRpc()
+    private void DrawClientRpc() //TODO Delete this()  
     {
-#if !UNITY_SERVER
-        if (!IsOwner) return;
-
-        _gameEnded = true;
-        _gameData.ActiveBoard.EndGame();
-
-        MatchUIManager.Instance.EndGame(_global.EndGameType);
-
-        if (!IsWhite) return;
-
-        var player1 = _matchData.GetPlayerData(_myId); //player1 always White
-        var player2 = _matchData.GetPlayerData(_enemyId);
-
-        var player1Elo = _matchData.Player1.FirebasePlayer.Elo;
-        var player2Elo = _matchData.Player2.FirebasePlayer.Elo;
-        _global.FirestoreManager.SaveMatchHistory(
-            "-1",
-            player1.FirebasePlayer.ID, player1Elo, player1.StartArrangement,
-            player2.FirebasePlayer.ID, player2Elo, player2.StartArrangement,
-            _gameData.ActiveBoard.GetHistory()
-        );
-#endif
+        Debug.Log("Draw ClientRpc");
+        HandleEndGameLogic(-1, EndGameType.Draw, WonReason.Null);
     }
 
     [Rpc(SendTo.ClientsAndHost)]
     private void WonPlayerClientRpc(ulong winnerId, WonReason wonReason)
     {
         var endGameType = winnerId == _myId ? EndGameType.Won : EndGameType.Lose;
-        HandleEndGameLogic(winnerId, endGameType, wonReason);
+        HandleEndGameLogic(Convert.ToInt32(winnerId.ToString()), endGameType, wonReason);
     }
 
-    private void HandleEndGameLogic(ulong winnerId, EndGameType endGameType, WonReason wonReason)
+    [Rpc(SendTo.ClientsAndHost)]
+    private void GameEndedRpc(string historyId)
     {
-#if !UNITY_SERVER
+        OnGameEnded?.Invoke(historyId);
+    }
+    private UnityEvent<string> OnGameEnded = new ();
+    private void HandleEndGameLogic(int winnerId, EndGameType endGameType, WonReason wonReason) // winnerId -1 if is Draw
+    {
         if (!IsOwner) return;
 
-        Debug.Log("LosePlayerClientRpc");
+        Debug.Log("HandleEndGameLogic winnerId " + winnerId);
 
         var isFirstPlayer = _matchData.Player1.PlayerId == _myId;
         var myId = _global.FirestoreManager.MyData.ID;
-        var myPlayer = _matchData.GetPlayerData(_myId); //player1 always White
+        var myPlayer = _matchData.GetPlayerData(_myId);
+        var enemyPlayer = _matchData.GetPlayerData(_enemyId);
         var board = _gameData.ActiveBoard;
         var history = board.GetHistory();
-        
-        _global.EndGameType = endGameType;
+
         CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
-        var myNewElo = isFirstPlayer ? player1Elo : player2Elo;
-        MatchUIManager.Instance.EndGame(_global.EndGameType, isFirstPlayer ? player1Elo : player2Elo,
-            isFirstPlayer ? player2Elo : player1Elo);
+        if (endGameType == EndGameType.Lose && endGameType == EndGameType.Won)
+        {
+            _matchData.Player1.FirebasePlayer.Elo = player1Elo;
+            _matchData.Player2.FirebasePlayer.Elo = player2Elo;
+            var myNewElo = isFirstPlayer ? player1Elo : player2Elo;
+            _global.FirestoreManager.PlayerDataManager.BdSetMyElo(myId, myNewElo);
+        }
+        
         _gameEnded = true;
         board.EndGame();
-
         
-        _global.FirestoreManager.PlayerDataManager.BdSetMyElo(myId, myNewElo);
         _global.FirestoreManager.StatisticManager.UpdatePlayerStatistics(myId, myPlayer, history, endGameType, wonReason);
-        if (!IsWhite) return;
+        OnGameEnded.AddListener((matchId) =>
+        {
+            _global.EndGameData = new EndGameData(endGameType, wonReason, myPlayer, enemyPlayer,isFirstPlayer ? player1Elo : player2Elo,
+                isFirstPlayer ? player2Elo : player1Elo, matchId);
+            NetworkManager.Singleton.Shutdown();
+            Destroy(global::DontDestroyOnLoad.Instance.gameObject);
+            SceneManager.LoadScene("Main", LoadSceneMode.Single);
+        });
+        if (!IsServerCore) return;
 
-        var enemyPlayer = _matchData.GetPlayerData(_enemyId);
+        var firebaseWinnerId = winnerId >= 0 ? _matchData.GetPlayerData((ulong)winnerId).FirebasePlayer.ID : winnerId.ToString();
         _global.FirestoreManager.SaveMatchHistory(
-            _matchData.GetPlayerData(winnerId).FirebasePlayer.ID,
+            firebaseWinnerId,
             myPlayer.FirebasePlayer.ID, player1Elo, myPlayer.StartArrangement,
             enemyPlayer.FirebasePlayer.ID, player2Elo, enemyPlayer.StartArrangement,
-            _gameData.ActiveBoard.GetHistory()
+            _gameData.ActiveBoard.GetHistory(), (matchId =>
+            {
+                SendGameEndedRpc(matchId);
+            })
         );
-#endif
+    }
+
+    [Rpc(SendTo.Server)]
+    private void SendGameEndedRpc(string historyId)
+    {
+        foreach (var allMatchCore in _allMatchCores) allMatchCore.GameEndedRpc(historyId);
     }
 #if !UNITY_SERVER
-    private void CalculateNewEloRatings(ulong winnerId, out int player1Elo, out int player2Elo)
+    private void CalculateNewEloRatings(int winnerId, out int player1Elo, out int player2Elo)
     {
         double scope1 = 0;
         double scope2 = 0;
@@ -272,44 +289,25 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.ClientsAndHost)]
     private void UseMoveCommandRpc(Vector2Int from, Vector2Int to, ulong playerId)
     {
-        Debug.Log("UseMoveCommandRpc");
         if (IsOwner && IsClient) UseMove(from, to, playerId);
     }
 
     public void UseMove(Vector2Int from, Vector2Int to, ulong playerId)
     {
-        Debug.Log("UseMoveCommandRpc Need 2:1 repeat");
         var board = _gameData.ActiveBoard;
-        var killedPiece = board.GetCell(to.x, to.y).Piece;
-
-        _gameData.ActiveBoard.MovePiece(from, to);
-
-        _matchData.GetPlayerData(playerId).IsMoving = false;
+        var isRotate = _matchData.GetPlayerData(_matchData.MovingPlayerId).IsRotate;
         var anotherPlayer = _matchData.GetAnotherPlayerData(playerId);
+        var killedPiece = board.GetCell(to.x, to.y).Piece;
+        
+        var movedPiece = board.GetCell(to.x, to.y).Piece;
+        
+        _matchData.GetPlayerData(playerId).IsMoving = false;
         Debug.Log("movingID " + anotherPlayer.PlayerId);
         anotherPlayer.IsMoving = true;
         _matchData.MovingPlayerId = anotherPlayer.PlayerId;
-
-        if ((IsServer || IsHost) && _oneKingDead)
-        {
-            if (killedPiece != null && killedPiece.PieceType == PieceType.Kings)
-            {
-                Draw();
-            }
-            else
-            {
-                WonPlayer(_matchData.MovingPlayerId, WonReason.Null);
-            }
-
-            return;
-        }
-
-        if (killedPiece != null)
-            DeathRattle(killedPiece);
-
-
-        var isRotate = _matchData.GetPlayerData(_matchData.MovingPlayerId).IsRotate;
-        var movedPiece = board.GetCell(to.x, to.y).Piece;
+        
+        _gameData.ActiveBoard.MovePiece(from, to);
+        
         if ((isRotate || to.y == 0) && (!isRotate || to.y == 7))
         {
             if (movedPiece != null && movedPiece.PieceType == PieceType.Pawns)
@@ -318,6 +316,41 @@ public class MatchCore : NetworkBehaviour
                 board.GetCell(to.x, to.y).SetPiece(pawn);
             }
         }
+        
+        Debug.Log($"_oneKingDead {_oneKingDead}, killedPiece != null {killedPiece != null}, ");
+
+        if (playerId == _myId) return;
+        if (_killedKings > 0)
+        {
+            _serverCore = GetServerCore();
+            Debug.Log("[TTT]" + (killedPiece != null && killedPiece.PieceType == PieceType.Kings));
+            if (killedPiece != null && killedPiece.PieceType == PieceType.Kings)
+            {
+                _serverCore.DrawRpc();
+            }
+            else
+            {
+                Debug.Log("WonPlayerClientRpc _serverCore" + (_serverCore == null));
+                _serverCore.WonPlayerRpc(_lastKilledKingPlayerID, WonReason.Null); 
+            }
+        }
+
+        if (killedPiece != null)
+        {
+            DeathRattle(killedPiece);
+        }
+        // if (!IsServer && !IsHost) return;
+        // if (_killedKings == 0) return;
+        //
+        // if (_killedKings == 1)
+        // {
+        //     var winerId = _matchData.GetAnotherPlayerData(_lastKilledKingPlayerID).PlayerId;
+        //     WonPlayer(winerId, WonReason.Null);
+        // }
+        // else if(_killedKings == 2)
+        // {
+        //     Draw();
+        // }
 
     }
 
@@ -363,14 +396,11 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void TryMoveRpc(Vector2Int from, Vector2Int to, RpcParams rpcParams = default)
     {
-        Debug.Log("TryMoveRpc");
-        Debug.Log($"_serverCore is null {_serverCore == null}");
         _serverCore.TryMoveServer(from, to, rpcParams);
     }
 
     private void TryMoveServer(Vector2Int from, Vector2Int to, RpcParams rpcParams)
     {
-        Debug.Log("TryMove");
         if (IsClient && !IsHost)
         {
             Debug.LogError("Client in [Rpc(SendTo.Server)]public void TryMoveRps()");
@@ -379,7 +409,6 @@ public class MatchCore : NetworkBehaviour
 
         var playerId = rpcParams.Receive.SenderClientId;
         var playerData = _matchData.GetPlayerData(playerId);
-        Debug.Log("playerData: " + playerData);
         if (!playerData.IsMoving)
         {
             Debug.LogError("isNotValidMoving");
@@ -408,7 +437,6 @@ public class MatchCore : NetworkBehaviour
 
     private void DeathRattle(AbstractPiece piece)
     {
-        Debug.Log("DeathRattle");
         switch (piece.PieceType)
         {
             case PieceType.Empty:
@@ -419,46 +447,74 @@ public class MatchCore : NetworkBehaviour
             case PieceType.Queens:
                 break;
             case PieceType.Kings:
-                _oneKingDead = true;
+                OnKingDeath(_enemyId);
+                Debug.Log("DeathRattle Kings");
                 //TODO перевірити чи у ворога є фігури якими він може походити якщо ні перемогти завершити матч
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
         }
     }
-
-    private void WonPlayer(ulong winnerId, WonReason wonReason)
+    private void OnKingDeath(ulong id)
     {
-        if (!IsServer)
-        {
-            Debug.LogError("WonPlayer called on client");
-            return;
-        }
-        
-        foreach (var allMatchCore in _allMatchCores) allMatchCore.WonPlayerClientRpc(winnerId, wonReason);;
+        _serverCore = GetServerCore();
+        _serverCore.OnKingDeathRPC(id);
+    }
+    
+    [Rpc(SendTo.Server)]
+    private void OnKingDeathRPC(ulong id)
+    {
+        foreach (var core in _allMatchCores) core.OnKingDeathClientRpc(id);
     }
 
-    private void Draw()
+    [Rpc(SendTo.ClientsAndHost)]
+    private void OnKingDeathClientRpc(ulong id)
+    {
+        if (!IsOwner) return;
+
+        _killedKings += 1;
+        _lastKilledKingPlayerID = id;
+    }
+
+    private int _killedKings;
+    private ulong _lastKilledKingPlayerID;
+
+    [Rpc(SendTo.Server)]
+    private void WonPlayerRpc(ulong winnerId, WonReason wonReason)
+    {
+        foreach (var allMatchCore in _allMatchCores) allMatchCore.WonPlayerClientRpc(winnerId, wonReason);
+    }
+    [Rpc(SendTo.Server)]
+    private void DrawRpc()
     {
         foreach (var allMatchCore in _allMatchCores) allMatchCore.DrawClientRpc();
     }
 
-    private void GetScopes(ulong winnerId, ref double player1Score, ref double player2Score)
+    private void GetScopes(int winnerId, ref double player1Score, ref double player2Score)
     {
-        if (winnerId == _matchData.Player1.PlayerId)
-        {
-            player1Score = 1.0;
-            player2Score = 0.0;
-        }
-        else if (winnerId == _matchData.Player2.PlayerId)
-        {
-            player1Score = 0.0;
-            player2Score = 1.0;
-        }
-        else
+        if (winnerId < 0)
         {
             player1Score = 0.5;
             player2Score = 0.5;
+        }
+        else
+        {
+            var id = (ulong)winnerId;
+
+            if (id == _matchData.Player1.PlayerId)
+            {
+                player1Score = 1.0;
+                player2Score = 0.0;
+            }
+            else if (id == _matchData.Player2.PlayerId)
+            {
+                player1Score = 0.0;
+                player2Score = 1.0;
+            }
+            else
+            {
+                Debug.LogError("GetScopes Player Id Not Valid " + id + "expected value is" + _matchData.Player1.PlayerId + " or " + _matchData.Player2.PlayerId);;
+            }
         }
     }
 
@@ -469,11 +525,13 @@ public class MatchCore : NetworkBehaviour
     }
 
     [Rpc(SendTo.Server)]
-    public void TrySurrenderRpc(ulong winnerId)
+    public void TrySurrenderRpc(RpcParams rpcParams = default)
     {
-        WonPlayer(winnerId, WonReason.Surrender);
+        var senderId = rpcParams.Receive.SenderClientId;
+        var winer = _matchData.GetAnotherPlayerData(senderId);
+        _serverCore = GetServerCore();
+        _serverCore.WonPlayerRpc(winer.PlayerId, WonReason.Surrender);
     }
-
 
     [Rpc(SendTo.Server)]
     public void TryCancelMatchRpc()
@@ -595,15 +653,15 @@ public class MatchCore : NetworkBehaviour
 
         targetPlayerCore.OnAnotherPlayerWantsDrawRpc();
     }
-
     private void OnAnotherPlayerWantsDrawRpc()
     {
-        throw new NotImplementedException();
+        MatchUIManager.Instance.OnAnotherPlayerWantsDrawRpc();
     }
 
     public void AcceptAnotherPlayerWantsDrawRpc()
     {
-        throw new NotImplementedException();
+        _serverCore = GetServerCore();
+        _serverCore.DrawRpc();
     }
 
     #endregion

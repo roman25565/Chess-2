@@ -14,8 +14,6 @@ namespace Firebase.RealtimeDatabase
 public class ReConnectRequestsManager
 {
     private AdvancedMatchmaking _advancedMatchmaking;
-    
-    private const long WeekInMs = 7 * 24 * 60 * 60 * 1000; // 7 day in ms
         
     private readonly DatabaseReference _database;
     private readonly string _currentUserId;
@@ -26,10 +24,6 @@ public class ReConnectRequestsManager
         _database = database;
         _currentUserId = currentUserId;
         _advancedMatchmaking = advancedMatchmaking;
-
-        FetchRequests();
-
-        // SendMatchRequest("002", "Alpha");
     }
 
     public async Task SendReConnectRequest(string recipientId,string relayJoinCode)
@@ -52,12 +46,11 @@ public class ReConnectRequestsManager
         }
     }
     
-    private void FetchRequests()
+    public void FetchReConnectRequests()
     {
         try
         {
-            Debug.Log("FetchRequests");
-            Debug.Log("III" + _currentUserId);
+            Debug.Log("FetchReConnectRequests");
             var query = _database.Child(ReConnectRequestData.CollectionName)
                 .OrderByChild(AbstractRequestData.RecipientIdKey)
                 .EqualTo(_currentUserId);
@@ -87,7 +80,6 @@ public class ReConnectRequestsManager
                     if (timeDifferenceInMinutes > 2)
                     {
                         Debug.Log("DeleteRequest");
-                        // Якщо пройшло більше хвилини - видаляємо запис
                         request.Reference.RemoveValueAsync().ContinueWith(removeTask =>
                         {
                             if (removeTask.IsFaulted)
@@ -98,7 +90,6 @@ public class ReConnectRequestsManager
                     }
                     else
                     {
-                        // Якщо пройшло менше хвилини - виконуємо реконект
                         Debug.Log("ReConnect");
                         try
                         {

@@ -1,5 +1,6 @@
 #if !UNITY_SERVER
 
+using System;
 using Setting;
 using TMPro;
 using UnityEngine;
@@ -28,16 +29,32 @@ namespace UI
         [SerializeField] private GameModeSelector gameModeSelector;
         [SerializeField] private HistoryPanel historyPanel;
         [SerializeField] private FriendsPanel friendsPanel;
-        
+        [SerializeField] private EndGamePanel endGamePanel; 
         
         public void Init(bool isSignIn = false)
         {
+            Debug.Log("Init" + isSignIn);
             DisableAllPanels();
             DisableFindMatchPanel();
-            ShowSignInPanel();
+            if (!isSignIn) ShowSignInPanel();
 
             if (isSignIn) SetProfileImageText(_global.FirestoreManager.MyData);
             if (isSignIn) SetProfileImage(_global.FirestoreManager.MyData.Icon);
+            if (isSignIn)
+            {
+                Debug.Log("Init endGamePanel");
+                try
+                { 
+                    endGamePanel.gameObject.SetActive(true);
+                    Debug.Log("Init endGamePanel end" + endGamePanel.gameObject.activeInHierarchy);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e);
+                    throw;
+                }
+                endGamePanel.EndGame(_global.EndGameData, this);
+            }
             _global.FirestoreManager.OnLogin.AddListener(OnLogin);
 
             void OnLogin()
@@ -63,6 +80,7 @@ namespace UI
 
         private void DisableAllPanels()
         {
+            Debug.Log("DisableAllPanels");
             if (settingsPanel != null) settingsPanel.SetActive(false);
             if (arrangementPanel != null) arrangementPanel.SetActive(false);
             if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
@@ -77,8 +95,6 @@ namespace UI
             if (defaultUI != null) defaultUI.SetActive(true);
         }
 
-        #region BackButtonAndroid
-
         private void Update()
         {
             if (Input.GetKeyDown(KeyCode.Escape))
@@ -87,7 +103,10 @@ namespace UI
             }
         }
 
-        #endregion
+        public void HideEndGamePanel()
+        {
+            if (endGamePanel != null) endGamePanel.gameObject.SetActive(false);
+        }
 
         public void ShowSettingsPanel()
         {
