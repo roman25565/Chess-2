@@ -19,8 +19,6 @@ namespace Bootstrap
 {
 public class Bootstrap : MonoBehaviour
 {
-    private const string Server = "Server";
-
     [Inject] private GameData _gameData;
     [Inject] private Global _global;
     
@@ -42,6 +40,10 @@ public class Bootstrap : MonoBehaviour
     private async void Awake()
     {
         Application.targetFrameRate = 120;
+#if !Android && !UNITY_EDITOR
+        Screen.SetResolution(500, 1040, false);
+#endif
+        Debug.Log("currentResolution.width" + Screen.currentResolution.width);
         SetupMatchButtonListeners();
         if (_global.IsSignIn)//Is Return To Main Menu
         {
@@ -151,16 +153,17 @@ public class Bootstrap : MonoBehaviour
     {
         Debug.Log("SignInFireBase " + user);
 
-        _ = _global.FirestoreManager.PlayerDataManager.GetPlayerData(user.UserId, CallBack);
+        _global.FirestoreManager.LoadPlayerData(user.UserId, CallBack);
         
         return;
 
-        void CallBack(FirebasePlayerData result)
+        void CallBack(string id, FirebasePlayerData result)
         {
             if (result == null)
             {
                 _global.FirestoreManager.PlayerDataManager.CreatePlayerData(user);
-                _ = _global.FirestoreManager.StatisticManager.CreatePlayerStatistics(user.UserId);
+                _global.FirestoreManager.StatisticManager.CreatePlayerStatistics(user.UserId);
+                _global.FirestoreManager.PlayerRankingManager.CreateMyPlayerRanking(id);
                 _global.IsSignIn = true;
             }
             else

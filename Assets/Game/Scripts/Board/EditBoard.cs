@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Setting;
+using Statistics;
 using Unity.Mathematics;
 using UnityEngine;
 using Zenject;
@@ -74,13 +75,13 @@ namespace Board
                 _global.FirestoreManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer1Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer1Id, historyMatchData.Player1Name,
-                        historyMatchData.Player1Elo, sprite, null, null), historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.MyData.ID);
+                       new PlayerRankingData{Elo = historyMatchData.Player1Elo, Position = -1}, sprite, null, null), historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.MyData.ID);
                 });
                 
                 _global.FirestoreManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer2Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer2Id, historyMatchData.Player2Name,
-                        historyMatchData.Player2Elo, sprite, null, null), historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.MyData.ID);
+                        new PlayerRankingData{Elo = historyMatchData.Player2Elo, Position = -1}, sprite, null, null), historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.MyData.ID);
                 });
 
                 _internalMoveHistory = new MoveHistory(Move);

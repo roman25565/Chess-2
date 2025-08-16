@@ -57,7 +57,14 @@ public class PlayerProfileController : MonoBehaviour
         if (id != _targetPlayerId) return;
         playerImage.color = Color.white;
         playerImage.sprite = player.Icon;
-        topProfileText.text = $"{player.Name} ({player.Elo})";
+        var playerRankingPosition = player.PlayerRanking.Position;
+        string text = $"{player.Name}\n({player.PlayerRanking.Elo.ToString()})";
+        if (playerRankingPosition != -1)
+        {
+            text += $" #{playerRankingPosition.ToString()}";
+        }
+        topProfileText.text = text;
+        Debug.Log(text);
     }
 
     private void UpdateStatisticProfile(string id, PlayerStatistic statistic)

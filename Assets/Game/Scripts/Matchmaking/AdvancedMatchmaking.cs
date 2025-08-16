@@ -2,10 +2,12 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Board;
 using Bootstrap;
+using Google;
 using Setting;
 using TMPro;
 using Unity.Netcode;
@@ -22,6 +24,7 @@ using UnityEngine.SceneManagement;
 using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Zenject;
+using Debug = UnityEngine.Debug;
 using Random = UnityEngine.Random;
 
 public enum MatchmakingState
@@ -94,10 +97,10 @@ public class AdvancedMatchmaking : MonoBehaviour
 
     public void SearchMatch(GameData gameData)
     {
-        _global.FirestoreManager.MyData.GetElo(elo =>
+        _global.FirestoreManager.MyData.GetPlayerRanking(rankingData =>
         {
             var timeControl = gameData.TimeControl;
-            StartMatchmaking(elo, timeControl.ToString());
+            StartMatchmaking(rankingData.Elo, timeControl.ToString());
         });
     }
 
@@ -320,6 +323,7 @@ public class AdvancedMatchmaking : MonoBehaviour
     private void OnApplicationQuit()
     {
         CancelMatchmaking();
+        OnApplicationQuit2();
     }
 
     #region Reconnect
@@ -365,8 +369,6 @@ public class AdvancedMatchmaking : MonoBehaviour
     }
 
     #endregion
-
-
     
     public async Task HostMatch(Action<string> callback = null, bool needLoadGameScene = true)
     {
@@ -490,4 +492,21 @@ public class AdvancedMatchmaking : MonoBehaviour
         searchTimeText.text = "Search cancelled";
         Debug.Log("CancelMatchmaking");
     }
+    
+    
+        public void OnApplicationQuit2()
+        {
+            Debug.Log("Application quitting...");
+#if ANDROID
+            GoogleSignIn.DefaultInstance.Disconnect();
+#endif
+            // Закриває Unity-процес повністю
+            Application.Quit();
+
+            Debug.Log(Process.GetCurrentProcess().ProcessName);
+#if UNITY_STANDALONE_WIN &&  !UNITY_EDITOR
+            System.Diagnostics.Process.GetCurrentProcess().Kill();
+#endif
+        }
+    
 }

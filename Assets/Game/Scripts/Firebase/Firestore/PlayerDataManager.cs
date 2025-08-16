@@ -6,6 +6,7 @@ using Firebase.Extensions;
 using Firebase.Firestore;
 using Firebase.RealtimeDatabase;
 using Google;
+using Statistics;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -15,7 +16,7 @@ public class PlayerDataManager
 {
 
     private const string IDKey = "ID";
-    private const string EloKey = "Elo";
+    // private const string EloKey = "Elo";
     private const string IconURLKey = "IconURL";
     private const string EmailKey = "Email";
     private const string HistoryIDsKey = "HistoryIDs";
@@ -84,18 +85,21 @@ public class PlayerDataManager
             {
                 Debug.Log("snapshot.Exists: ");
                 var existingName = snapshot.GetValue<string>(NameKey);
-                var existingElo = snapshot.GetValue<int>(EloKey);
                 var imageURL = snapshot.GetValue<string>(IconURLKey);
                 var historyIds = snapshot.GetValue<List<string>>(HistoryIDsKey);
                 var friendIds = snapshot.GetValue<List<string>>(FriendIdsKey);
-                await Task.Yield(); //Optimization
-
-                Debug.Log("Load From DB");
-                GlobalTools.LoadSprite(new Uri(imageURL), sprite =>
+                _firestoreManager.LoadPlayerRanking(playerId, (arg0, data) =>
                 {
-                    result = new FirebasePlayerData(playerId, existingName, existingElo, sprite, historyIds, friendIds);
-                    callback(result);
+                    var existingElo = data;
+                    Debug.Log("Load From DB");
+                    GlobalTools.LoadSprite(new Uri(imageURL), sprite =>
+                    {
+                        result = new FirebasePlayerData(playerId, existingName, existingElo, sprite, historyIds,
+                            friendIds);
+                        callback(result);
+                    });
                 });
+
             }
             else
             {
@@ -140,7 +144,6 @@ public class PlayerDataManager
         {
             { IDKey, "<ID>" },
             { NameKey, "<ID>" },
-            { EloKey, 500 },
             { IconURLKey, imageUrl },
             { EmailKey, "<EMAIL>" },
             {HistoryIDsKey, new object[]{} },
@@ -170,7 +173,8 @@ public class PlayerDataManager
                     }
                     else
                     {
-                        _ = _firestoreManager.StatisticManager.CreatePlayerStatistics(id);
+                        _firestoreManager.StatisticManager.CreatePlayerStatistics(id);
+                        _firestoreManager.PlayerRankingManager.CreateMyPlayerRanking(id);
                         callback.Invoke(id);
                     }
 
@@ -190,7 +194,6 @@ public class PlayerDataManager
         {
             { IDKey, user.UserId },
             { NameKey, user.DisplayName },
-            { EloKey, 500 },
             { IconURLKey, user.ImageUrl.ToString() },
             { EmailKey, user.Email },
             { HistoryIDsKey, new object[] { } },
@@ -210,14 +213,18 @@ public class PlayerDataManager
             }
             else
             {
-                OnPlayerDataCreated(playerData);
+                OnPlayerDataCreated(playerData, new PlayerRankingData
+                {
+                    Elo = 500,
+                    Position = -1
+                });
             }
 
             return Task.CompletedTask;
         });
     }
 
-    private void OnPlayerDataCreated(Dictionary<string, object> playerData, UnityAction<FirebasePlayerData> callback = null)
+    private void OnPlayerDataCreated(Dictionary<string, object> playerData, PlayerRankingData playerRanking, UnityAction<FirebasePlayerData> callback = null)
     {
         GlobalTools.LoadSprite(new Uri(playerData[IconURLKey].ToString()), sprite =>
         {
@@ -226,39 +233,13 @@ public class PlayerDataManager
             (
                 playerData[IDKey].ToString(),
                 playerData[NameKey].ToString(),
-                int.Parse(playerData[EloKey].ToString()),
+                playerRanking,
                 sprite,
                 new List<string>(),
                 new List<string>()
             );
             callback?.Invoke(firebasePlayerData);
             _firestoreManager.Login(firebasePlayerData);
-        });
-    }
-
-    public void BdSetMyElo(string playerId, int newElo)
-    {
-        if (playerId != _firestoreManager.MyData.ID)
-        {
-            Debug.LogError("Invalid attempt to update statistics, user unavailable for this action");
-            return;
-        }
-        
-        var docRef = _db.Collection(PlayersDataCollectionName).Document(playerId);
-
-        var updates = new Dictionary<string, object>
-        {
-            { EloKey, newElo }
-        };
-
-        docRef.UpdateAsync(updates).ContinueWithOnMainThread(task =>
-        {
-            if (task.IsCompleted)
-            {
-                Debug.Log("Document updated successfully.");
-                _firestoreManager.GetSavedPlayer(playerId).PlayerData.IsOutdated = true;
-            }
-            else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
         });
     }
 }

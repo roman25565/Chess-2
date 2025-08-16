@@ -69,7 +69,7 @@ public class PlayerStatistic
     {
         LastPlayedDate = Timestamp.FromDateTime(DateTime.UtcNow);
 
-        CurrentEloRating = playerData.FirebasePlayer.Elo;
+        CurrentEloRating = playerData.FirebasePlayer.PlayerRanking.Elo;
         PeakEloRating = PeakEloRating < CurrentEloRating ? CurrentEloRating : PeakEloRating;
         LowestEloRating = LowestEloRating > CurrentEloRating ? CurrentEloRating : LowestEloRating;
 

@@ -70,7 +70,6 @@ public class SignIn : MonoBehaviour
         GoogleSignIn.Configuration = _configuration;
         GoogleSignIn.DefaultInstance.SignIn().ContinueWithOnMainThread(
             OnAuthenticationFinished);
-
     }
     
     public void OnSignInDebug()

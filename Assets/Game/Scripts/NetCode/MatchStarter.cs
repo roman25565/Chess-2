@@ -196,13 +196,13 @@ public class MatchStarter : NetworkBehaviour
     
     private void LoadFirestoreRefreshUI(MatchData matchData, MatchCore core)
     {
-        _ = _global.FirestoreManager.PlayerDataManager.GetPlayerData(matchData.Player1.FirebasePlayer.ID, result =>
+        _global.FirestoreManager.LoadPlayerData(matchData.Player1.FirebasePlayer.ID, (_,result) =>
         {
             matchData.Player1.FirebasePlayer = result;
 
             core.RefreshPlayerUI(matchData.Player1.PlayerId, matchData.Player1.PlayerId != OwnerClientId);
         });
-        _ = _global.FirestoreManager.PlayerDataManager.GetPlayerData(matchData.Player2.FirebasePlayer.ID, result =>
+        _global.FirestoreManager.LoadPlayerData(matchData.Player2.FirebasePlayer.ID, (_,result) =>
         {
             matchData.Player2.FirebasePlayer = result;
             core.RefreshPlayerUI(matchData.Player2.PlayerId, matchData.Player2.PlayerId != OwnerClientId);

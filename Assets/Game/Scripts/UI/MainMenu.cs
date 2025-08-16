@@ -1,5 +1,3 @@
-#if !UNITY_SERVER
-
 using System;
 using Setting;
 using TMPro;
@@ -183,12 +181,18 @@ namespace UI
             profileImage.color = new Color(255, 255, 255, 255);
         }
 
-        public void SetProfileImageText(MyData myData)
+        private void SetProfileImageText(MyData player)
         {
-            myData.GetElo((elo =>
+            player.GetPlayerRanking(playerRanking =>
             {
-                profileImageText.text = $"{myData.Name}\n({elo})";;
-            }));
+                var playerRankingPosition = playerRanking.Position;
+                string text = $"{player.Name}\n({playerRanking.Elo.ToString()})";
+                if (playerRankingPosition != -1)
+                {
+                    text += $" #{playerRankingPosition.ToString()}";
+                }
+                profileImageText.text = text;
+            });
         }
 
         private bool _notificationOpen;
@@ -255,5 +259,3 @@ namespace UI
         }
     }
 }
-
-#endif

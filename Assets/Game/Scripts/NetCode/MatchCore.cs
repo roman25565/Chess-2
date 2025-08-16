@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Board.Piece;
 using Setting;
+using Statistics;
 using Unity.Netcode;
 using UnityEngine;
 using UnityEngine.Events;
@@ -234,10 +235,10 @@ public class MatchCore : NetworkBehaviour
         CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
         if (endGameType == EndGameType.Lose && endGameType == EndGameType.Won)
         {
-            _matchData.Player1.FirebasePlayer.Elo = player1Elo;
-            _matchData.Player2.FirebasePlayer.Elo = player2Elo;
+            _matchData.Player1.FirebasePlayer.PlayerRanking.Elo = player1Elo;
+            _matchData.Player2.FirebasePlayer.PlayerRanking.Elo = player2Elo;
             var myNewElo = isFirstPlayer ? player1Elo : player2Elo;
-            _global.FirestoreManager.PlayerDataManager.BdSetMyElo(myId, myNewElo);
+            _global.FirestoreManager.PlayerRankingManager.UpdateMyPlayerRanking(myId, new PlayerRankingData{Elo = myNewElo, Position = -1});
         }
         
         _gameEnded = true;
@@ -278,10 +279,13 @@ public class MatchCore : NetworkBehaviour
         double scope2 = 0;
         GetScopes(winnerId, ref scope1, ref scope2);
 
-        player1Elo = GlobalTools.CalculateNewRating(_matchData.Player1.FirebasePlayer.Elo,
-            _matchData.Player1.FirebasePlayer.Elo, scope1);
-        player2Elo = GlobalTools.CalculateNewRating(_matchData.Player2.FirebasePlayer.Elo,
-            _matchData.Player2.FirebasePlayer.Elo, scope2);
+        var player1RankingElo = _matchData.Player1.FirebasePlayer.PlayerRanking.Elo;
+        var player2RankingElo = _matchData.Player2.FirebasePlayer.PlayerRanking.Elo;
+        
+        player1Elo = GlobalTools.CalculateNewRating(player1RankingElo,
+            player1RankingElo, scope1);
+        player2Elo = GlobalTools.CalculateNewRating(player2RankingElo,
+            player2RankingElo, scope2);
 
         Debug.Log($"new Elo P1 {player1Elo} P2 {player2Elo}");
     }

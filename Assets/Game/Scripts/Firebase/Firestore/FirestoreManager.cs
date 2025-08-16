@@ -23,11 +23,11 @@ public class MyData
     public readonly string Name;
     public UnityEvent OnIconLoaded = new ();
 
-    public void GetElo(UnityAction<int> callback)
+    public void GetPlayerRanking(UnityAction<PlayerRankingData> callback)
     {
-        _firestoreManager.LoadPlayerData(ID, (arg0, arg1) =>
+        _firestoreManager.LoadPlayerRanking(ID, (arg0, ranking) =>
         {
-            callback.Invoke(arg1.Elo);
+            callback.Invoke(ranking);
         });
     }
     
@@ -67,16 +67,15 @@ public class FirestoreManager
     
     public MyData MyData;
     
-    
     public StatisticManager StatisticManager;
     public HistoryManager HistoryManager;
     public PlayerDataManager PlayerDataManager;
+    public PlayerRankingManager PlayerRankingManager;
     public RealtimeDatabase RealtimeDatabase;
     public readonly UnityEvent OnLogin = new UnityEvent();
     public FirestoreManager(AdvancedMatchmaking advancedMatchmaking)
     {
         _advancedMatchmaking = advancedMatchmaking;
-
     }
 
     public async Task Init()
@@ -109,9 +108,8 @@ public class FirestoreManager
         StatisticManager = new StatisticManager(_db, this);
         HistoryManager = new HistoryManager(_db, this);
         PlayerDataManager = new PlayerDataManager(_db, this, PlayersDataCollectionName, NameKey);
-
+        PlayerRankingManager = new PlayerRankingManager(_db, this);
     }
-
 
     private readonly Dictionary<string, SavedPlayerData> _savedPlayersData = new();
 
@@ -119,7 +117,12 @@ public class FirestoreManager
     {
         if (_savedPlayersData.TryGetValue(targetPlayerId, out var player)) return player;
         
-        var newSavedPlayer = new SavedPlayerData(StatisticManager.GetPlayerStatistic, PlayerDataManager.GetPlayerData, HistoryManager.LoadHistory);
+        var newSavedPlayer = new SavedPlayerData(
+            StatisticManager.LoadPlayerStatistic,
+            PlayerDataManager.GetPlayerData,
+            HistoryManager.LoadHistory,
+            PlayerRankingManager.LoadRankings);
+        
         _savedPlayersData.Add(targetPlayerId, newSavedPlayer);
         return newSavedPlayer;
     }
@@ -150,6 +153,13 @@ public class FirestoreManager
         var player = GetSavedPlayer(targetPlayerId);
         
         player.Statistic.Load(targetPlayerId, callback);
+    }
+    
+    public void LoadPlayerRanking(string targetPlayerId, UnityAction<string, PlayerRankingData> callback)
+    {
+        var player = GetSavedPlayer(targetPlayerId);
+        
+        player.Ranking.Load(targetPlayerId, callback);
     }
 
     public void SaveMatchHistory(string winnerID,
@@ -199,29 +209,5 @@ public class FirestoreManager
             GetSavedPlayer(id).PlayerData.IsOutdated = true;
         }, _advancedMatchmaking);
         OnLogin?.Invoke();
-    }
-
-    public void ForEachSavedData()
-    {
-        foreach (KeyValuePair<string, SavedPlayerData> data in _savedPlayersData)
-        {
-            if (data.Value.PlayerData.IsOutdated)
-            {
-                LoadPlayerData(data.Key, (arg0, arg1) =>
-                {
-                });
-            }
-
-            if (data.Value.Statistic.IsOutdated)
-            {
-                LoadStatistic(data.Key, (arg0, arg1) => { });
-            }
-            
-            if (data.Value.History.IsOutdated)
-            {
-                LoadHistory(data.Key, (arg0, arg1) => { });
-            }
-        }
-        
     }
 }

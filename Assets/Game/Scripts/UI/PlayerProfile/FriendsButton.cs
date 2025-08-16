@@ -40,8 +40,8 @@ public class FriendsButton : MonoBehaviour
 
             playerIcon.color = new Color(255, 255, 255, 255);
             playerIcon.sprite = playerData.Icon;
-            Debug.Log($"SetButton {playerData.Name}, {playerData.Elo}");
-            playerNameAndElo.text = $"{playerData.Name} ({playerData.Elo})";
+            playerNameAndElo.text = $"{playerData.Name} ({playerData.PlayerRanking.Elo})";
+            if (playerData.PlayerRanking.Position != -1) playerNameAndElo.text +=  $" {playerData.PlayerRanking.Position}";
 
             toProfileButton.onClick.AddListener(() => { mainMenu.ShowProfilePanel(playerData.ID); });
             sendMatchRequest.onClick.AddListener(() => OnSendMatchRequest(playerData.ID, myName, notificationParent));

@@ -11,16 +11,19 @@ public class SavedPlayerData
     public PlayerHistoryLoader History;
     public PlayerStatisticLoader Statistic;
     public PlayerDataLoader PlayerData;
+    public PlayerRankingLoader Ranking;
     
     
     public SavedPlayerData(
         Action<string, UnityAction<string, PlayerStatistic>> getPlayerStatistic,
         Action<string, UnityAction<string, FirebasePlayerData>> getPlayerData,
-        Action<string, UnityAction<HistoryMatchData>> getHistory)
+        Action<string, UnityAction<HistoryMatchData>> getHistory,
+        Action<string, UnityAction<string, PlayerRankingData>> getRanking)
     {
         Statistic = new PlayerStatisticLoader(getPlayerStatistic);
         PlayerData = new PlayerDataLoader(getPlayerData);
         History = new PlayerHistoryLoader(this,getHistory);
+        Ranking = new PlayerRankingLoader(getRanking);
     }
 }
 
@@ -124,6 +127,12 @@ public class PlayerHistoryLoader : SavedPlayerDataLoader<List<HistoryMatchData>>
 public class PlayerDataLoader : SavedPlayerDataLoader<FirebasePlayerData>
 {
     public PlayerDataLoader(Action<string, UnityAction<string, FirebasePlayerData>> loadMethod)
+        : base(loadMethod) { }
+}
+
+public class PlayerRankingLoader : SavedPlayerDataLoader<PlayerRankingData>
+{
+    public PlayerRankingLoader(Action<string, UnityAction<string, PlayerRankingData>> loadMethod)
         : base(loadMethod) { }
 }
 }

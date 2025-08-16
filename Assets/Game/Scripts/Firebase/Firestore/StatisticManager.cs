@@ -23,7 +23,7 @@ public class StatisticManager
         _firestoreManager = firestoreManager;
     }
 
-    public async void GetPlayerStatistic(string playerId, UnityAction<string, PlayerStatistic> callback = null)
+    public async void LoadPlayerStatistic(string playerId, UnityAction<string, PlayerStatistic> callback = null)
     {
         try
         {
@@ -44,7 +44,7 @@ public class StatisticManager
         }
     }
 
-    public async Task<bool> CreatePlayerStatistics(string playerId)
+    public async void CreatePlayerStatistics(string playerId)
     {
         try
         {
@@ -57,18 +57,14 @@ public class StatisticManager
                 CurrentEloRating = 500,
                 LowestEloRating = 500,
                 PeakEloRating = 500,
-                
-                // Всі інші поля за замовчуванням 0
             };
 
             DocumentReference docRef = _db.Collection(CollectionName).Document(playerId);
             await docRef.SetAsync(initialStats);
-            return true;
         }
         catch (Exception e)
         {
             Debug.LogError($"Error creating player statistics: {e.Message}");
-            return false;
         }
     }
 

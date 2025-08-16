@@ -1,7 +1,6 @@
 ﻿using System;
 using TMPro;
 using UnityEngine;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 
 public class PlayerPanel : MonoBehaviour
@@ -19,7 +18,10 @@ public class PlayerPanel : MonoBehaviour
     
     public void SetPlayerUI(FirebasePlayerData playerData)
     {
-        nameAndEloText.text = $"{playerData.Name} + ({playerData.Elo})";
+        var playerRankingPosition = playerData.PlayerRanking.Position;
+        
+        nameAndEloText.text = $"{playerData.Name} ({playerData.PlayerRanking.Elo})";
+        if (playerRankingPosition != -1) nameAndEloText.text += $" #{playerRankingPosition})";
         iconImage.sprite = playerData.Icon;
     }
 #endif
