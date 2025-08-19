@@ -41,7 +41,7 @@ public class PlayerRankingManager
         }
     }
     
-    public async Task UpdateMyPlayerRanking(string playerId, PlayerRankingData updatedStats)
+    public async void UpdateMyPlayerRanking(string playerId, PlayerRankingData updatedStats)
     {
         if (playerId != _firestoreManager.MyData.ID)
         {

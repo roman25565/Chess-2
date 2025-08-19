@@ -202,12 +202,8 @@ public class FirestoreManager
         LoadPlayerData(myID, (arg0, firebasePlayerData) =>
         {
             MyData.Icon = firebasePlayerData.Icon;
-        });;
-        RealtimeDatabase = new RealtimeDatabase(playerData.ID, id =>
-        {
-            PlayerDataManager.AddFriend(id);
-            GetSavedPlayer(id).PlayerData.IsOutdated = true;
-        }, _advancedMatchmaking);
+        });
+        RealtimeDatabase = new RealtimeDatabase(playerData.ID, PlayerDataManager.AddFriend, PlayerDataManager.RemoveFriend, _advancedMatchmaking);
         OnLogin?.Invoke();
     }
 }

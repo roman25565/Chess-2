@@ -28,7 +28,7 @@ public class MoveHistory
         HistoryIndex = _history.Count;
     }
 
-    private void HistoryToReal()
+    public void HistoryToReal()
     {
         if (InHistory) SetHistoryIndex(_history.Count);
     }

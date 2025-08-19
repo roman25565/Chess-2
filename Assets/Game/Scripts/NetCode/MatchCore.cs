@@ -260,10 +260,8 @@ public class MatchCore : NetworkBehaviour
             firebaseWinnerId,
             myPlayer.FirebasePlayer.ID, player1Elo, myPlayer.StartArrangement,
             enemyPlayer.FirebasePlayer.ID, player2Elo, enemyPlayer.StartArrangement,
-            _gameData.ActiveBoard.GetHistory(), (matchId =>
-            {
-                SendGameEndedRpc(matchId);
-            })
+            _gameData.ActiveBoard.GetHistory(),
+            SendGameEndedRpc
         );
     }
 

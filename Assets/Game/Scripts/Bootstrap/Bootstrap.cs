@@ -40,7 +40,7 @@ public class Bootstrap : MonoBehaviour
     private async void Awake()
     {
         Application.targetFrameRate = 120;
-#if !Android && !UNITY_EDITOR
+#if UNITY_STANDALONE_WIN && !UNITY_EDITOR
         Screen.SetResolution(500, 1040, false);
 #endif
         Debug.Log("currentResolution.width" + Screen.currentResolution.width);

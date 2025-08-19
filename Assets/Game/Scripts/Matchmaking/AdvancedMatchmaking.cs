@@ -64,14 +64,15 @@ public class AdvancedMatchmaking : MonoBehaviour
         Debug.Log("OnSignIn " + userIdToken + " " + anonymous);;
         try
         {
-            if (anonymous == SignTypes.Google)
-            {
-                await AuthenticationService.Instance.SignInWithGoogleAsync(userIdToken);
-            }
-            else
-            {
-                await AuthenticationService.Instance.SignInAnonymouslyAsync();
-            }
+            await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            // if (anonymous == SignTypes.Google) //TODO SignInWithGoogleAsync not work
+            // {
+            //     await AuthenticationService.Instance.SignInWithGoogleAsync(userIdToken);
+            // }
+            // else
+            // {
+                // await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            // }
         }
         catch (Exception e)
         {
@@ -497,7 +498,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         public void OnApplicationQuit2()
         {
             Debug.Log("Application quitting...");
-#if ANDROID
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             GoogleSignIn.DefaultInstance.Disconnect();
 #endif
             // Закриває Unity-процес повністю

@@ -54,19 +54,19 @@ namespace Firebase.RealtimeDatabase
         }
         
 
-        public RealtimeDatabase(string userId, UnityAction<string> addFriend, AdvancedMatchmaking advancedMatchmaking)
+        public RealtimeDatabase(string userId, UnityAction<string> addFriend, UnityAction<string> removeFriend, AdvancedMatchmaking advancedMatchmaking)
         {
             _currentUserId = userId;
             _database = FirebaseDatabase.DefaultInstance.RootReference;
             _advancedMatchmaking = advancedMatchmaking;
-            Init(addFriend);
+            Init(addFriend, removeFriend);
         }
 
-        private void Init(UnityAction<string> addFriend)
+        private void Init(UnityAction<string> addFriend, UnityAction<string> removeFriend)
         {
             DeleteLegacyRequests();
             
-            FriendRequestsManager = new FriendRequestsManager(_database, _currentUserId, OnChangedRequests, addFriend);
+            FriendRequestsManager = new FriendRequestsManager(_database, _currentUserId, OnChangedRequests, addFriend, removeFriend);
             MatchRequestsManager = new MatchRequestsManager(_database, _currentUserId, OnChangedRequests, _advancedMatchmaking);
             ReConnectRequestsManager = new ReConnectRequestsManager(_database, _currentUserId, _advancedMatchmaking);
         }

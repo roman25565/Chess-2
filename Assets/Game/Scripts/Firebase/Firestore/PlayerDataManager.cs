@@ -47,8 +47,35 @@ public class PlayerDataManager
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted)
+                {
+                    var playerDataLoader = _firestoreManager.GetSavedPlayer(_firestoreManager.MyData.ID).PlayerData;
+                    playerDataLoader.Data.FriendIds.Add(friendId);
                     Debug.Log("Friend Added successfully.");
+                }
                 else if (task.IsFaulted) Debug.LogError("Error updating document: " + task.Exception);
+            });
+    }
+    
+    public void RemoveFriend(string friendId)
+    {
+        var isMyFriend = _firestoreManager.MyData.FriendIdsContains(friendId);
+        if (!isMyFriend) return;
+        
+        _firestoreManager.GetSavedPlayer(_firestoreManager.MyData.ID).PlayerData.Data.FriendIds.Remove(friendId);
+        
+        var docRef = _db.Collection(PlayersDataCollectionName).Document(_firestoreManager.MyData.ID);
+        
+        docRef.UpdateAsync(FriendIdsKey, FieldValue.ArrayRemove(friendId))
+            .ContinueWithOnMainThread(task =>
+            {
+                if (task.IsCompleted)
+                {
+                    Debug.Log("Friend Removed successfully.");
+                }
+                else if (task.IsFaulted)
+                {
+                    Debug.LogError("Error updating document: " + task.Exception);
+                };
             });
     }
     

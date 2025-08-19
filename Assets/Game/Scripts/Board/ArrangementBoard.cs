@@ -264,7 +264,7 @@ public class ArrangementBoard : AbstractBoard
         if (errorMessage == null) return true;
         else
         {
-#if ANDROID
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
             Handheld.Vibrate();
 #endif
             errorText.text = errorMessage;

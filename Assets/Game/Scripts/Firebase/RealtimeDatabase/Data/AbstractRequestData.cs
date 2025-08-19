@@ -9,6 +9,7 @@ namespace Firebase.RealtimeDatabase.Data
 public enum Type
 {
     FriendRequest,
+    RemoveFriendRequest,
     MatchRequest,
 }
 

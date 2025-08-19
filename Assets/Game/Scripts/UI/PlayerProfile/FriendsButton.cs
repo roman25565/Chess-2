@@ -41,14 +41,14 @@ public class FriendsButton : MonoBehaviour
             playerIcon.color = new Color(255, 255, 255, 255);
             playerIcon.sprite = playerData.Icon;
             playerNameAndElo.text = $"{playerData.Name} ({playerData.PlayerRanking.Elo})";
-            if (playerData.PlayerRanking.Position != -1) playerNameAndElo.text +=  $" {playerData.PlayerRanking.Position}";
+            if (playerData.PlayerRanking.Position != -1) playerNameAndElo.text +=  $" #{playerData.PlayerRanking.Position}";
 
             toProfileButton.onClick.AddListener(() => { mainMenu.ShowProfilePanel(playerData.ID); });
             sendMatchRequest.onClick.AddListener(() => OnSendMatchRequest(playerData.ID, myName, notificationParent));
             var isMyFriend = _global.FirestoreManager.MyData.FriendIdsContains(playerData.ID);
             if (isMyFriend)
             {
-                sendDeleteFriendRequest.onClick.AddListener(() => { OnsendDeleteFriendRequest(myId, playerData.ID, notificationParent); });
+                sendDeleteFriendRequest.onClick.AddListener(() => { OnsendDeleteFriendRequest(myId, playerData.ID, notificationParent, gameObject); });
             }
             else
             {
@@ -76,14 +76,18 @@ public class FriendsButton : MonoBehaviour
         notification.Init("Send Match Request?",() => { _ = realtimeDatabase.MatchRequestsManager.SendMatchRequest(recipientId, senderName); }, () => { _notifications.Remove(notification); });
     }
 
-    private void OnsendDeleteFriendRequest(string myId, string friendId, Transform notificationParent)
+    private void OnsendDeleteFriendRequest(string myId, string friendId, Transform notificationParent, GameObject friendButton)
     {
         var realtimeDatabase = _global.FirestoreManager.RealtimeDatabase;
 
         var notification = Instantiate(prefab, notificationParent);
         ClearNotifications();
         _notifications.Add(notification);
-        notification.Init("Delete Friend?",() => { realtimeDatabase.FriendRequestsManager.DeleteFriendRequest(myId, friendId); }, () => { _notifications.Remove(notification); });
+        notification.Init("Delete Friend?", () =>
+        {
+            realtimeDatabase.FriendRequestsManager.SendDeleteFriendRequest(myId, friendId); 
+            Destroy(friendButton);
+        }, () => { _notifications.Remove(notification); });
     }
 
     private void OnDisable()

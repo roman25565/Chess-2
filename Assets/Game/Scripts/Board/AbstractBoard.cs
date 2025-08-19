@@ -203,6 +203,11 @@ public abstract class AbstractBoard : MonoBehaviour
 
     public void StartDragging(RectTransform piece)
     {
+        if (MoveHistory.InHistory)
+        {
+            MoveHistory.HistoryToReal();
+            return;
+        }
         _draggingRectTransform = piece;
         _isDragging = true;
         _draggingTime = 0f;

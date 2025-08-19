@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Firebase.Extensions;
+using Firebase.Firestore;
 using Firebase.RealtimeDatabase.Data;
 using Unity.Networking.Transport;
 using UnityEngine;
@@ -21,21 +22,24 @@ public class FriendRequestsManager
     private readonly DatabaseReference _database;
     private readonly string _currentUserId;
     private readonly UnityAction<string> _addFriend;
+    private readonly UnityAction<string> _removeFriend;
 
     public IReadOnlyList<AbstractRequestData> GetRequestData()
     {
         return _requests;
     }
 
-    public FriendRequestsManager(DatabaseReference database, string currentUserId, UnityEvent onChangedRequests, UnityAction<string> addFriend)
+    public FriendRequestsManager(DatabaseReference database, string currentUserId, UnityEvent onChangedRequests, UnityAction<string> addFriend, UnityAction<string> removeFriend)
     {
         _database = database;
         _currentUserId = currentUserId;
         _onChangedRequests = onChangedRequests;
         _addFriend = addFriend;
+        _removeFriend = removeFriend;
 
         SubscribeToStatusUpdates();
         ListenReceivedRequests();
+        ListenReceivedRemoveFriendRequests();
         // GetReceivedFriendRequests();
     }
 
@@ -73,7 +77,7 @@ public class FriendRequestsManager
             }
             
             var friendRequest = new FriendRequestData(snapshot);
-            friendRequest.Status = StatusKeys.AcceptedKey;;
+            friendRequest.Status = StatusKeys.AcceptedKey;
 
             await requestRef.UpdateChildrenAsync(friendRequest.ToDictionary());
             _addFriend.Invoke(friendRequest.SenderId);
@@ -112,37 +116,70 @@ public class FriendRequestsManager
         }
     }
 
-    public async void DeleteFriendRequest(string myId, string friendId)
+    public async void SendDeleteFriendRequest(string myId, string recipientId)
     {
+        if (myId != _currentUserId)
+        {
+            Debug.LogError("You can only delete friend requests from your profile");
+            return;
+        }
         
+        try
+        {
+            var requestData = new RemoveFriendRequestData
+                (recipientId, "/SenderName/", _currentUserId).ToDictionary();
+
+            var requestRef = _database.Child(RemoveFriendRequestData.CollectionName)
+                .Push();
+
+            await requestRef.SetValueAsync(requestData);
+
+            Debug.Log("Friend request sent successfully");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error sending friend request: {e.Message}");
+        }
+        
+        _removeFriend.Invoke(recipientId);
     }
     
-    private void GetReceivedFriendRequests()
+    private IDisposable ListenReceivedRemoveFriendRequests()
     {
-        var query = _database.Child(FriendRequestData.CollectionName)
+        var query = _database.Child(RemoveFriendRequestData.CollectionName)
             .OrderByChild(AbstractRequestData.RecipientIdKey)
             .EqualTo(_currentUserId);
 
-        query.GetValueAsync().ContinueWith(task =>
+        query.ChildAdded += Handler;
+
+        return new RealtimeDatabase.FirebaseEventDisposable(() => { query.ChildAdded -= Handler; });
+
+        void Handler(object sender, ChildChangedEventArgs args)
         {
-            if (task.IsFaulted)
+            if (args.DatabaseError != null)
             {
-                Debug.LogError("Error getting sent requests: " + task.Exception);
+                Debug.LogError(args.DatabaseError.Message);
                 return;
             }
-
-            var snapshot = task.Result;
-           
-            if (snapshot.Exists)
+            
+            var data = new RemoveFriendRequestData(args.Snapshot);
+            _removeFriend.Invoke(data.SenderId);
+            RemoveFriendRequestById(data.RequestId);
+        }
+        
+        void RemoveFriendRequestById(string requestId)
+        {
+            try
             {
-                foreach (var request in snapshot.Children)
-                {
-                    _requests.Add(new FriendRequestData(request));
-                }
+                _database.Child(RemoveFriendRequestData.CollectionName)
+                    .Child(requestId)
+                    .RemoveValueAsync();
             }
-
-            _onChangedRequests?.Invoke();
-        });
+            catch (Exception ex)
+            {
+                Debug.LogError($"Failed to remove request: {ex.Message}");
+            }
+        }
     }
 
     private IDisposable ListenReceivedRequests()
