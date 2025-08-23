@@ -150,7 +150,7 @@ public class ArrangementBoard : AbstractBoard
         return to.Column > 4 && to.Column < 8;
     }
 
-    protected override void BoardTryMove(Cell from, Cell to)
+    public override void BoardTryMove(Cell from, Cell to)
     {
         MovePiece(from, to);
     }

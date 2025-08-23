@@ -45,7 +45,7 @@ public abstract class AbstractPiece
     public bool IsRotated;
     public ulong OwnerId;
 
-    public AbstractPiece(PieceData pieceData)
+    protected AbstractPiece(PieceData pieceData)
     {
         PieceType = pieceData.pieceType;
         Skins = pieceData.skins;

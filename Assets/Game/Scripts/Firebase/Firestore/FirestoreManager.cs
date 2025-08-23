@@ -205,5 +205,6 @@ public class FirestoreManager
         });
         RealtimeDatabase = new RealtimeDatabase(playerData.ID, PlayerDataManager.AddFriend, PlayerDataManager.RemoveFriend, _advancedMatchmaking);
         OnLogin?.Invoke();
+        Debug.Log("Login success");
     }
 }

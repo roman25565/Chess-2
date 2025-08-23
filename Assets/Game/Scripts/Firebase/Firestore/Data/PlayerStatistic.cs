@@ -15,12 +15,10 @@ public class PlayerStatistic
     [FirestoreProperty] public Timestamp RegistrationDate { get; set; }
     [FirestoreProperty] public Timestamp LastPlayedDate { get; set; }
 
-    // Рейтинги
     [FirestoreProperty] public int CurrentEloRating { get; set; }
     [FirestoreProperty] public int PeakEloRating { get; set; }
     [FirestoreProperty] public int LowestEloRating { get; set; }
 
-    // Загальна статистика
     public int TotalMatchesPlayed => Wins + Losses + Draws;
     [FirestoreProperty] public int Wins { get; set; }
     [FirestoreProperty] public int Losses { get; set; }
@@ -32,7 +30,6 @@ public class PlayerStatistic
     [FirestoreProperty] public int LossesAsWhite { get; set; }
     [FirestoreProperty] public int LossesAsBlack { get; set; }
 
-    // Для TimeSpan використовуємо long (секунди)
     [FirestoreProperty] public long TotalPlayTimeHours { get; set; }
 
     public TimeSpan TotalPlayTime
@@ -41,28 +38,22 @@ public class PlayerStatistic
         set => TotalPlayTimeHours = (long)value.TotalHours;
     }
 
-    // Статистика по ходах
     [FirestoreProperty] public int TotalMovesMade { get; set; }
     public int AverageMovesPerGame => TotalMatchesPlayed > 0 ? TotalMovesMade / TotalMatchesPlayed : 0;
 
-    // Стиль гри
     [FirestoreProperty] public int KingsDefeated { get; set; }
     [FirestoreProperty] public int KingsLost { get; set; }
     [FirestoreProperty] public int Resignations { get; set; }
     [FirestoreProperty] public int Timeouts { get; set; }
     [FirestoreProperty] public int DrawsByAgreement { get; set; }
-    // Серії
     [FirestoreProperty] public int CurrentWinStreak { get; set; }
     [FirestoreProperty] public int MaxWinStreak { get; set; }
     [FirestoreProperty] public int CurrentLoseStreak { get; set; }
     [FirestoreProperty] public int MaxLoseStreak { get; set; }
 
 
-    // Методи для роботи з датами
     public DateTime GetRegistrationDate() => RegistrationDate.ToDateTime().ToLocalTime();
     public DateTime GetLastPlayedDate() => LastPlayedDate.ToDateTime().ToLocalTime();
-    public void SetRegistrationDate(DateTime date) => RegistrationDate = Timestamp.FromDateTime(date);
-    public void SetLastPlayedDate(DateTime date) => LastPlayedDate = Timestamp.FromDateTime(date);
 
     public void UpdateStatistics(PlayerData playerData, List<Move> history,
         EndGameType endGameType, WonReason wonReason)

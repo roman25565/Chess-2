@@ -30,7 +30,7 @@ public class Bishop : AbstractPiece
                 var targetCell = cell.Board.GetCell(currentRow, currentColumn);
 
                     points.Add(new Vector2Int(currentRow, currentColumn));
-                if (targetCell.Piece != null)
+                if (targetCell != null && targetCell.Piece != null)
                 {
                     break; 
                 }

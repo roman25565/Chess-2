@@ -24,7 +24,7 @@ public class SignIn : MonoBehaviour
 {
     [Inject] private Global _global;
     
-    private const string WebClientId = "492940055939-57m8n1fr0eu5cgis5kn94p1kj310cm4f.apps.googleusercontent.com";
+    private const string WebClientId = "118320481974-t1bo9evo0p6ee3evrrn4k7j6t6675u6c.apps.googleusercontent.com";
     const string AnonymouslyIdKey = "AnonymousIdKey";
     
     private GoogleSignInConfiguration _configuration;
@@ -66,10 +66,18 @@ public class SignIn : MonoBehaviour
     
     public void OnSignInGoogle()
     {
-
         GoogleSignIn.Configuration = _configuration;
-        GoogleSignIn.DefaultInstance.SignIn().ContinueWithOnMainThread(
-            OnAuthenticationFinished);
+        try
+        {
+            GoogleSignIn.DefaultInstance.SignIn().ContinueWithOnMainThread(
+                OnAuthenticationFinished);
+        }
+        catch (Exception e)
+        {
+            Debug.LogError($"Error signing in: {e.Message}");
+            Console.WriteLine(e);
+            throw;
+        }
     }
     
     public void OnSignInDebug()
@@ -162,6 +170,24 @@ public class SignIn : MonoBehaviour
     internal void OnAuthenticationFinished(Task<GoogleSignInUser> task)
     {
         if (task.IsFaulted)
+        {
+            Debug.LogError("Google Sign-In faulted!");
+
+            foreach (var inner in task.Exception.InnerExceptions)
+            {
+                if (inner is GoogleSignIn.SignInException gse)
+                {
+                    Debug.LogError(
+                        $"[GoogleSignIn] Status: {(int)gse.Status}\n" +
+                        $"Message: {gse.Message}\n" +
+                        $"StackTrace: {gse.StackTrace}");
+                }
+                else
+                {
+                    Debug.LogError($"[GoogleSignIn] Unexpected exception: {inner}");
+                }
+            }
+            
             using (var enumerator =
                    task.Exception.InnerExceptions.GetEnumerator())
             {
@@ -176,6 +202,7 @@ public class SignIn : MonoBehaviour
                     Debug.LogError("Got unexpected exception?!?" + task.Exception);
                 }
             }
+        }
         else if (task.IsCanceled)
             Debug.LogError("Cancelled");
         else

@@ -54,7 +54,13 @@ public class Sound
 
     public void OnMove()
     {
-        if (_move != null) _move.Play();
+        if (_move == null)
+        {
+            Debug.LogError("OnMove null");
+            return;
+        }
+        Debug.Log("OnMove");
+        _move.Play();
     }
 
     public void StartBgSound()

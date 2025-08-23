@@ -27,7 +27,7 @@ public class Confirmation : MonoBehaviour
     }
 
 
-    public void Show(string text, UnityAction onAccept)
+    public void Show(string text, UnityAction onAccept, UnityAction onReject = null)
     {
         if (_isShown) return;
         _isShown = true;
@@ -37,6 +37,7 @@ public class Confirmation : MonoBehaviour
         acceptButton.onClick.AddListener(onAccept);
         acceptButton.onClick.AddListener(Hide);
         rejectButton.onClick.AddListener(Hide);
+        if (onReject != null) rejectButton.onClick.AddListener(onReject);
         closeBgButton.onClick.AddListener(Hide);
     }
 

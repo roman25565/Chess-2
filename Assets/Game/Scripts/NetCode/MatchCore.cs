@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Board;
 using Board.Piece;
 using Setting;
 using Statistics;
@@ -164,7 +165,8 @@ public class MatchCore : NetworkBehaviour
         return null;
     }
 
-    public bool CanMove()
+    private bool _isConfirm;
+    public bool CanMove(Cell from, Cell to)
     {
         if (!_isInitialize)
         {
@@ -172,12 +174,24 @@ public class MatchCore : NetworkBehaviour
             return false;
         }
 
-        var myData = _matchData.GetPlayerData(_myId);
+        var myData = _matchData.GetPlayerData(_myId); 
+        var board = _gameData.ActiveBoard;
+        
 
+        Debug.Log("to.Piece != null && to.Piece.OwnerId == OwnerClientId" +(to.Piece != null && to.Piece.OwnerId == OwnerClientId));
+        if (to.Piece != null && to.Piece.OwnerId == OwnerClientId && !_isConfirm)
+        {
+            _isConfirm = true;
+            MatchUIManager.Instance.ConfirmSelfCapture(
+                board.BoardTryMove, () =>
+            {
+                _isConfirm = false;
+            }, from, to);
+            return false;
+        }
         if (myData.IsMoving && myData.TimeToMove > 0)
             return true;
-
-        Debug.LogError("Error player cont move");
+        Debug.LogError("Error player can't move");
         return false;
     }
 
@@ -233,7 +247,7 @@ public class MatchCore : NetworkBehaviour
         var history = board.GetHistory();
 
         CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
-        if (endGameType == EndGameType.Lose && endGameType == EndGameType.Won)
+        if (endGameType == EndGameType.Lose || endGameType == EndGameType.Won)
         {
             _matchData.Player1.FirebasePlayer.PlayerRanking.Elo = player1Elo;
             _matchData.Player2.FirebasePlayer.PlayerRanking.Elo = player2Elo;

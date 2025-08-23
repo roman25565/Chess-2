@@ -21,7 +21,7 @@ public class PlayerPanel : MonoBehaviour
         var playerRankingPosition = playerData.PlayerRanking.Position;
         
         nameAndEloText.text = $"{playerData.Name} ({playerData.PlayerRanking.Elo})";
-        if (playerRankingPosition != -1) nameAndEloText.text += $" #{playerRankingPosition})";
+        if (playerRankingPosition != -1) nameAndEloText.text += $" #{playerRankingPosition}";
         iconImage.sprite = playerData.Icon;
     }
 #endif

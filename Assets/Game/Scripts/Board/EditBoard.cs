@@ -142,7 +142,7 @@ namespace Board
             }
         }
 
-        protected override void BoardTryMove(Cell from, Cell to)
+        public override void BoardTryMove(Cell from, Cell to)
         {
             if (from.Piece.OwnerId == _matchData.MovingPlayerId)
             {

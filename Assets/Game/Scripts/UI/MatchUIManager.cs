@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using Board;
+using UnityEngine;
+using UnityEngine.Events;
 #if !UNITY_SERVER
 using System;
 using System.Collections.Generic;
@@ -98,6 +100,14 @@ public class MatchUIManager : MonoBehaviour
 
         void OnAccept()
         {
+            Debug.Log("BackToMenu" + (_matchCore != null));
+            if (_matchCore == null)
+            {
+                NetworkManager.Singleton.Shutdown();
+                Destroy(global::DontDestroyOnLoad.Instance.gameObject);
+                SceneManager.LoadScene("Main", LoadSceneMode.Single);
+                return;
+            }
             _matchCore.TrySurrenderRpc();
         }
     }
@@ -182,5 +192,13 @@ public class MatchUIManager : MonoBehaviour
         {
             _matchCore.AcceptAnotherPlayerWantsDrawRpc();
         }
+    }
+
+    public void ConfirmSelfCapture(UnityAction<Cell, Cell> onAccept,UnityAction onReject, Cell from, Cell to)
+    {
+        confirmation.Show(
+            "Are you sure you want to remove your own piece?",
+            () => onAccept(from, to), 
+            onReject);
     }
 }

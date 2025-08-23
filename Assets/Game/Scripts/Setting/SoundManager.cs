@@ -22,7 +22,7 @@ public class SoundManager : MonoBehaviour
     [SerializeField] private AudioSource moveAudio;
     
     
-    private const string SOUND_PREFS_KEY = "SoundSettings";
+    private const string SoundPrefsKey = "SoundSettings";
 
     public void Init(bool isFirstStart)
     {
@@ -74,24 +74,20 @@ public class SoundManager : MonoBehaviour
     
     private Sound LoadSettings()
     {
-        if (PlayerPrefs.HasKey(SOUND_PREFS_KEY))
-        {
-            string json = PlayerPrefs.GetString(SOUND_PREFS_KEY);
-            return JsonUtility.FromJson<Sound>(json);
-        }
-
-        // Default values
-        return new Sound
-        {
-            SoundVolume = 80, // 80% by default
-            VibrationVolume = 50 // 50% by default
-        };
+        if (!PlayerPrefs.HasKey(SoundPrefsKey))
+            return new Sound // Default values
+            {
+                SoundVolume = 80,
+                VibrationVolume = 50
+            };
+        var json = PlayerPrefs.GetString(SoundPrefsKey);
+        return JsonUtility.FromJson<Sound>(json);
     }
 
     public void SaveSettings()
     {
         string json = JsonUtility.ToJson(_sound);
-        PlayerPrefs.SetString(SOUND_PREFS_KEY, json);
+        PlayerPrefs.SetString(SoundPrefsKey, json);
         PlayerPrefs.Save();
     }
 

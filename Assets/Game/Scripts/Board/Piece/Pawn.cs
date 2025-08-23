@@ -14,14 +14,31 @@ public class Pawn : AbstractPiece
     {
         var points = new List<Vector2Int>();
         var directionY = IsRotated ? 1 : -1;
-        var moveForward = new Vector2Int(cell.Row, cell.Column + directionY);
-        var takeLeft = new Vector2Int(cell.Row - 1, cell.Column + directionY);
-        var takeRight = new Vector2Int(cell.Row + 1, cell.Column + directionY);
-        points.Add(moveForward);
-        points.Add(takeLeft);
-        points.Add(takeRight);
+        var abstractBoard = cell.Board;
         
-        if (IsFirstMove && cell.Board.GetCell(cell.Row, cell.Column + 1 * directionY).Piece == null)
+        var moveForward = new Vector2Int(cell.Row, cell.Column + directionY);
+        var forwardCell = abstractBoard.GetCell(moveForward.x, moveForward.y);
+        if (forwardCell != null && forwardCell.Piece == null)
+        {
+            points.Add(moveForward);
+        }
+        
+        var diagonalLeftCell = abstractBoard.GetCell(cell.Row - 1, cell.Column + directionY);
+        if (diagonalLeftCell != null && diagonalLeftCell.Piece != null)
+        {
+            var takeLeft = new Vector2Int(cell.Row - 1, cell.Column + directionY);
+            points.Add(takeLeft);
+        }
+
+        var diagonalRightCell = abstractBoard.GetCell(cell.Row + 1, cell.Column + directionY);
+        if (diagonalRightCell != null && diagonalRightCell.Piece != null)
+        {
+            var takeRight = new Vector2Int(cell.Row + 1, cell.Column + directionY);
+            points.Add(takeRight);
+        }
+
+        var doubleForwardCell = abstractBoard.GetCell(cell.Row, cell.Column + 1 * directionY);
+        if (IsFirstMove && doubleForwardCell != null && doubleForwardCell.Piece == null)
         {
             var moveDoubleForward = new Vector2Int(cell.Row, cell.Column + 2 * directionY);
             points.Add(moveDoubleForward);

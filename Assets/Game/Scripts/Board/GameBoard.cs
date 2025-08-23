@@ -12,16 +12,18 @@ public class GameBoard : AbstractBoard
         Debug.Log("ArrangeFigures " + matchData.Player1.StartArrangement.Length);
         ArrangeFigures(matchData.Player1, needRotate);
         ArrangeFigures(matchData.Player2, needRotate);
+        
     }
-    
-    
-    protected override void BoardTryMove(Cell from, Cell to)
+
+    public override void BoardTryMove(Cell from, Cell to)
     {
-        if (!MatchCore.CanMove())
+        Debug.Log("BoardTryMove " + from.Row + " " + from.Column + " " + to.Row + " " + to.Column);
+        if (!MatchCore.CanMove(from, to))
         {
             Deselect();
             return;
         }
+        
         MovePiece(from, to);
         _lastMoveIsFantom = true;
         MatchCore.TryMove(new Vector2Int(from.Row, from.Column),

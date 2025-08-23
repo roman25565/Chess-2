@@ -53,6 +53,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         {
             _gameData.Matchmaking = this;
             transport = FindAnyObjectByType<UnityTransport>();
+            
             await UnityServices.InitializeAsync();
             AuthenticationService.Instance.SwitchProfile(Random.Range(0, 1000000).ToString());
             _initialized = true;
@@ -65,6 +66,7 @@ public class AdvancedMatchmaking : MonoBehaviour
         try
         {
             await AuthenticationService.Instance.SignInAnonymouslyAsync();
+            
             // if (anonymous == SignTypes.Google) //TODO SignInWithGoogleAsync not work
             // {
             //     await AuthenticationService.Instance.SignInWithGoogleAsync(userIdToken);

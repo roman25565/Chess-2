@@ -69,6 +69,7 @@ public abstract class AbstractBoard : MonoBehaviour
 
     [Inject] private GameData _gameData;
 
+    [CanBeNull]
     public Cell GetCell(int row, int column)
     {
         if (row < 0 || row >= 8 || column < 0 || column >= 8) return null;
@@ -151,8 +152,8 @@ public abstract class AbstractBoard : MonoBehaviour
         SetSelectedState(ref _firstSelectedCell, from);
         SetSelectedState(ref _secondSelectedCell, to);
         if (from.Piece != null && from.Piece.IsFirstMove) from.Piece.IsFirstMove = false;
-        
         Move(from, to);
+        Global.Sound.OnMove();
     }
     protected virtual bool IsFantom()
     {
@@ -172,9 +173,12 @@ public abstract class AbstractBoard : MonoBehaviour
         {
             Deselect();
         }
-        else if (_selectedCell != null && IsValidMove(_selectedCell, cell))
+        else if (_selectedCell != null)
         {
-            BoardTryMove(_selectedCell, cell);
+            if (IsValidMove(_selectedCell, cell))
+            {
+                BoardTryMove(_selectedCell, cell);
+            }
             Deselect();
         }
         else if (cell.Piece != null)
@@ -199,7 +203,7 @@ public abstract class AbstractBoard : MonoBehaviour
         }
     }
 
-    protected abstract void BoardTryMove(Cell from, Cell to);
+    public abstract void BoardTryMove(Cell from, Cell to);
 
     public void StartDragging(RectTransform piece)
     {
@@ -254,7 +258,7 @@ public abstract class AbstractBoard : MonoBehaviour
             _draggingRectTransform.position = Input.mousePosition;
         }
     }
-
+    [CanBeNull]
     private Cell FindCellOnScreen(float x, float y)
     {
         var cellSize = Screen.currentResolution.width / 8;

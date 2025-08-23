@@ -40,7 +40,7 @@ public class Queen : AbstractPiece
 
                 points.Add(new Vector2Int(currentRow, currentColumn));
 
-                if (targetCell.Piece != null)
+                if (targetCell != null && targetCell.Piece != null)
                     break;
             }
         }

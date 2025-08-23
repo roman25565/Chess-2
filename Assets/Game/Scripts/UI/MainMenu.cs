@@ -40,18 +40,11 @@ namespace UI
             if (isSignIn) SetProfileImage(_global.FirestoreManager.MyData.Icon);
             if (isSignIn)
             {
-                Debug.Log("Init endGamePanel");
-                try
-                { 
-                    endGamePanel.gameObject.SetActive(true);
-                    Debug.Log("Init endGamePanel end" + endGamePanel.gameObject.activeInHierarchy);
-                }
-                catch (Exception e)
-                {
-                    Console.WriteLine(e);
-                    throw;
-                }
-                endGamePanel.EndGame(_global.EndGameData, this);
+                var endGameData = _global.EndGameData;
+                if (endGameData == null) return;
+                endGamePanel.gameObject.SetActive(true);
+                
+                endGamePanel.EndGame(endGameData, this);
             }
             _global.FirestoreManager.OnLogin.AddListener(OnLogin);
 
