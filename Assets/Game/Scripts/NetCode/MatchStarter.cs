@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Board;
+using Board.Piece;
+using Game.Scripts.Matchmaking;
 using Setting;
 using Unity.Netcode;
 using Unity.VisualScripting;
@@ -23,6 +25,11 @@ public class MatchStarter : NetworkBehaviour
 
     [SerializeField] private MatchCore matchCore;
 
+    public void SetMatchCore(MatchCore matchCore)
+    {
+        this.matchCore = matchCore;
+    }
+
     [Inject] private GameData _gameData;
 
     [Inject] private Global _global;
@@ -37,10 +44,11 @@ public class MatchStarter : NetworkBehaviour
 
     private void Start()
     {
+        Debug.Log("MatchStarter Start");
 #if UNITY_EDITOR
         if (IsServer) Camera.main.backgroundColor = Color.blue;
 #endif
-        if (!IsOwner || !IsLocalPlayer) return;
+        if ((!IsOwner || !IsLocalPlayer) && _gameData.Mode != GameMode.SinglePlayVsBot) return;
         
         var gameMode = _gameData.Mode;
         var myArrangements = _global.MyArrangements;
@@ -68,14 +76,11 @@ public class MatchStarter : NetworkBehaviour
                 SendConnectedDataRpc(id, _global.FirestoreManager.MyData.ID, _gameData.TimeControl, arrangementEntryArray.ArrangementEntry);
                 break;
             }
-            case GameMode.Test:
-                SendConnectedDataRpc(OwnerClientId, _global.FirestoreManager.MyData.ID, _gameData.TimeControl,
-                    arrangementEntryArray.ArrangementEntry);
-                SendConnectedDataRpc(2, "002", _gameData.TimeControl,
-                    arrangementEntryArray.ArrangementEntry);
-                break;
             case GameMode.Reconnect:
                 GetReConnectDataRpc(OwnerClientId, _global.FirestoreManager.MyData.ID);
+                break;
+            case GameMode.SinglePlayVsBot:
+                StartMatchVsBot();
                 break;
             case GameMode.MigrateHost: 
                 break;
@@ -387,10 +392,10 @@ public class MatchStarter : NetworkBehaviour
 
         connectedPlayerBootstrap.SendToClientPlayerBootstrapDataRpc(hostPlayerId, hostPlayerFirestoreId, hostArrangement, 10,
             connectedPlayerId, connectedFirestoreId, connectedArrangement, 10,
-            whitePlayerId, startTimeControl);;
+            whitePlayerId, startTimeControl);
         
         Debug.Log($"whitePlayerId {whitePlayerId} remainingPlayerId {hostPlayerId}");
-
+        
         GetMoves(out var from, out var to);
         connectedPlayerBootstrap.SendReMovesRpc(from.ToArray(), to.ToArray());
         connectedPlayerBootstrap.SetTimeControlRpc(hostTimeToMove, connectedTimeToMove);
@@ -517,5 +522,122 @@ public class MatchStarter : NetworkBehaviour
             }
         }
     }
-   
+
+
+    #region SinglePlayer
+
+    private void StartMatchVsBot()
+    {
+        Debug.Log("StartMatchVsBot");
+        var firestoreId = _global.FirestoreManager.MyData.ID;
+        var myArrangements = _global.MyArrangements;
+        var arrangementsArray = myArrangements.ToArray();
+        var whitePlayerId = GetWhitePlayerId(0, 1);
+        var botArrangement = GetRandomArrangement();
+        
+        var playerArrangement = new ArrangementEntryArray
+        {
+            ArrangementEntry = new ArrangementEntry[arrangementsArray.Length]
+        };
+
+        for (var index = 0; index < arrangementsArray.Length; index++)
+        {
+            playerArrangement.ArrangementEntry[index] = arrangementsArray[index];
+        }
+        
+        _matchData = CreateMatchData(
+            0, firestoreId, playerArrangement.ArrangementEntry, 1000,
+            1, "-1", botArrangement, 1000,
+            whitePlayerId, -1);
+
+        var corePlayer = Instantiate(matchCore, transform);
+        
+        corePlayer.Init(_matchData);
+        corePlayer.SetServerCore(corePlayer);
+        corePlayer.SetIsLocal(true);
+        
+        TryArrangeFigures(_matchData);
+        StartBot(_matchData, corePlayer);
+    }
+
+    private void StartBot(MatchData matchData, MatchCore matchCore)
+    {
+        var botController = FindAnyObjectByType<BotController>();
+        matchCore.SetBotController(botController);
+        
+        botController.InitBotController(matchData, matchCore);
+    }
+
+    private ArrangementEntry[] GetRandomArrangement()
+    {
+        List<AbstractPiece> pieces = GetRandomPieces();
+        var arrangement = new ArrangementEntry[pieces.Count];
+
+        List<(int row, int col)> cells = new List<(int, int)>();
+        for (int row = 0; row <= 7; row++)
+        {
+            for (int col = 5; col <= 7; col++)
+            {
+                cells.Add((row, col));
+            }
+        }
+
+        for (int i = 0; i < cells.Count; i++)
+        {
+            int j = UnityEngine.Random.Range(i, cells.Count);
+            (cells[i], cells[j]) = (cells[j], cells[i]);
+        }
+
+        //King
+        int kingIndex = cells.FindIndex(c => c.col == 7);
+        var kingCell = cells[kingIndex];
+        cells.RemoveAt(kingIndex);
+
+        arrangement[0] = new ArrangementEntry
+        {
+            row = kingCell.row,
+            column = kingCell.col,
+            pieceType = pieces[0].PieceType
+        };
+        //End King
+        Debug.Log("cells.Count" + cells.Count);
+        for (int i = 1; i < pieces.Count && i - 1 < cells.Count; i++)
+        {
+            var cell = cells[i - 1];
+            arrangement[i] = new ArrangementEntry
+            {
+                row = cell.row,
+                column = cell.col,
+                pieceType = pieces[i].PieceType
+            };
+        }
+
+        return arrangement;
+    }
+
+    private List<AbstractPiece> GetRandomPieces()
+    {
+        var difficulty = _gameData.BotDifficulty;
+        var botPiecesCost = 0;
+        switch (difficulty)
+        {
+            case BotDifficulty.Easy:
+                botPiecesCost = 20;
+                break;
+            case BotDifficulty.Medium:
+                botPiecesCost = 30;
+                break;
+            case BotDifficulty.Hard:
+                botPiecesCost = 40;
+                break;
+            case BotDifficulty.Expert:
+                botPiecesCost = 50;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+        return _global.GetRandomPiecesForCost(botPiecesCost);
+    }
+
+    #endregion
 }   

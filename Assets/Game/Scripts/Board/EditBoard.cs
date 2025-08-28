@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using Game.Scripts.Board;
 using Setting;
 using Statistics;
 using Unity.Mathematics;

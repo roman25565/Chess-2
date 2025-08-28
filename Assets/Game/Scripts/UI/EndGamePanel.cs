@@ -36,7 +36,16 @@ public class EndGamePanel : MonoBehaviour
             addToFriendB.interactable = true;
             addToFriendB.onClick.AddListener(() => AddToFriend(enemyId));
         }
-        
+
+        if (endGameData.IsLocal)
+        {
+            addToFriendB.interactable = false;
+            rematchB.interactable = (false);
+            viewHistoryB.interactable = (false);
+            return;
+        }
+        rematchB.interactable = (true);
+        viewHistoryB.interactable = (true);
         rematchB.onClick.AddListener(() => Rematch(enemyId));
         viewHistoryB.onClick.AddListener(() =>
         {

@@ -9,6 +9,7 @@ using Firebase;
 using Firebase.Extensions;
 using Firebase.Firestore;
 using Firebase.RealtimeDatabase;
+using Game.Scripts.Board;
 using Game.Scripts.Firebase.Firestore;
 using Google;
 using Statistics;

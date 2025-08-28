@@ -1,12 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using Board;
 using Board.Piece;
 using JetBrains.Annotations;
 using Setting;
 using UnityEngine;
 using Zenject;
 
-namespace Board
+namespace Game.Scripts.Board
 {
 public abstract class AbstractBoard : MonoBehaviour
 {
@@ -110,7 +111,7 @@ public abstract class AbstractBoard : MonoBehaviour
         ForEachCell(cell => cell.transform.localRotation = Quaternion.Euler(0, 0, 180));
     }
 
-    protected void ForEachCell(Action<Cell> action)
+    public void ForEachCell(Action<Cell> action)
     {
         foreach (var boardLinesKey in BoardLines.Keys)
         foreach (var cell in BoardLines[boardLinesKey])
@@ -146,7 +147,7 @@ public abstract class AbstractBoard : MonoBehaviour
         if (IsConfirmation(from, to))
             return;
         
-        var killedPiece = to.Piece != null && to.Piece.PieceType == PieceType.Kings ? to.Piece : null;
+        var killedPiece = to.Piece != null && to.Piece.PieceType == PieceType.King ? to.Piece : null;
         
         moveHistory.AddMove(from, to, isInternalHistoryMove);
         SetSelectedState(ref _firstSelectedCell, from);
@@ -160,7 +161,7 @@ public abstract class AbstractBoard : MonoBehaviour
         return false;
     }
 
-    protected virtual bool IsConfirmation(Cell from, Cell to)
+    public virtual bool IsConfirmation(Cell from, Cell to)
     {
         return false;
     }
@@ -168,6 +169,7 @@ public abstract class AbstractBoard : MonoBehaviour
 
     public void TryMove(Cell cell, bool isTab = true)
     {
+        Debug.Log("TryMove");
         if (!(!MoveHistory.InHistory || !_gameEnded)) return;
         if (isTab && _selectedCell == cell)
         {
@@ -175,6 +177,7 @@ public abstract class AbstractBoard : MonoBehaviour
         }
         else if (_selectedCell != null)
         {
+            Debug.Log("IsValidMove " + IsValidMove(_selectedCell, cell));
             if (IsValidMove(_selectedCell, cell))
             {
                 BoardTryMove(_selectedCell, cell);
@@ -326,7 +329,6 @@ public abstract class AbstractBoard : MonoBehaviour
     }
     protected virtual bool IsValidMove(Cell from, Cell to)
     {
-        Debug.Log("vir IsValidMove from " + from + "to " + to + "from.Piece " + from.Piece);
         return from.Piece.IsValidMove(from, to);
     }
 

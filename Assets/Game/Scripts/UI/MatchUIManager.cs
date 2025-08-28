@@ -1,4 +1,5 @@
 ﻿using Board;
+using Game.Scripts.Board;
 using UnityEngine;
 using UnityEngine.Events;
 #if !UNITY_SERVER
@@ -17,7 +18,7 @@ public class MatchUIManager : MonoBehaviour
 #if !UNITY_SERVER
     [SerializeField] private PlayerPanel myPlayerPanel;
     [SerializeField] private PlayerPanel enemyPlayerPanel;
-    
+    [Inject] private GameData _gameData;
     public static MatchUIManager Instance;
     
     private void Awake()
@@ -101,7 +102,7 @@ public class MatchUIManager : MonoBehaviour
         void OnAccept()
         {
             Debug.Log("BackToMenu" + (_matchCore != null));
-            if (_matchCore == null)
+            if (_matchCore == null || _gameData.Mode == GameMode.SinglePlayVsBot)
             {
                 NetworkManager.Singleton.Shutdown();
                 Destroy(global::DontDestroyOnLoad.Instance.gameObject);
@@ -109,17 +110,6 @@ public class MatchUIManager : MonoBehaviour
                 return;
             }
             _matchCore.TrySurrenderRpc();
-        }
-    }
-
-    private void ReportPlayer()
-    {
-        confirmation.Show("Report player?", OnAccept);
-        return;
-
-        void OnAccept()
-        {
-            _global.FirestoreManager.StatisticManager.ReportAnotherPlayer(_enemyPlayerData.FirebasePlayer.ID);
         }
     }
 

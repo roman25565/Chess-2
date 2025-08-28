@@ -1,6 +1,6 @@
 ﻿using Board.Piece;
 
-namespace Board
+namespace Game.Scripts.Board
 {
 public class Move
 {

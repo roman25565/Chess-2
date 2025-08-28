@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Game.Scripts.Board;
 using Setting;
 using UnityEngine;
 
@@ -18,12 +19,12 @@ public enum Directions
 public enum PieceType
 {
     Empty = 0,
-    Pawns = 1,
-    Rooks = 2,
-    Knights = 3,
-    Bishops = 4,
-    Queens = 5,
-    Kings = 6
+    Pawn = 1,
+    Rook = 2,
+    Knight = 3,
+    Bishop = 4,
+    Queen = 5,
+    King = 6
 }
 
 [Serializable]

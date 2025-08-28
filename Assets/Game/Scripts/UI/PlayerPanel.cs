@@ -12,6 +12,11 @@ public class PlayerPanel : MonoBehaviour
 #if !UNITY_SERVER
     public void SetTime(float time)
     {
+        if (time == 1000)
+        {
+            timeText.text = "--:--";
+            return;
+        }
         TimeSpan timeSpan = TimeSpan.FromSeconds(time);
         timeText.text = string.Format("{0:D2}:{1:D2}", (int)timeSpan.TotalMinutes, timeSpan.Seconds);
     }

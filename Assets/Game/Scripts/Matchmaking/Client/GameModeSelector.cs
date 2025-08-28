@@ -28,13 +28,13 @@ public class GameModeSelector : MonoBehaviour
 
     private void ButtonOnClick(float timeControl)
     {
-        SelectGameMode(timeControl);
+        SetTimeControl(timeControl);
         FindMatch();
         mainMenu.HideGameModeSelectorPanel();
     }
-    
-    
-    public void SelectGameMode(float timeControl)
+
+
+    private void SetTimeControl(float timeControl)
     {
         _gameData.TimeControl = timeControl;
     }

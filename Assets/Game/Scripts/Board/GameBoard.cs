@@ -1,8 +1,10 @@
 ﻿using System.Collections.Generic;
+using Board;
 using Board.Piece;
 using UnityEngine;
+using UnityEngine.XR;
 
-namespace Board
+namespace Game.Scripts.Board
 {
 public class GameBoard : AbstractBoard
 {
@@ -23,7 +25,11 @@ public class GameBoard : AbstractBoard
             Deselect();
             return;
         }
-        
+        bool a = false;
+        if (to.Piece != null && to.Piece.PieceType == PieceType.King)
+        {
+            MatchCore.HandleEndGameLogicLocal((int)to.Piece.OwnerId);
+        }
         MovePiece(from, to);
         _lastMoveIsFantom = true;
         MatchCore.TryMove(new Vector2Int(from.Row, from.Column),
@@ -35,14 +41,16 @@ public class GameBoard : AbstractBoard
         return _lastMoveIsFantom;
     }
 
-    protected override bool IsConfirmation(Cell from, Cell to)
+    public override bool IsConfirmation(Cell from, Cell to)
     {
+        Debug.Log("IsConfirmation " + _lastMoveIsFantom);
         if (_lastMoveIsFantom)
         {
             _lastMoveIsFantom = false;
             var lastMove = MoveHistory.GetHistory()[MoveHistory.HistoryIndex - 1];
             if (lastMove.From == from && lastMove.To == to)
             {
+                Debug.Log("IsConfirmation return true");
                 return true;
             }
             else

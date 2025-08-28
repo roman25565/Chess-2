@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Board;
 using Firebase.Extensions;
 using Firebase.Firestore;
+using Game.Scripts.Board;
 using Google;
 using Setting;
 using Statistics;
@@ -111,9 +112,5 @@ public class StatisticManager
         }
     }
 
-    public void ReportAnotherPlayer(string id)
-    {
-        throw new NotImplementedException();
-    }
 }
 #endif

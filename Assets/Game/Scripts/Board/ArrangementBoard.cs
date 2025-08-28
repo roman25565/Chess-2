@@ -1,7 +1,7 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Board;
 using Board.Piece;
 using Newtonsoft.Json;
 using Setting;
@@ -11,7 +11,7 @@ using UnityEngine;
 using UnityEngine.UI;
 using Zenject;
 
-namespace Board
+namespace Game.Scripts.Board
 {
 public class ArrangementBoard : AbstractBoard
 {
@@ -255,10 +255,10 @@ public class ArrangementBoard : AbstractBoard
             shakeManager.ShakeObject(piecesCostText.transform);
         }
 
-        if (_piecesCount[PieceType.Kings] != 1)
+        if (_piecesCount[PieceType.King] != 1)
         {
             errorMessage = "Your army must contain exactly 1 King\n(Current: " + 
-                           _piecesCount[PieceType.Kings] + ")";
+                           _piecesCount[PieceType.King] + ")";
         }
         
         if (errorMessage == null) return true;

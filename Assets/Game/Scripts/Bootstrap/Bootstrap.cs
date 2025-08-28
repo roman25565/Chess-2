@@ -12,6 +12,7 @@ using Unity.Netcode;
 using UnityEditor;
 using UnityEngine;
 using UnityEngine.SceneManagement;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Zenject;
 
@@ -30,12 +31,17 @@ public class Bootstrap : MonoBehaviour
     [SerializeField] private ReconnectFetcher reconnectFetcher;
     
     [SerializeField] private Button startOnlineMatch;
-    [SerializeField] private Button startLocalMatch;
-    [SerializeField] private Button startTestMatch;
-    [SerializeField] private Button hostLocalMatch;
+    [SerializeField] private Button startSinglePlayVsBotMatchB;
     [SerializeField] private Button settingsButton;
     
     [SerializeField] private GameObject networkManagerPrefab;
+
+    [SerializeField] private Sprite[] botIcons = new Sprite[4]; // Easy, Medium, Hard, Expert
+
+    public Sprite GetIcon(BotDifficulty difficulty)
+    {
+        return botIcons[(int)difficulty - 1];
+    }
     
     private async void Awake()
     {
@@ -74,34 +80,7 @@ public class Bootstrap : MonoBehaviour
         {
             startOnlineMatch.interactable = state == MatchmakingState.Cancelled ? true : false;
         }));
-        startLocalMatch.onClick.AddListener(() =>
-        {
-            DisableButtons();
-            _gameData.Mode = GameMode.Offline;
-            NetworkManager.Singleton.StartClient();
-        });
-        startTestMatch.onClick.AddListener(() =>
-        {
-            DisableButtons();
-
-            _gameData.Mode = GameMode.Test;
-            SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-
-            SceneManager.sceneLoaded += OnSceneLoaded;
-
-            void OnSceneLoaded(Scene scene, LoadSceneMode loadSceneMode)
-            {
-                NetworkManager.Singleton.StartHost();
-
-                SceneManager.sceneLoaded -= OnSceneLoaded;
-            }
-        });
-        hostLocalMatch.onClick.AddListener(() =>
-        {
-            DisableButtons();
-            SceneManager.LoadScene("GameScene", LoadSceneMode.Single);
-            NetworkManager.Singleton.StartServer();
-        });
+        startSinglePlayVsBotMatchB.onClick.AddListener(() => { mainMenu.ShowBotDifficultySelectorPanel(); });
         
     }
 
@@ -129,6 +108,12 @@ public class Bootstrap : MonoBehaviour
         
 
         _global.Init(arrangement, piecesData, cellStates, firestore);
+        var icons = new Dictionary<BotDifficulty, Sprite>();
+        icons.Add(BotDifficulty.Easy, GetIcon(BotDifficulty.Easy));
+        icons.Add(BotDifficulty.Medium, GetIcon(BotDifficulty.Medium));
+        icons.Add(BotDifficulty.Hard, GetIcon(BotDifficulty.Hard));
+        icons.Add(BotDifficulty.Expert, GetIcon(BotDifficulty.Expert));
+        _global.BotIcons = icons;
     }
 
     public void OnSignIn(GoogleSignInUser user, SignTypes signType)
@@ -192,9 +177,7 @@ public class Bootstrap : MonoBehaviour
     private void DisableButtons()
     {
         startOnlineMatch.gameObject.SetActive(false);
-        startLocalMatch.gameObject.SetActive(false);
-        startTestMatch.gameObject.SetActive(false);
-        hostLocalMatch.gameObject.SetActive(false);
+        startSinglePlayVsBotMatchB.gameObject.SetActive(false);
         settingsButton.gameObject.SetActive(false);
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using Board;
 using Board.Piece;
+using Game.Scripts.Board;
+using Game.Scripts.Matchmaking;
 using Setting;
 using Statistics;
 using Unity.Netcode;
@@ -11,6 +13,7 @@ using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.SceneManagement;
 using Zenject;
+using Zenject.SpaceFighter;
 
 public enum EndGameType
 {
@@ -68,12 +71,23 @@ public class MatchCore : NetworkBehaviour
     [Inject] private Global _global;
 
     private MatchData _matchData;
+    private BotController _botController;
     private ulong _enemyId;
     private bool _gameEnded;
     private bool _isInitialize;
     private float _lastUpdateTime;
     private ulong _myId;
     private bool _oneKingDead;
+    private bool _isLocal;
+
+    public void SetBotController(BotController botController)
+    {
+        _botController = botController;
+    }
+    public void SetIsLocal(bool value)
+    {
+        _isLocal = value;
+    }
     
     private AbstractPiece _lastKilledPiece;
 
@@ -189,6 +203,7 @@ public class MatchCore : NetworkBehaviour
             }, from, to);
             return false;
         }
+        Debug.Log("myData.IsMoving  myData.TimeToMove > 0 " +(myData.IsMoving.ToString() + (myData.TimeToMove > 0)));
         if (myData.IsMoving && myData.TimeToMove > 0)
             return true;
         Debug.LogError("Error player can't move");
@@ -197,12 +212,19 @@ public class MatchCore : NetworkBehaviour
 
     public void TryMove(Vector2Int from, Vector2Int to)
     {
-        if (!IsSpawned)
+        if (!IsSpawned && !_isLocal)
         {
             Debug.LogError("NetworkObject not spawned yet!");
             return;
         }
 
+        if (_isLocal)
+        {
+            _botController.OnMoveChosen(from, to);
+        }
+        
+        
+        
         TryMoveRpc(from, to);
     }
 
@@ -278,6 +300,64 @@ public class MatchCore : NetworkBehaviour
             SendGameEndedRpc
         );
     }
+    
+    public void HandleEndGameLogicLocal(int id)
+    {
+        try
+        {
+
+            Debug.Log("HandleEndGameLogicLocal");
+            _global.EndGameData = CreateEndGameDataLocal(id);
+            Destroy(global::DontDestroyOnLoad.Instance.gameObject);
+            SceneManager.LoadScene("Main", LoadSceneMode.Single);
+        }
+        catch (Exception e)
+        {
+            Debug.LogException(e);
+            Console.WriteLine(e);
+            throw;
+        }
+    }
+
+    private EndGameData CreateEndGameDataLocal(int id)
+    {
+        UpdateBotFirestoreData(id);
+        var mydata = _global.FirestoreManager.GetSavedPlayer(_global.FirestoreManager.MyData.ID);
+        var newPlayerElo = mydata.Ranking.Data.Elo;
+        var myIcon = mydata.PlayerData.Data.Icon; 
+        _matchData.Player1.FirebasePlayer.PlayerRanking.Elo = newPlayerElo;
+        _matchData.Player1.FirebasePlayer.Icon = myIcon;
+        var endGameType = EndGameType.Lose;
+        if (id == 1)
+        {
+            endGameType = EndGameType.Won;
+            newPlayerElo += 2 * (int)_gameData.BotDifficulty;
+        }
+        
+        
+        
+        return new EndGameData(endGameType, WonReason.Null, _matchData.Player1, _matchData.Player2,newPlayerElo,
+            _matchData.Player2.FirebasePlayer.PlayerRanking.Elo, null,true);
+    }
+
+    private PlayerData UpdateBotFirestoreData(int id)
+    {
+        var result = _matchData.Player2;
+        Debug.Log($"Player2 null? {result == null}");
+        Debug.Log($"FirebasePlayer null? {result?.FirebasePlayer == null}");
+        Debug.Log($"Global null? {_global == null}");
+        Debug.Log($"BotIcons null? {_global?.BotIcons == null}");
+        
+        result.FirebasePlayer = new FirebasePlayerData("id");
+        Debug.Log(_gameData.BotDifficulty + " " + _global.BotIcons[_gameData.BotDifficulty]);
+        result.FirebasePlayer.Icon = _global.BotIcons[_gameData.BotDifficulty];
+        Debug.Log("UpdateBotFirestoreData");
+        result.FirebasePlayer.Name = "Bot";
+        result.FirebasePlayer.PlayerRanking = new PlayerRankingData();
+        result.FirebasePlayer.PlayerRanking.Elo = 625 * (int)_gameData.BotDifficulty;
+        
+        return result;
+    }
 
     [Rpc(SendTo.Server)]
     private void SendGameEndedRpc(string historyId)
@@ -318,29 +398,30 @@ public class MatchCore : NetworkBehaviour
         var movedPiece = board.GetCell(to.x, to.y).Piece;
         
         _matchData.GetPlayerData(playerId).IsMoving = false;
-        Debug.Log("movingID " + anotherPlayer.PlayerId);
         anotherPlayer.IsMoving = true;
         _matchData.MovingPlayerId = anotherPlayer.PlayerId;
         
         _gameData.ActiveBoard.MovePiece(from, to);
+
         
-        if ((isRotate || to.y == 0) && (!isRotate || to.y == 7))
+        
+        if ((isRotate || to.y == 0) && (!isRotate || to.y == 7)) //Queen Update
         {
-            if (movedPiece != null && movedPiece.PieceType == PieceType.Pawns)
+            if (movedPiece != null && movedPiece.PieceType == PieceType.Pawn)
             {
-                var pawn = _global.CreatePiece(PieceType.Queens);
+                var pawn = _global.CreatePiece(PieceType.Queen);
                 board.GetCell(to.x, to.y).SetPiece(pawn);
             }
         }
         
-        Debug.Log($"_oneKingDead {_oneKingDead}, killedPiece != null {killedPiece != null}, ");
-
+        
+        Debug.Log("UseMove" + playerId + " " + _myId + "E" + (playerId == _myId));
         if (playerId == _myId) return;
         if (_killedKings > 0)
         {
             _serverCore = GetServerCore();
-            Debug.Log("[TTT]" + (killedPiece != null && killedPiece.PieceType == PieceType.Kings));
-            if (killedPiece != null && killedPiece.PieceType == PieceType.Kings)
+            Debug.Log("[TTT]" + (killedPiece != null && killedPiece.PieceType == PieceType.King));
+            if (killedPiece != null && killedPiece.PieceType == PieceType.King)
             {
                 _serverCore.DrawRpc();
             }
@@ -353,7 +434,37 @@ public class MatchCore : NetworkBehaviour
 
         if (killedPiece != null)
         {
+            
             DeathRattle(killedPiece);
+        }
+
+        return;
+
+        void DeathRattle(AbstractPiece piece)
+        {
+            Debug.Log("DeathRattle" + piece.PieceType + "local" + _isLocal);
+            switch (piece.PieceType)
+            {
+                case PieceType.Empty:
+                case PieceType.Pawn:
+                case PieceType.Rook:
+                case PieceType.Knight:
+                case PieceType.Bishop:
+                case PieceType.Queen:
+                    break;
+                case PieceType.King:
+                    if (_isLocal)
+                    {
+                        HandleEndGameLogicLocal((int)piece.OwnerId);
+                    }
+                    OnKingDeath(_enemyId);
+                
+                    Debug.Log("DeathRattle Kings");
+                    //TODO перевірити чи у ворога є фігури якими він може походити якщо ні перемогти завершити матч
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
+            }
         }
         // if (!IsServer && !IsHost) return;
         // if (_killedKings == 0) return;
@@ -412,6 +523,7 @@ public class MatchCore : NetworkBehaviour
     [Rpc(SendTo.Server)]
     private void TryMoveRpc(Vector2Int from, Vector2Int to, RpcParams rpcParams = default)
     {
+        Debug.Log("TryMoveRpc");
         _serverCore.TryMoveServer(from, to, rpcParams);
     }
 
@@ -445,32 +557,12 @@ public class MatchCore : NetworkBehaviour
                 return;
             }
         }
-
+        
         // UseMove(from, to, playerId);
         SendToPlayersMove(from, to, playerId);
     }
 
 
-    private void DeathRattle(AbstractPiece piece)
-    {
-        switch (piece.PieceType)
-        {
-            case PieceType.Empty:
-            case PieceType.Pawns:
-            case PieceType.Rooks:
-            case PieceType.Knights:
-            case PieceType.Bishops:
-            case PieceType.Queens:
-                break;
-            case PieceType.Kings:
-                OnKingDeath(_enemyId);
-                Debug.Log("DeathRattle Kings");
-                //TODO перевірити чи у ворога є фігури якими він може походити якщо ні перемогти завершити матч
-                break;
-            default:
-                throw new ArgumentOutOfRangeException();
-        }
-    }
     private void OnKingDeath(ulong id)
     {
         _serverCore = GetServerCore();

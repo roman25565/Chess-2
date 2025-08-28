@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using Board;
 using Board.Piece;
+using Game.Scripts.Board;
 using Setting;
 using UnityEngine;
 
@@ -136,7 +137,7 @@ public class PlayerStatistic
         List<AbstractPiece> allKilledKings = new();
         foreach (var move in history)
         {
-            if (move.KilledPiece != null && move.KilledPiece.PieceType == PieceType.Kings)
+            if (move.KilledPiece != null && move.KilledPiece.PieceType == PieceType.King)
             {
                 allKilledKings.Add(move.KilledPiece);;
             }

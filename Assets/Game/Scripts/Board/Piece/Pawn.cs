@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Game.Scripts.Board;
 using Setting;
 using UnityEngine;
 
@@ -21,6 +22,13 @@ public class Pawn : AbstractPiece
         if (forwardCell != null && forwardCell.Piece == null)
         {
             points.Add(moveForward);
+            
+            var doubleForwardCell = abstractBoard.GetCell(cell.Row, cell.Column + 2 * directionY);
+            if (IsFirstMove && doubleForwardCell != null && doubleForwardCell.Piece == null)
+            {
+                var moveDoubleForward = new Vector2Int(cell.Row, cell.Column + 2 * directionY);
+                points.Add(moveDoubleForward);
+            }
         }
         
         var diagonalLeftCell = abstractBoard.GetCell(cell.Row - 1, cell.Column + directionY);
@@ -37,12 +45,6 @@ public class Pawn : AbstractPiece
             points.Add(takeRight);
         }
 
-        var doubleForwardCell = abstractBoard.GetCell(cell.Row, cell.Column + 1 * directionY);
-        if (IsFirstMove && doubleForwardCell != null && doubleForwardCell.Piece == null)
-        {
-            var moveDoubleForward = new Vector2Int(cell.Row, cell.Column + 2 * directionY);
-            points.Add(moveDoubleForward);
-        }
         
         return points;
     }

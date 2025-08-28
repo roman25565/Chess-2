@@ -57,7 +57,6 @@ public class ReConnectRequestsManager
 
             query.GetValueAsync().ContinueWithOnMainThread(async task =>
             {
-                Debug.Log("FetchRequests task");
                 if (task.IsFaulted)
                 {
                     Debug.LogError("Error getting sent requests: " + task.Exception);
@@ -67,7 +66,6 @@ public class ReConnectRequestsManager
                 var snapshot = task.Result;
 
                 if (!snapshot.Exists) return;
-                Debug.Log("FetchRequests snapshot");
                 Debug.Log(snapshot.Children.First().Key);
                 foreach (var request in snapshot.Children)
                 {

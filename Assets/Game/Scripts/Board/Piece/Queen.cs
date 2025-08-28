@@ -1,8 +1,10 @@
 using System.Collections.Generic;
+using Board;
+using Board.Piece;
 using Setting;
 using UnityEngine;
 
-namespace Board.Piece
+namespace Game.Scripts.Board.Piece
 {
 public class Queen : AbstractPiece
 {

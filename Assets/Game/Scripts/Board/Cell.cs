@@ -6,7 +6,7 @@ using UnityEngine.EventSystems;
 using UnityEngine.UI;
 using Zenject;
 
-namespace Board
+namespace Game.Scripts.Board
 {
 public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
 {

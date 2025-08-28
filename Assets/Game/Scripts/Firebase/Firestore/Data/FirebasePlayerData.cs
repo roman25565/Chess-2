@@ -14,6 +14,7 @@ public class FirebasePlayerData
     public List<string> FriendIds;
     public FirebasePlayerData(string id){
         ID = id;
+        PlayerRanking = new PlayerRankingData();
     }
 
     public FirebasePlayerData(string id, string name, PlayerRankingData playerRanking, Sprite icon, List<string> historyMatchIDs, List<string> friendIds)

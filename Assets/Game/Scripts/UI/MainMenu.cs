@@ -21,13 +21,15 @@ namespace UI
         [SerializeField] private Image profileImage;
         [SerializeField] private TextMeshProUGUI profileImageText;
         [SerializeField] private GameObject gameModeSelectorPanel;
+        [SerializeField] private GameObject botDifficultySelectorPanel;
         
         [SerializeField] private PlayerProfileController profilePanel;
         [SerializeField] private NotificationPanel notificationPanel;
         [SerializeField] private GameModeSelector gameModeSelector;
         [SerializeField] private HistoryPanel historyPanel;
         [SerializeField] private FriendsPanel friendsPanel;
-        [SerializeField] private EndGamePanel endGamePanel; 
+        [SerializeField] private EndGamePanel endGamePanel;
+        [SerializeField] private BotDifficultySelector botDifficultySelector;
         
         public void Init(bool isSignIn = false)
         {
@@ -67,11 +69,11 @@ namespace UI
         {
             notificationPanel.Init();
             gameModeSelector.Init();
+            botDifficultySelector.Init();
         }
 
         private void DisableAllPanels()
         {
-            Debug.Log("DisableAllPanels");
             if (settingsPanel != null) settingsPanel.SetActive(false);
             if (arrangementPanel != null) arrangementPanel.SetActive(false);
             if (mainMenuPanel != null) mainMenuPanel.SetActive(false);
@@ -82,6 +84,7 @@ namespace UI
             if (profilePanel != null) profilePanel.gameObject.SetActive(false);
             if (historyPanel != null) historyPanel.gameObject.SetActive(false);
             if (friendsPanel != null) friendsPanel.gameObject.SetActive(false);
+            if (botDifficultySelectorPanel != null) botDifficultySelectorPanel.gameObject.SetActive(false);
             
             if (defaultUI != null) defaultUI.SetActive(true);
         }
@@ -248,6 +251,23 @@ namespace UI
             if (friendsPanel != null)
             {
                 friendsPanel.gameObject.SetActive(true);
+            }
+        }
+        
+        public void ShowBotDifficultySelectorPanel()
+        {
+            if (botDifficultySelectorPanel != null)
+            {
+                botDifficultySelectorPanel.gameObject.SetActive(true);
+            }
+        }
+        
+
+        public void HideBotDifficultySelectorPanel()
+        {
+            if (botDifficultySelectorPanel != null)
+            {
+                botDifficultySelectorPanel.gameObject.SetActive(false);
             }
         }
     }

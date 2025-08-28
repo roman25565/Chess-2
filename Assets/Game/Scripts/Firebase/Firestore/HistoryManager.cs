@@ -6,6 +6,7 @@ using Board;
 using Board.Piece;
 using Firebase.Extensions;
 using Firebase.Firestore;
+using Game.Scripts.Board;
 using Unity.Mathematics;
 using UnityEngine;
 using UnityEngine.Events;
