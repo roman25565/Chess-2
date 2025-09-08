@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      robot-yellow-hard-hat-holds-tablet-symbolizing-robotics-construction_778980-9455_0: -7067324512849849938
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -5,6 +5,7 @@ using Board;
 using Board.Piece;
 using Game.Scripts.Matchmaking;
 using Setting;
+using Statistics;
 using Unity.Netcode;
 using Unity.VisualScripting;
 using UnityEngine;
@@ -44,11 +45,11 @@ public class MatchStarter : NetworkBehaviour
 
     private void Start()
     {
-        Debug.Log("MatchStarter Start");
 #if UNITY_EDITOR
         if (IsServer) Camera.main.backgroundColor = Color.blue;
 #endif
         if ((!IsOwner || !IsLocalPlayer) && _gameData.Mode != GameMode.SinglePlayVsBot) return;
+            Debug.Log("MatchStarter Start");
         
         var gameMode = _gameData.Mode;
         var myArrangements = _global.MyArrangements;
@@ -203,13 +204,18 @@ public class MatchStarter : NetworkBehaviour
     {
         _global.FirestoreManager.LoadPlayerData(matchData.Player1.FirebasePlayer.ID, (_,result) =>
         {
-            matchData.Player1.FirebasePlayer = result;
+            matchData.Player1.FirebasePlayer = new FirebasePlayerData(result.ID, result.Name,
+                new PlayerRankingData { Elo = result.PlayerRanking.Elo, Position = result.PlayerRanking.Position },
+                result.Icon, result.HistoryMatchIDs, result.FriendIds);
 
             core.RefreshPlayerUI(matchData.Player1.PlayerId, matchData.Player1.PlayerId != OwnerClientId);
         });
         _global.FirestoreManager.LoadPlayerData(matchData.Player2.FirebasePlayer.ID, (_,result) =>
         {
-            matchData.Player2.FirebasePlayer = result;
+            matchData.Player2.FirebasePlayer = new FirebasePlayerData(result.ID, result.Name,
+                new PlayerRankingData { Elo = result.PlayerRanking.Elo, Position = result.PlayerRanking.Position },
+                result.Icon, result.HistoryMatchIDs, result.FriendIds);
+            
             core.RefreshPlayerUI(matchData.Player2.PlayerId, matchData.Player2.PlayerId != OwnerClientId);
         });
     }
@@ -556,10 +562,37 @@ public class MatchStarter : NetworkBehaviour
         corePlayer.SetServerCore(corePlayer);
         corePlayer.SetIsLocal(true);
         
+        UpdateMatchDataSingleplayer(_matchData, corePlayer);
+        
         TryArrangeFigures(_matchData);
         StartBot(_matchData, corePlayer);
     }
 
+    private void UpdateMatchDataSingleplayer(MatchData matchData, MatchCore core)
+    {
+        UpdateBotData();
+        var mydata = _global.FirestoreManager.GetSavedPlayer(_global.FirestoreManager.MyData.ID);
+        var newPlayerElo = mydata.Ranking.Data.Elo;
+        var myIcon = mydata.PlayerData.Data.Icon; 
+        _matchData.Player1.FirebasePlayer.Name = mydata.PlayerData.Data.Name;
+        _matchData.Player1.FirebasePlayer.PlayerRanking.Elo = newPlayerElo;
+        _matchData.Player1.FirebasePlayer.Icon = myIcon;
+
+        UpdateBotData();
+        core.RefreshPlayerUI(matchData.Player1.PlayerId, false);
+        core.RefreshPlayerUI(matchData.Player2.PlayerId, true);
+    }
+
+    private void UpdateBotData()
+    {
+        var player = _matchData.Player2;
+        
+        player.FirebasePlayer = new FirebasePlayerData("id");
+        player.FirebasePlayer.Icon = _global.BotIcons[_gameData.BotDifficulty];
+        player.FirebasePlayer.Name = $"Bot {_gameData.BotDifficulty.ToString()}";
+        player.FirebasePlayer.PlayerRanking = new PlayerRankingData();
+        player.FirebasePlayer.PlayerRanking.Elo = 625 * (int)_gameData.BotDifficulty;
+    }
     private void StartBot(MatchData matchData, MatchCore matchCore)
     {
         var botController = FindAnyObjectByType<BotController>();
@@ -570,49 +603,53 @@ public class MatchStarter : NetworkBehaviour
 
     private ArrangementEntry[] GetRandomArrangement()
     {
-        List<AbstractPiece> pieces = GetRandomPieces();
-        var arrangement = new ArrangementEntry[pieces.Count];
+        List<AbstractPiece> pieces = GetRandomPieces(); // очікуємо, що [0] = King
+        int kingIdx = pieces.FindIndex(p => p.PieceType == PieceType.King);
+        if (kingIdx < 0)
+            throw new System.Exception("GetRandomPieces() не повернув короля");
+        if (kingIdx != 0)
+            (pieces[0], pieces[kingIdx]) = (pieces[kingIdx], pieces[0]);
 
-        List<(int row, int col)> cells = new List<(int, int)>();
-        for (int row = 0; row <= 7; row++)
-        {
-            for (int col = 5; col <= 7; col++)
-            {
-                cells.Add((row, col));
-            }
-        }
+        var cells = new List<(int row, int col)>(24);
+        for (int row = 0; row < 8; row++)
+        for (int col = 5; col <= 7; col++)
+            cells.Add((row, col));
 
-        for (int i = 0; i < cells.Count; i++)
+        for (int i = cells.Count - 1; i > 0; i--)
         {
-            int j = UnityEngine.Random.Range(i, cells.Count);
+            int j = UnityEngine.Random.Range(0, i + 1);
             (cells[i], cells[j]) = (cells[j], cells[i]);
         }
 
-        //King
-        int kingIndex = cells.FindIndex(c => c.col == 7);
-        var kingCell = cells[kingIndex];
-        cells.RemoveAt(kingIndex);
+        var kingCandidates = cells.FindAll(c => c.col == 7);
+        var kingCell = kingCandidates[UnityEngine.Random.Range(0, kingCandidates.Count)];
+        cells.Remove(kingCell);
 
-        arrangement[0] = new ArrangementEntry
+        int capacity = 1 + cells.Count;
+        if (pieces.Count > capacity)
         {
+            pieces = pieces.GetRange(0, capacity);
+        }
+
+        var result = new List<ArrangementEntry>(pieces.Count);
+
+        result.Add(new ArrangementEntry {
             row = kingCell.row,
             column = kingCell.col,
             pieceType = pieces[0].PieceType
-        };
-        //End King
-        Debug.Log("cells.Count" + cells.Count);
-        for (int i = 1; i < pieces.Count && i - 1 < cells.Count; i++)
+        });
+
+        for (int i = 1; i < pieces.Count; i++)
         {
             var cell = cells[i - 1];
-            arrangement[i] = new ArrangementEntry
-            {
+            result.Add(new ArrangementEntry {
                 row = cell.row,
                 column = cell.col,
                 pieceType = pieces[i].PieceType
-            };
+            });
         }
 
-        return arrangement;
+        return result.ToArray();
     }
 
     private List<AbstractPiece> GetRandomPieces()

@@ -1,4 +1,6 @@
-﻿﻿namespace Chess.Core
+﻿﻿using UnityEngine;
+
+ namespace Chess.Core
 {
 	public class Evaluation
 	{
@@ -87,7 +89,6 @@
 
 			return bonus + isolatedPawnPenaltyByCount[numIsolatedPawns];
 		}
-
 
 
 		float EndgamePhaseWeight(int materialCountWithoutPawns)

@@ -11,26 +11,25 @@ public class GameBoard : AbstractBoard
     private bool _lastMoveIsFantom;
     public override void ArrangeFigures(MatchData matchData, bool needRotate = true)
     {
-        Debug.Log("ArrangeFigures " + matchData.Player1.StartArrangement.Length);
+        Debug.Log("ArrangeFigures " + matchData.Player2.StartArrangement.Length);
         ArrangeFigures(matchData.Player1, needRotate);
         ArrangeFigures(matchData.Player2, needRotate);
         
     }
 
-    public override void BoardTryMove(Cell from, Cell to)
+    public override void BoardTryMove(Cell from, Cell to, bool isTab = true)
     {
-        Debug.Log("BoardTryMove " + from.Row + " " + from.Column + " " + to.Row + " " + to.Column);
+        Debug.Log("BoardTryMove isTab" + isTab);
         if (!MatchCore.CanMove(from, to))
         {
             Deselect();
             return;
         }
-        bool a = false;
-        if (to.Piece != null && to.Piece.PieceType == PieceType.King)
+        if (MatchCore.IsLocal && to.Piece != null && to.Piece.PieceType == PieceType.King)
         {
             MatchCore.HandleEndGameLogicLocal((int)to.Piece.OwnerId);
         }
-        MovePiece(from, to);
+        MovePiece(from, to, isTab);;
         _lastMoveIsFantom = true;
         MatchCore.TryMove(new Vector2Int(from.Row, from.Column),
             new Vector2Int(to.Row, to.Column));

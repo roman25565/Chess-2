@@ -20,7 +20,7 @@ public class EndGamePanel : MonoBehaviour
 
     public void EndGame(EndGameData endGameData, MainMenu mainMenu)
     {
-        Debug.Log("EndGameUI");
+        Debug.Log($"EndGameUI {endGameData.Type} {endGameData.MyNewElo}, {endGameData.WonReason}, {endGameData.MyPlayerData.FirebasePlayer.ID}");
         var enemyId = endGameData.EnemyPlayerData.FirebasePlayer.ID;
 
         myProfile.EndGame(endGameData.MyPlayerData, endGameData.MyNewElo, mainMenu);

@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Chess.Core
 {
@@ -51,7 +52,6 @@ namespace Chess.Core
 			}
 
 			loadedPositionInfo.whiteToMove = (sections[1] == "w");
-
 			string castlingRights = sections[2];
 			loadedPositionInfo.whiteCastleKingside = castlingRights.Contains("K");
 			loadedPositionInfo.whiteCastleQueenside = castlingRights.Contains("Q");

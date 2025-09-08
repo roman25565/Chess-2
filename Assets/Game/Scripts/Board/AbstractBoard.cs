@@ -1,10 +1,13 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Board;
 using Board.Piece;
+using Game.Scripts.Board;
 using JetBrains.Annotations;
 using Setting;
 using UnityEngine;
+using UnityEngine.UI;
 using Zenject;
 
 namespace Game.Scripts.Board
@@ -137,25 +140,33 @@ public abstract class AbstractBoard : MonoBehaviour
         MovePiece(GetCell(from.x, from.y), GetCell(to.x, to.y));
     }
 
-    protected void MovePiece(Cell from, Cell to)
+    protected void MovePiece(Cell from, Cell to, bool isTab = true)
     {
-        MovePiece(from, to, MoveHistory);
+        MovePiece(from, to, MoveHistory, false,isTab);
     }
 
-    protected void MovePiece(Cell from, Cell to, MoveHistory moveHistory, bool isInternalHistoryMove = false)
+    protected void MovePiece(Cell from, Cell to, MoveHistory moveHistory, bool isInternalHistoryMove = false, bool isTab = true)
     {
         if (IsConfirmation(from, to))
             return;
-        
-        var killedPiece = to.Piece != null && to.Piece.PieceType == PieceType.King ? to.Piece : null;
         
         moveHistory.AddMove(from, to, isInternalHistoryMove);
         SetSelectedState(ref _firstSelectedCell, from);
         SetSelectedState(ref _secondSelectedCell, to);
         if (from.Piece != null && from.Piece.IsFirstMove) from.Piece.IsFirstMove = false;
         Move(from, to);
+        if ((to.Column == 0 || to.Column == 7) && to.Piece != null && to.Piece.PieceType == PieceType.Pawn) //Queen Update
+        {
+            var queen = Global.CreatePiece(PieceType.Queen);
+            GetCell(to.Row, to.Column).SetPiece(queen);
+        }
         Global.Sound.OnMove();
+        if (isTab)
+        {
+            AnimateMove(from, to);
+        }
     }
+
     protected virtual bool IsFantom()
     {
         return false;
@@ -180,9 +191,17 @@ public abstract class AbstractBoard : MonoBehaviour
             Debug.Log("IsValidMove " + IsValidMove(_selectedCell, cell));
             if (IsValidMove(_selectedCell, cell))
             {
-                BoardTryMove(_selectedCell, cell);
+                BoardTryMove(_selectedCell, cell, isTab);
+                Deselect();
             }
-            Deselect();
+            else if (cell.Piece != null && IsMyId(cell.Piece.OwnerId))
+            { 
+                SelectMyPiece(cell);
+            }
+            else
+            {
+                Deselect();
+            }
         }
         else if (cell.Piece != null)
         {
@@ -206,7 +225,7 @@ public abstract class AbstractBoard : MonoBehaviour
         }
     }
 
-    public abstract void BoardTryMove(Cell from, Cell to);
+    public abstract void BoardTryMove(Cell from, Cell to, bool isTab = true);
 
     public void StartDragging(RectTransform piece)
     {
@@ -382,6 +401,31 @@ public abstract class AbstractBoard : MonoBehaviour
     public virtual void UpdatePiecesId(ulong oldId, ulong clientId)
     {
         throw new NotImplementedException();
+    }
+    
+    private void AnimateMove(Cell from, Cell to)
+    {
+        to.transform.SetAsLastSibling();
+        var image = to.pieceImage;
+
+        StartCoroutine(AnimatePieceMove(image, from.transform.position, to.transform.position, 0.1f));
+    }
+
+    private IEnumerator AnimatePieceMove(Image image, Vector3 startPos, Vector3 endPos, float duration)
+    {
+        float elapsed = 0f;
+
+        image.transform.position = startPos;
+
+        while (elapsed < duration)
+        {
+            elapsed += Time.deltaTime;
+            float t = elapsed / duration;
+            image.transform.position = Vector3.Lerp(startPos, endPos, t);
+            yield return null;
+        }
+
+        image.transform.position = endPos;
     }
 }
 }

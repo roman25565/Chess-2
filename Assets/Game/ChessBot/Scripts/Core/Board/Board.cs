@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using UnityEngine;
 
 namespace Chess.Core
 {
@@ -472,7 +473,7 @@ namespace Chess.Core
 
 			// Side to move
 			IsWhiteToMove = posInfo.whiteToMove;
-
+			Debug.Log("Side to move: " + (IsWhiteToMove) + "");
 			// Set extra bitboards
 			allPiecesBitboard = colourBitboards[WhiteIndex] | colourBitboards[BlackIndex];
 			UpdateSliderBitboards();

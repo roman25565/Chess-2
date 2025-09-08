@@ -1,4 +1,6 @@
-﻿using UnityEngine;
+﻿using System;
+using Board.Piece;
+using UnityEngine;
 
 namespace Chess.Core
 {
@@ -68,46 +70,62 @@ namespace Chess.Core
 
 		public void StartSearch()
 		{
+			
+			Debug.Log($"Searcher: AI calculating move for {board.MoveColour}");
+			
+
 			Debug.Log("Starting search");
 			// Initialize search
-
-			bestEvalThisIteration = bestEval = 0;
-			bestMoveThisIteration = bestMove = Move.NullMove;
-
-			aiPlaysWhite = board.IsWhiteToMove;
-
-			moveOrderer.ClearHistory();
-			repetitionTable.Init(board.RepetitionPositionHistory.ToArray());
-
-
-
-			// Initialize debug info
-			CurrentDepth = 0;
-			debugInfo = "Starting search with FEN " + FenUtility.CurrentFen(board);
-			searchCancelled = false;
-			searchDiagnostics = new SearchDiagnostics();
-			searchIterationTimer = new System.Diagnostics.Stopwatch();
-			searchTotalTimer = System.Diagnostics.Stopwatch.StartNew();
-
-			// Run search
-			if (settings.Mode == SearchSettings.SearchMode.IterativeDeepening)
+			try
 			{
-				DoIterativeDeepeningSearch();
-			}
-			else
-			{
-				DoFixedDepthSearch();
-			}
 
-			// Finish up
+				bestEvalThisIteration = bestEval = 0;
+				bestMoveThisIteration = bestMove = Move.NullMove;
 
-			// In the very unlikely event that the search is cancelled before a best move can be found, pick a random move
-			if (bestMove.IsNull)
-			{
-				bestMove = GetRandomMove();
+				aiPlaysWhite = board.IsWhiteToMove;
+
+				moveOrderer.ClearHistory();
+				repetitionTable.Init(board.RepetitionPositionHistory.ToArray());
+
+
+
+				// Initialize debug info
+				CurrentDepth = 0;
+				debugInfo = "Starting search with FEN " + FenUtility.CurrentFen(board);
+				searchCancelled = false;
+				searchDiagnostics = new SearchDiagnostics();
+				searchIterationTimer = new System.Diagnostics.Stopwatch();
+				searchTotalTimer = System.Diagnostics.Stopwatch.StartNew();
+
+				// Run search
+				if (settings.Mode == SearchSettings.SearchMode.IterativeDeepening)
+				{
+					DoIterativeDeepeningSearch();
+				}
+				else
+				{
+					DoFixedDepthSearch();
+				}
+
+				// Finish up
+
+				// In the very unlikely event that the search is cancelled before a best move can be found, pick a random move
+				if (bestMove.IsNull)
+				{
+					bestMove = GetRandomMove();
+				}
 			}
-			onSearchComplete?.Invoke(bestMove);
-			searchCancelled = false;
+			catch (Exception e)
+			{
+				Debug.LogException(e);
+				Console.WriteLine(e);
+				throw;
+			}
+			finally
+			{
+				onSearchComplete?.Invoke(bestMove);
+				searchCancelled = false;
+			}
 		}
 
 		// Run iterative deepening. This means doing a full search with a depth of 1, then with a depth of 2, and so on.
@@ -123,7 +141,6 @@ namespace Chess.Core
 				searchIterationTimer.Restart();
 				currentIterationDepth = searchDepth;
 				var a = Search(searchDepth, 0, negativeInfinity, positiveInfinity);
-				Debug.Log($"aAA " + a);
 				if (searchCancelled)
 				{
 					Debug.Log("Abort. Can use partial: " + hasSearchedAtLeastOneMove +" Move: " +  MoveUtility.NameFromMove(bestMoveThisIteration));
@@ -169,7 +186,6 @@ namespace Chess.Core
 						break;
 					}
 				}
-				Debug.Log("Iteration complete");
 			}
 		}
 

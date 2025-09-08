@@ -11,17 +11,20 @@ public class EndGameProfile : MonoBehaviour
     [SerializeField] private Image icon;
     [SerializeField] private Button iconB;
     [SerializeField] private TextMeshProUGUI nameAndElo;
-    [SerializeField] private TextMeshProUGUI changingElo;
     [SerializeField] private Color eloGainColor = new Color(0.2f, 0.8f, 0.2f); // Green
     [SerializeField] private Color eloLossColor = new Color(0.8f, 0.2f, 0.2f);  // Red
     [SerializeField] private float animationDuration = 0.5f;
+    
+    private string _baseText;
     public void EndGame(PlayerData playerData, int newElo, MainMenu mainMenu)
     {
         var firebasePlayer = playerData.FirebasePlayer;
         var elo = firebasePlayer.PlayerRanking.Elo;
         
         icon.sprite = firebasePlayer.Icon;
-        nameAndElo.text =$"{firebasePlayer.Name} ({newElo})";
+        
+        _baseText = $"{firebasePlayer.Name} ({newElo})";
+        nameAndElo.text = _baseText;
         
         if (elo != newElo)
         {
@@ -39,17 +42,17 @@ public class EndGameProfile : MonoBehaviour
     
         if (difference > 0)
         {
-            changingElo.text = $"(+{difference})";
-            changingElo.color = eloGainColor;
+            string hexColor = ColorUtility.ToHtmlStringRGB(eloGainColor);
+            nameAndElo.text = $"{_baseText}\n<align=center><color=#{hexColor}>(+{difference})</color></align>";
         }
         else if (difference < 0)
         {
-            changingElo.text = $"({difference})";
-            changingElo.color = eloLossColor;
+            string hexColor = ColorUtility.ToHtmlStringRGB(eloLossColor);
+            nameAndElo.text = $"{_baseText}\n<align=center><color=#{hexColor}>({difference})</color></align>";
         }
         else
         {
-            changingElo.text = "";
+            nameAndElo.text = _baseText;
             return;
         }
 
@@ -58,27 +61,28 @@ public class EndGameProfile : MonoBehaviour
 
     private IEnumerator AnimateEloChange()
     {
-        changingElo.transform.localScale = Vector3.one * 1.3f;
-        var startColor = changingElo.color;
+        nameAndElo.transform.localScale = Vector3.one * 1.3f;
+
+        var startColor = nameAndElo.color;
         startColor.a = 0;
-        changingElo.color = startColor;
+        nameAndElo.color = startColor;
 
         var elapsed = 0f;
         while (elapsed < animationDuration)
         {
             elapsed += Time.deltaTime;
             var t = elapsed / animationDuration;
-        
-            var currentColor = changingElo.color;
+
+            var currentColor = nameAndElo.color;
             currentColor.a = Mathf.Lerp(0, 1, t);
-            changingElo.color = currentColor;
-        
-            changingElo.transform.localScale = Vector3.Lerp(Vector3.one * 1.3f, Vector3.one, t);
-        
+            nameAndElo.color = currentColor;
+
+            nameAndElo.transform.localScale = Vector3.Lerp(Vector3.one * 1.3f, Vector3.one, t);
+
             yield return null;
         }
 
-        changingElo.transform.localScale = Vector3.one;
+        nameAndElo.transform.localScale = Vector3.one;
     }
 
 }

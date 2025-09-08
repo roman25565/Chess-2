@@ -1,6 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using Chess.Core;
 
 namespace Chess.Players
@@ -15,6 +13,7 @@ namespace Chess.Players
 
 		protected virtual void ChoseMove(Move move)
 		{
+			Debug.Log($"onMoveChosen {onMoveChosen != null}");
 			onMoveChosen?.Invoke(move);
 		}
 	}

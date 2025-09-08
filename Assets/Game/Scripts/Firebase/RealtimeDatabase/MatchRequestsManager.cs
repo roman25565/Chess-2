@@ -25,6 +25,12 @@ public class MatchRequestsManager
     {
         return _requests;
     }
+    
+    public void RemoveRequest(AbstractRequestData request)
+    {
+        _requests.Remove(request as MatchRequestData);
+        _onChangedRequests?.Invoke();
+    }
 
     public MatchRequestsManager(DatabaseReference database, string currentUserId, UnityEvent onChangedRequests, AdvancedMatchmaking advancedMatchmaking)
     {

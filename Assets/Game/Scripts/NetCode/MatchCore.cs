@@ -98,6 +98,7 @@ public class MatchCore : NetworkBehaviour
         _matchData.Player1.IsWhite ? _matchData.Player1.PlayerId : _matchData.Player2.PlayerId;
 
     public bool IsServerCore => _serverCore == this;
+    public bool IsLocal { get => _isLocal; }
 
 
     private void Awake()
@@ -191,23 +192,23 @@ public class MatchCore : NetworkBehaviour
         var myData = _matchData.GetPlayerData(_myId); 
         var board = _gameData.ActiveBoard;
         
+        if (!myData.IsMoving || myData.TimeToMove < 0)
+            return false;
 
         Debug.Log("to.Piece != null && to.Piece.OwnerId == OwnerClientId" +(to.Piece != null && to.Piece.OwnerId == OwnerClientId));
         if (to.Piece != null && to.Piece.OwnerId == OwnerClientId && !_isConfirm)
         {
             _isConfirm = true;
-            MatchUIManager.Instance.ConfirmSelfCapture(
-                board.BoardTryMove, () =>
-            {
-                _isConfirm = false;
-            }, from, to);
+            MatchUIManager.Instance.ConfirmSelfCapture((fr,t) =>
+                {
+                    board.BoardTryMove(fr, t);
+                    _isConfirm = false;
+                }
+                , () => { _isConfirm = false; }, from, to);
             return false;
         }
-        Debug.Log("myData.IsMoving  myData.TimeToMove > 0 " +(myData.IsMoving.ToString() + (myData.TimeToMove > 0)));
-        if (myData.IsMoving && myData.TimeToMove > 0)
-            return true;
-        Debug.LogError("Error player can't move");
-        return false;
+
+        return true;
     }
 
     public void TryMove(Vector2Int from, Vector2Int to)
@@ -259,7 +260,7 @@ public class MatchCore : NetworkBehaviour
     {
         if (!IsOwner) return;
 
-        Debug.Log("HandleEndGameLogic winnerId " + winnerId);
+        Debug.Log($"HandleEndGameLogic winnerId {winnerId} endGameType {endGameType} wonReason {wonReason}");
 
         var isFirstPlayer = _matchData.Player1.PlayerId == _myId;
         var myId = _global.FirestoreManager.MyData.ID;
@@ -271,10 +272,12 @@ public class MatchCore : NetworkBehaviour
         CalculateNewEloRatings(winnerId, out var player1Elo, out var player2Elo);
         if (endGameType == EndGameType.Lose || endGameType == EndGameType.Won)
         {
-            _matchData.Player1.FirebasePlayer.PlayerRanking.Elo = player1Elo;
-            _matchData.Player2.FirebasePlayer.PlayerRanking.Elo = player2Elo;
             var myNewElo = isFirstPlayer ? player1Elo : player2Elo;
             _global.FirestoreManager.PlayerRankingManager.UpdateMyPlayerRanking(myId, new PlayerRankingData{Elo = myNewElo, Position = -1});
+            _global.FirestoreManager.MyData.GetPlayerRanking((ranking) =>
+            {
+                ranking.Elo = myNewElo;
+            });
         }
         
         _gameEnded = true;
@@ -283,6 +286,7 @@ public class MatchCore : NetworkBehaviour
         _global.FirestoreManager.StatisticManager.UpdatePlayerStatistics(myId, myPlayer, history, endGameType, wonReason);
         OnGameEnded.AddListener((matchId) =>
         {
+            
             _global.EndGameData = new EndGameData(endGameType, wonReason, myPlayer, enemyPlayer,isFirstPlayer ? player1Elo : player2Elo,
                 isFirstPlayer ? player2Elo : player1Elo, matchId);
             NetworkManager.Singleton.Shutdown();
@@ -301,11 +305,14 @@ public class MatchCore : NetworkBehaviour
         );
     }
     
-    public void HandleEndGameLogicLocal(int id)
+    public async Task HandleEndGameLogicLocal(int id)
     {
+        _gameEnded = true;
+        _gameData.ActiveBoard.EndGame();
+        
+        await Task.Delay(TimeSpan.FromSeconds(3));
         try
         {
-
             Debug.Log("HandleEndGameLogicLocal");
             _global.EndGameData = CreateEndGameDataLocal(id);
             Destroy(global::DontDestroyOnLoad.Instance.gameObject);
@@ -321,42 +328,22 @@ public class MatchCore : NetworkBehaviour
 
     private EndGameData CreateEndGameDataLocal(int id)
     {
-        UpdateBotFirestoreData(id);
-        var mydata = _global.FirestoreManager.GetSavedPlayer(_global.FirestoreManager.MyData.ID);
-        var newPlayerElo = mydata.Ranking.Data.Elo;
-        var myIcon = mydata.PlayerData.Data.Icon; 
-        _matchData.Player1.FirebasePlayer.PlayerRanking.Elo = newPlayerElo;
-        _matchData.Player1.FirebasePlayer.Icon = myIcon;
         var endGameType = EndGameType.Lose;
+        var  newPlayerElo = _matchData.Player1.FirebasePlayer.PlayerRanking.Elo;
+        var myId = _global.FirestoreManager.MyData.ID;
+        
         if (id == 1)
         {
             endGameType = EndGameType.Won;
             newPlayerElo += 2 * (int)_gameData.BotDifficulty;
         }
-        
-        
-        
+        _global.FirestoreManager.PlayerRankingManager.UpdateMyPlayerRanking(myId, new PlayerRankingData{Elo = newPlayerElo, Position = -1});
+        _global.FirestoreManager.MyData.GetPlayerRanking((ranking) =>
+        {
+            ranking.Elo = newPlayerElo;
+        });
         return new EndGameData(endGameType, WonReason.Null, _matchData.Player1, _matchData.Player2,newPlayerElo,
             _matchData.Player2.FirebasePlayer.PlayerRanking.Elo, null,true);
-    }
-
-    private PlayerData UpdateBotFirestoreData(int id)
-    {
-        var result = _matchData.Player2;
-        Debug.Log($"Player2 null? {result == null}");
-        Debug.Log($"FirebasePlayer null? {result?.FirebasePlayer == null}");
-        Debug.Log($"Global null? {_global == null}");
-        Debug.Log($"BotIcons null? {_global?.BotIcons == null}");
-        
-        result.FirebasePlayer = new FirebasePlayerData("id");
-        Debug.Log(_gameData.BotDifficulty + " " + _global.BotIcons[_gameData.BotDifficulty]);
-        result.FirebasePlayer.Icon = _global.BotIcons[_gameData.BotDifficulty];
-        Debug.Log("UpdateBotFirestoreData");
-        result.FirebasePlayer.Name = "Bot";
-        result.FirebasePlayer.PlayerRanking = new PlayerRankingData();
-        result.FirebasePlayer.PlayerRanking.Elo = 625 * (int)_gameData.BotDifficulty;
-        
-        return result;
     }
 
     [Rpc(SendTo.Server)]
@@ -395,28 +382,23 @@ public class MatchCore : NetworkBehaviour
         var anotherPlayer = _matchData.GetAnotherPlayerData(playerId);
         var killedPiece = board.GetCell(to.x, to.y).Piece;
         
-        var movedPiece = board.GetCell(to.x, to.y).Piece;
         
         _matchData.GetPlayerData(playerId).IsMoving = false;
         anotherPlayer.IsMoving = true;
         _matchData.MovingPlayerId = anotherPlayer.PlayerId;
         
         _gameData.ActiveBoard.MovePiece(from, to);
-
-        
-        
-        if ((isRotate || to.y == 0) && (!isRotate || to.y == 7)) //Queen Update
-        {
-            if (movedPiece != null && movedPiece.PieceType == PieceType.Pawn)
-            {
-                var pawn = _global.CreatePiece(PieceType.Queen);
-                board.GetCell(to.x, to.y).SetPiece(pawn);
-            }
-        }
-        
         
         Debug.Log("UseMove" + playerId + " " + _myId + "E" + (playerId == _myId));
         if (playerId == _myId) return;
+
+        var movedPiece = board.GetCell(to.x, to.y)?.Piece;
+        if ((to.y == 0 || to.y == 7) && movedPiece != null && movedPiece.PieceType == PieceType.Pawn) //Queen Update
+        {
+            var queen = _global.CreatePiece(PieceType.Queen);
+            board.GetCell(to.x, to.y).SetPiece(queen);
+        }
+
         if (_killedKings > 0)
         {
             _serverCore = GetServerCore();

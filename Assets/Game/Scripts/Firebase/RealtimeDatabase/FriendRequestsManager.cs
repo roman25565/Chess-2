@@ -28,6 +28,12 @@ public class FriendRequestsManager
     {
         return _requests;
     }
+    
+    public void RemoveRequest(AbstractRequestData request)
+    {
+        _requests.Remove(request as FriendRequestData);
+        _onChangedRequests?.Invoke();
+    }
 
     public FriendRequestsManager(DatabaseReference database, string currentUserId, UnityEvent onChangedRequests, UnityAction<string> addFriend, UnityAction<string> removeFriend)
     {

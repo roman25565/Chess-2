@@ -1,40 +1,106 @@
 fileFormatVersion: 2
-guid: 5bd2ac99595d01841b9fa5181a62e3aa
+guid: bb66ef7a1fb4bfc42aecf0607ac90fce
 TextureImporter:
   internalIDToNameTable:
   - first:
-      213: 9007473304181861447
-    second: cxvxcv_0
+      213: -7173684102286877539
+    second: chess-removebg_0
   - first:
-      213: -858308089903458993
-    second: cxvxcv_1
+      213: 420414534576287814
+    second: chess-removebg_1
   - first:
-      213: -3352793574277380558
-    second: cxvxcv_2
+      213: -1788353647698662542
+    second: chess-removebg_2
   - first:
-      213: -579513165599305285
-    second: cxvxcv_3
+      213: -5007698741517775332
+    second: chess-removebg_3
   - first:
-      213: -4326033842337138217
-    second: cxvxcv_4
+      213: 203719318328809372
+    second: chess-removebg_4
   - first:
-      213: 2424113069629325289
-    second: cxvxcv_5
+      213: 6351613437955307885
+    second: chess-removebg_5
   - first:
-      213: 3435220875359717070
-    second: cxvxcv_6
+      213: 8327106389360121056
+    second: chess-removebg_6
   - first:
-      213: 7379006971756767171
-    second: cxvxcv_7
+      213: -7970702641684746536
+    second: chess-removebg_7
   - first:
-      213: 5396675781520985218
-    second: cxvxcv_8
+      213: 649097732841982078
+    second: chess-removebg_8
   - first:
-      213: -5593696999448854260
-    second: cxvxcv_9
+      213: -7261351263803635731
+    second: chess-removebg_9
   - first:
-      213: -6545972677950124823
-    second: cxvxcv_10
+      213: -2035710780251958388
+    second: chess-removebg_10
+  - first:
+      213: -5554378330873921194
+    second: chess-removebg_11
+  - first:
+      213: 2630694643936675772
+    second: chess-removebg_12
+  - first:
+      213: 8943841359494829247
+    second: chess-removebg_13
+  - first:
+      213: -2125137708215224564
+    second: chess-removebg_14
+  - first:
+      213: 6884560068236154319
+    second: chess-removebg_15
+  - first:
+      213: -4378671347037263747
+    second: chess-removebg_16
+  - first:
+      213: 3752882014254289962
+    second: chess-removebg_17
+  - first:
+      213: -5543181653228504002
+    second: chess-removebg_18
+  - first:
+      213: 6470164056885300365
+    second: chess-removebg_19
+  - first:
+      213: -1383890870976542397
+    second: chess-removebg_20
+  - first:
+      213: -4521882210768557574
+    second: chess-removebg_21
+  - first:
+      213: 2005717752026144514
+    second: chess-removebg_22
+  - first:
+      213: -3459458522148010644
+    second: chess-removebg_23
+  - first:
+      213: 3143346105892453763
+    second: chess-removebg_24
+  - first:
+      213: -1496429874217572710
+    second: chess-removebg_25
+  - first:
+      213: 383490844449338701
+    second: chess-removebg_26
+  - first:
+      213: -5010881372301030065
+    second: chess-removebg_27
+  - first:
+      213: 6289647233484809316
+    second: chess-removebg_28
+  - first:
+      213: 2427509732382063025
+    second: chess-removebg_29
+  - first:
+      213: -5518813450995495291
+    second: chess-removebg_30
+  - first:
+      213: -9049115647723868980
+    second: chess-removebg_31
+  - first:
+      213: 909037687776802431
+    second: chess-removebg_32
   externalObjects: {}
   serializedVersion: 13
   mipmaps:
@@ -70,13 +136,13 @@ TextureImporter:
     filterMode: 1
     aniso: 1
     mipBias: 0
-    wrapU: 1
-    wrapV: 1
-    wrapW: 1
+    wrapU: 0
+    wrapV: 0
+    wrapW: 0
   nPOTScale: 0
   lightmap: 0
   compressionQuality: 50
-  spriteMode: 1
+  spriteMode: 2
   spriteExtrude: 1
   spriteMeshType: 1
   alignment: 0
@@ -169,243 +235,705 @@ TextureImporter:
     serializedVersion: 2
     sprites:
     - serializedVersion: 2
-      name: cxvxcv_0
+      name: chess-removebg_0
       rect:
         serializedVersion: 2
         x: 0
-        y: 0
-        width: 71
-        height: 72
+        y: 726
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 74ce29b1f39f00d70800000000000000
-      internalID: 9007473304181861447
+      spriteID: 964649d75b139794497d24562991b3df
+      internalID: 927699574
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_1
+      name: chess-removebg_1
       rect:
         serializedVersion: 2
-        x: 74
-        y: 57
-        width: 16
-        height: 15
+        x: 103
+        y: 726
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: f45d579f65da614f0800000000000000
-      internalID: -858308089903458993
+      spriteID: 9acb92ab8c596cb4dab46feac85b875d
+      internalID: -53812088
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_2
+      name: chess-removebg_2
       rect:
         serializedVersion: 2
-        x: 100
-        y: 0
-        width: 52
-        height: 72
+        x: 206
+        y: 726
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 2360cff020c7871d0800000000000000
-      internalID: -3352793574277380558
+      spriteID: d8f17d0edf2e8fa4687d849bf5745d5e
+      internalID: -1322364539
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_3
+      name: chess-removebg_3
       rect:
         serializedVersion: 2
-        x: 245
-        y: 0
-        width: 34
-        height: 67
+        x: 309
+        y: 726
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: bb19ac5a8d725f7f0800000000000000
-      internalID: -579513165599305285
+      spriteID: 83a21b0e7630e87448c7a6477bfb8fdb
+      internalID: 1846199676
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_4
+      name: chess-removebg_4
       rect:
         serializedVersion: 2
-        x: 283
-        y: 57
-        width: 16
-        height: 15
+        x: 412
+        y: 726
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 7d93d250427d6f3c0800000000000000
-      internalID: -4326033842337138217
+      spriteID: d822e60ca51f0464b9878cabf6603c7b
+      internalID: -1904941901
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_5
+      name: chess-removebg_8
       rect:
         serializedVersion: 2
-        x: 75
-        y: 0
-        width: 14
-        height: 54
+        x: 0
+        y: 623
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 9ef33aa4efd24a120800000000000000
-      internalID: 2424113069629325289
+      spriteID: 4129239956f624c4fadb9de385cd9c53
+      internalID: -810250878
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_6
+      name: chess-removebg_16
       rect:
         serializedVersion: 2
-        x: 160
-        y: 0
-        width: 30
-        height: 55
+        x: 0
+        y: 108
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: ec682d08f2b5caf20800000000000000
-      internalID: 3435220875359717070
+      spriteID: 6f7479c5f5d34ca43a7fefd9c8ebe8b9
+      internalID: 79060410
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_7
+      name: chess-removebg_24
       rect:
         serializedVersion: 2
-        x: 193
-        y: 0
-        width: 47
-        height: 55
+        x: 0
+        y: 5
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 3c761b2cebf776660800000000000000
-      internalID: 7379006971756767171
+      spriteID: f19ffb9d789219642b3def728e1edd2a
+      internalID: -2138035114
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_8
+      name: chess-removebg_25
       rect:
         serializedVersion: 2
-        x: 284
-        y: 0
-        width: 14
-        height: 54
+        x: 103
+        y: 5
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 28c038dc708d4ea40800000000000000
-      internalID: 5396675781520985218
+      spriteID: 33ff9ce8e668f8b42b5557abd3eec3fa
+      internalID: 667532182
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_9
+      name: chess-removebg_26
       rect:
         serializedVersion: 2
-        x: 306
-        y: 0
-        width: 54
-        height: 55
+        x: 206
+        y: 5
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: c01cea637323f52b0800000000000000
-      internalID: -5593696999448854260
+      spriteID: 94e1305e29bd0ad4baea1f55b2d374b2
+      internalID: -574754501
       vertices: []
       indices: 
       edges: []
       weights: []
     - serializedVersion: 2
-      name: cxvxcv_10
+      name: chess-removebg_27
       rect:
         serializedVersion: 2
-        x: 368
-        y: 0
-        width: 46
-        height: 55
+        x: 309
+        y: 5
+        width: 103
+        height: 103
       alignment: 0
-      pivot: {x: 0, y: 0}
+      pivot: {x: 0.5, y: 0.5}
       border: {x: 0, y: 0, z: 0, w: 0}
       customData: 
       outline: []
       physicsShape: []
-      tessellationDetail: -1
+      tessellationDetail: 0
       bones: []
-      spriteID: 9ecce5d08880825a0800000000000000
-      internalID: -6545972677950124823
+      spriteID: 4981c7829aa466b418230ba64c26b4b5
+      internalID: -859182228
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_28
+      rect:
+        serializedVersion: 2
+        x: 412
+        y: 5
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1e49d6689028ecf4dbdc1436627d04e1
+      internalID: 67308211
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_5
+      rect:
+        serializedVersion: 2
+        x: 515
+        y: 726
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4b18550b1d20fef42993b353c493639b
+      internalID: -594247682
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_6
+      rect:
+        serializedVersion: 2
+        x: 618
+        y: 726
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 18687dca2664fb045ad513b8093707e1
+      internalID: -1547859461
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_7
+      rect:
+        serializedVersion: 2
+        x: 721
+        y: 726
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 206941ca90ba1ef408b87806f7e8bce0
+      internalID: 1440278530
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_9
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 623
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 2eb6af8b9d2f0a44693182ea06afe123
+      internalID: -746890847
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_10
+      rect:
+        serializedVersion: 2
+        x: 206
+        y: 623
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 1270c7c967c289347937bf1eeb1af363
+      internalID: -2021805218
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_11
+      rect:
+        serializedVersion: 2
+        x: 309
+        y: 623
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 09f6eefba067e034fa46bb13de452226
+      internalID: -1806565390
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_12
+      rect:
+        serializedVersion: 2
+        x: 412
+        y: 623
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d22d5b55d6eb03b44916dc970ffd3991
+      internalID: 13855096
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_13
+      rect:
+        serializedVersion: 2
+        x: 515
+        y: 623
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 53adf9413f28ce34f8b7bdf4d9122349
+      internalID: -1043500050
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_14
+      rect:
+        serializedVersion: 2
+        x: 618
+        y: 623
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: ec130827371842e44b8fe24410469aba
+      internalID: 2139901903
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_15
+      rect:
+        serializedVersion: 2
+        x: 721
+        y: 623
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7820aff19b081c1408726b6bfd1c2a70
+      internalID: 1191587810
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_17
+      rect:
+        serializedVersion: 2
+        x: 103
+        y: 108
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 20a1366a9f83a5b4fba3c2add9764429
+      internalID: 1649008927
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_18
+      rect:
+        serializedVersion: 2
+        x: 206
+        y: 108
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 4a55bd9fe211cc344a28c41763f86c58
+      internalID: 1929222047
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_19
+      rect:
+        serializedVersion: 2
+        x: 309
+        y: 108
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 930796735714f6e419195dac5558c8a5
+      internalID: -1848443470
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_20
+      rect:
+        serializedVersion: 2
+        x: 412
+        y: 108
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 77d720cac5b5b6146b6e6cc26bfeb625
+      internalID: -427792172
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_21
+      rect:
+        serializedVersion: 2
+        x: 515
+        y: 108
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: d2f62b0fc83e3134dbcd5af79f0f03de
+      internalID: -428361355
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_22
+      rect:
+        serializedVersion: 2
+        x: 618
+        y: 108
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: eb9936f3475b7d84ea3fd8958f07576a
+      internalID: -1804829441
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_23
+      rect:
+        serializedVersion: 2
+        x: 721
+        y: 108
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: beb7223021955eb4b8671dd0cafa54c3
+      internalID: -1819722396
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_29
+      rect:
+        serializedVersion: 2
+        x: 515
+        y: 5
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: a4890b918e540c046b7fa8c38a51019b
+      internalID: 1349672901
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_30
+      rect:
+        serializedVersion: 2
+        x: 618
+        y: 5
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 7818d997348a2e54585be31482d4f816
+      internalID: 162096750
+      vertices: []
+      indices: 
+      edges: []
+      weights: []
+    - serializedVersion: 2
+      name: chess-removebg_31
+      rect:
+        serializedVersion: 2
+        x: 721
+        y: 5
+        width: 103
+        height: 103
+      alignment: 0
+      pivot: {x: 0.5, y: 0.5}
+      border: {x: 0, y: 0, z: 0, w: 0}
+      customData: 
+      outline: []
+      physicsShape: []
+      tessellationDetail: 0
+      bones: []
+      spriteID: 70e1af05025f49b459073aaa07df3017
+      internalID: 1729350457
       vertices: []
       indices: 
       edges: []
@@ -414,7 +942,7 @@ TextureImporter:
     customData: 
     physicsShape: []
     bones: []
-    spriteID: 5e97eb03825dee720800000000000000
+    spriteID: d4ddfde10566be143870ed63dfbb05d6
     internalID: 0
     vertices: []
     indices: 
@@ -424,17 +952,38 @@ TextureImporter:
     spriteCustomMetadata:
       entries: []
     nameFileIdTable:
-      cxvxcv_0: 9007473304181861447
-      cxvxcv_1: -858308089903458993
-      cxvxcv_10: -6545972677950124823
-      cxvxcv_2: -3352793574277380558
-      cxvxcv_3: -579513165599305285
-      cxvxcv_4: -4326033842337138217
-      cxvxcv_5: 2424113069629325289
-      cxvxcv_6: 3435220875359717070
-      cxvxcv_7: 7379006971756767171
-      cxvxcv_8: 5396675781520985218
-      cxvxcv_9: -5593696999448854260
+      chess-removebg_0: 927699574
+      chess-removebg_1: -53812088
+      chess-removebg_10: -2021805218
+      chess-removebg_11: -1806565390
+      chess-removebg_12: 13855096
+      chess-removebg_13: -1043500050
+      chess-removebg_14: 2139901903
+      chess-removebg_15: 1191587810
+      chess-removebg_16: 79060410
+      chess-removebg_17: 1649008927
+      chess-removebg_18: 1929222047
+      chess-removebg_19: -1848443470
+      chess-removebg_2: -1322364539
+      chess-removebg_20: -427792172
+      chess-removebg_21: -428361355
+      chess-removebg_22: -1804829441
+      chess-removebg_23: -1819722396
+      chess-removebg_24: -2138035114
+      chess-removebg_25: 667532182
+      chess-removebg_26: -574754501
+      chess-removebg_27: -859182228
+      chess-removebg_28: 67308211
+      chess-removebg_29: 1349672901
+      chess-removebg_3: 1846199676
+      chess-removebg_30: 162096750
+      chess-removebg_31: 1729350457
+      chess-removebg_4: -1904941901
+      chess-removebg_5: -594247682
+      chess-removebg_6: -1547859461
+      chess-removebg_7: 1440278530
+      chess-removebg_8: -810250878
+      chess-removebg_9: -746890847
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 

@@ -85,7 +85,8 @@ __pycache__/
 *.pyc
 
 # Unencrypted secret files
-google-services.json
+**/google-services.json
+**/user.keystore
 GoogleService-Info.plist
 uri_prefix.txt
 server_key.txt

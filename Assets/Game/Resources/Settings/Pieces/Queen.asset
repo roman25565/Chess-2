@@ -14,13 +14,8 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   pieceType: 5
   skins:
-  - {fileID: 1152470687, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
-  - {fileID: -752501078, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
-  selectedSkinIndex: 0
-  steps:
-  - directions: 02000000
-  - directions: 0000000002000000
-  - directions: 0100000002000000
+  - {fileID: -859182228, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
+  - {fileID: 1846199676, guid: 88c0cde0c843fa948aa1777a1b48ae8c, type: 3}
   arrangementMin: 0
   arrangementMax: 94
   arrangementCost: 9

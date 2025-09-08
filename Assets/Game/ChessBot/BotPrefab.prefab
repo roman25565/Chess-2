@@ -129,12 +129,13 @@ MonoBehaviour:
   m_GameObject: {fileID: 1976981152638936263}
   m_Enabled: 1
   m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 211f6a920ebe0480a869b50e724a2d2a, type: 3}
+  m_Script: {fileID: 11500000, guid: 0a3e4bec76284ed4d8cabbe682daea8d, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  loadCustomPosition: 1
-  customPosition: 2rq1rk1/1p2npp1/4p1b1/4P1Qp/4BN2/2R3R1/PP3PPP/6K1 w - - 0 1
-  whitePlayerType: 1
+  loadCustomPosition: 0
+  customPosition: 1rbq1r1k/2pp2pp/p1n3p1/2b1p3/R3P3/1BP2N2/1P3PPP/1NBQ1RK1 w - -
+    0 1
+  whitePlayerType: 0
   blackPlayerType: 0
   aiSettings: {fileID: 11400000, guid: d2b05b1ed402249ebb9c51f0c34168d7, type: 2}
   resultUI: {fileID: 88232739157261045}
@@ -276,11 +277,17 @@ MonoBehaviour:
   m_PrefabInstance: {fileID: 0}
   m_PrefabAsset: {fileID: 0}
   m_GameObject: {fileID: 2396740300489722947}
-  m_Enabled: 1
+  m_Enabled: 0
   m_EditorHideFlags: 0
   m_Script: {fileID: 11500000, guid: f29594e074e714f49959a53c90992a51, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  thickness: 0
+  headLength: 0
+  headAngle: 0
+  col: {r: 0, g: 0, b: 0, a: 0}
+  colTemp: {r: 0, g: 0, b: 0, a: 0}
+  boardUI: {fileID: 0}
 --- !u!1 &2461828937414190452
 GameObject:
   m_ObjectHideFlags: 0

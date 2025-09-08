@@ -109,7 +109,6 @@ public class NotificationPanel : MonoBehaviour
             () =>
             {
                 _mainMenu.DisableNotificationPanel();
-                if (request.RequestType == Type.MatchRequest) _mainMenu.EnableFindMatchPanel();
                 realtimeDatabase.AcceptInvite(request);
             },
             () => realtimeDatabase.DeclineInvite(request));

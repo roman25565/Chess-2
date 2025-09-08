@@ -1,12 +1,13 @@
 ﻿using System;
-
-namespace Chess.Players
-{
 	using System.Threading.Tasks;
 	using System.Threading;
 	using Chess.Core;
 	using Chess.Game;
 	using UnityEngine;
+	using SearchSettings = Chess.Core.SearchSettings;
+
+namespace Chess.Players
+{
 
 	public class AIPlayer : Player
 	{
@@ -15,13 +16,13 @@ namespace Chess.Players
 		AISettings settings;
 		bool moveFound;
 		Move move;
-		public Board board;
+		public Core.Board board;
 		CancellationTokenSource cancelSearchTimer;
 		System.Random rng;
 
 		OpeningBook book;
 
-		public AIPlayer(Board board, AISettings settings)
+		public AIPlayer(Core.Board board, AISettings settings)
 		{
 			this.settings = settings;
 			this.board = board;
@@ -38,9 +39,8 @@ namespace Chess.Players
 		{
 			var result = false;
 			var moves = search.GetMoves();
-			for (int i = 0; i < moves.Length; i++)
+			foreach (var move in moves)
 			{
-				Move move = moves[i];
 				int capturedPieceType = Piece.PieceType(board.Square[move.TargetSquare]);
 				if (capturedPieceType == Piece.King || capturedPieceType == Piece.BlackKing || capturedPieceType == Piece.WhiteKing)
 				{
@@ -60,6 +60,7 @@ namespace Chess.Players
 
 			if (moveFound)
 			{
+				Debug.Log($"move found {move.Value}");
 				settings.diagnostics = search.searchDiagnostics;
 				moveFound = false;
 				ChoseMove(move);
@@ -76,24 +77,23 @@ namespace Chess.Players
 
 		public override void NotifyTurnToMove()
 		{
-
+			Debug.Log("NotifyTurnToMove");
 			try
 			{
+				search.searchDiagnostics.isBook = false;
+				moveFound = false;
 
-			search.searchDiagnostics.isBook = false;
-			moveFound = false;
+				if (FastTryKillKing()) return;
 
-			if(FastTryKillKing()) return;
-			
-			if (settings.runOnMainThread)
-			{
-				StartSearch();
-			}
-			else
-			{
-				StartThreadedSearch();
+				if (settings.runOnMainThread)
+				{
+					StartSearch();
+				}
+				else
+				{
+					StartThreadedSearch();
 
-			}
+				}
 			}
 			catch (Exception D)
 			{
@@ -143,7 +143,6 @@ namespace Chess.Players
 		}
 		void OnSearchComplete(Move move)
 		{
-			Debug.Log($"search complete {move.Value}");
 			// Cancel search timer in case search finished before timer ran out (can happen when a mate is found)
 			cancelSearchTimer?.Cancel();
 			moveFound = true;

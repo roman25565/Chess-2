@@ -40,6 +40,7 @@ namespace UI
 
             if (isSignIn) SetProfileImageText(_global.FirestoreManager.MyData);
             if (isSignIn) SetProfileImage(_global.FirestoreManager.MyData.Icon);
+            _global.FirestoreManager.OnLogin.AddListener(OnLogin);
             if (isSignIn)
             {
                 var endGameData = _global.EndGameData;
@@ -47,9 +48,9 @@ namespace UI
                 endGamePanel.gameObject.SetActive(true);
                 
                 endGamePanel.EndGame(endGameData, this);
-            }
-            _global.FirestoreManager.OnLogin.AddListener(OnLogin);
-
+            } 
+            return; 
+            
             void OnLogin()
             {
                 SetProfileImageText(_global.FirestoreManager.MyData);

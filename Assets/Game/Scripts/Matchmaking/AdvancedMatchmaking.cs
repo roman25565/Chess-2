@@ -1,4 +1,3 @@
-
 using System;
 using System.Collections;
 using System.Collections.Generic;
@@ -7,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Board;
 using Bootstrap;
+using Firebase.Extensions;
 using Google;
 using Setting;
 using TMPro;
@@ -96,7 +96,6 @@ public class AdvancedMatchmaking : MonoBehaviour
     private Coroutine _heartbeatCoroutine;
 
     private bool IsHost => _connectedLobby.HostId == AuthenticationService.Instance.PlayerId;
-
 
     public void SearchMatch(GameData gameData)
     {
@@ -474,7 +473,7 @@ public class AdvancedMatchmaking : MonoBehaviour
 
         if (_connectedLobby != null)
         {
-            if (NetworkManager.Singleton.IsHost)
+            if (NetworkManager.Singleton != null && NetworkManager.Singleton.IsHost)
             {
                 LobbyService.Instance.DeleteLobbyAsync(_connectedLobby.Id);
                 Debug.Log("DeleteLobbyAsync");
@@ -492,7 +491,6 @@ public class AdvancedMatchmaking : MonoBehaviour
             _connectedLobby = null;
         }
 
-        searchTimeText.text = "Search cancelled";
         Debug.Log("CancelMatchmaking");
     }
     
@@ -511,5 +509,49 @@ public class AdvancedMatchmaking : MonoBehaviour
             System.Diagnostics.Process.GetCurrentProcess().Kill();
 #endif
         }
-    
+
+        public async Task GetLobbiesCount(Dictionary<int, int> result)
+        {
+            try
+            {
+
+            Debug.Log("GetLobbiesCount");
+            var options = new QueryLobbiesOptions
+            {
+                Count = 100,//max
+            };
+            var task = LobbyService.Instance.QueryLobbiesAsync(options).ContinueWithOnMainThread(res =>
+            {
+                var queryResponse = res.Result;
+                var lobbies = queryResponse.Results;
+                Debug.Log("Lobbies " + lobbies.Count);
+                _global.FirestoreManager.MyData.GetPlayerRanking((rankingData) =>
+                {
+                    var myElo = rankingData.Elo;
+                    foreach (var lobby in lobbies)
+                    {
+                        if (lobby.Data.TryGetValue(TimeControlKey, out var data) &&
+                            lobby.Data.TryGetValue(EloKey, out var eloData) && int.Parse(eloData.Value) != myElo)
+                        {
+                            var timeControlValue = data.Value;
+                            if (int.TryParse(timeControlValue, out var value))
+                            {
+                                var timeControl = value / 60;
+
+                                if (result.ContainsKey(timeControl))
+                                    result[timeControl]++;
+                            }
+                        }
+                    }
+                });
+            });
+            await task;
+            }
+            catch (Exception e)
+            {
+                Debug.LogError(e);
+                Console.WriteLine(e);
+                throw;
+            }
+        }
 }

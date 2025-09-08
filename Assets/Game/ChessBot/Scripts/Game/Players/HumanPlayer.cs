@@ -32,7 +32,7 @@ namespace Chess.Players
 
 		public override void NotifyTurnToMove()
 		{
-
+			Debug.LogError("NotifyTurnToMove not implemented for HumanPlayer");
 		}
 
 		public override void Update()

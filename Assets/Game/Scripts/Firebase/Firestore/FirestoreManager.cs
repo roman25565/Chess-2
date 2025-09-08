@@ -74,10 +74,12 @@ public class FirestoreManager
     public PlayerRankingManager PlayerRankingManager;
     public RealtimeDatabase RealtimeDatabase;
     public readonly UnityEvent OnLogin = new UnityEvent();
+    public readonly UnityEvent OnSignOut = new UnityEvent();
     public FirestoreManager(AdvancedMatchmaking advancedMatchmaking)
     {
         _advancedMatchmaking = advancedMatchmaking;
     }
+
 
     public async Task Init()
     {

@@ -130,10 +130,12 @@ namespace Firebase.RealtimeDatabase
             if (request.RequestType == Type.FriendRequest)
             {
                 _ = FriendRequestsManager.AcceptFriendRequest(request);
+                FriendRequestsManager.RemoveRequest(request);
             }
             else if (request.RequestType == Type.MatchRequest)
             {
                 _ = MatchRequestsManager.AcceptMatchRequest(request);
+                MatchRequestsManager.RemoveRequest(request);
             }
         }
         public void DeclineInvite(AbstractRequestData request)
@@ -141,10 +143,12 @@ namespace Firebase.RealtimeDatabase
             if (request.RequestType == Type.FriendRequest)
             {
                 _ = FriendRequestsManager.DeclineFriendRequest(request);
+                FriendRequestsManager.RemoveRequest(request);
             }
             else if (request.RequestType == Type.MatchRequest)
             {
                 _ = MatchRequestsManager.DeclineMatchRequest(request);
+                MatchRequestsManager.RemoveRequest(request);
             }
         }
     }

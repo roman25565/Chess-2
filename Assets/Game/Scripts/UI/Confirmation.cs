@@ -19,6 +19,7 @@ public class Confirmation : MonoBehaviour
     private void Start()
     {
         Hide();
+        closeBgButton.onClick.AddListener(() => Hide());
     }
 
     private void OnDestroy()
@@ -29,30 +30,40 @@ public class Confirmation : MonoBehaviour
 
     public void Show(string text, UnityAction onAccept, UnityAction onReject = null)
     {
+        Debug.Log("Show");
         if (_isShown) return;
         _isShown = true;
         
         confirmationPanel.SetActive(true);
         questionText.text = text;
-        acceptButton.onClick.AddListener(onAccept);
-        acceptButton.onClick.AddListener(Hide);
-        rejectButton.onClick.AddListener(Hide);
+        acceptButton.onClick.AddListener(() => Hide(onAccept));
+        rejectButton.onClick.AddListener(() => Hide());
         if (onReject != null) rejectButton.onClick.AddListener(onReject);
-        closeBgButton.onClick.AddListener(Hide);
     }
 
-    private void Hide()
+    private void Hide(UnityAction onAccept = null)
     {
+        Debug.Log("Hide");
         _isShown = false;
         confirmationPanel.SetActive(false);
         ClearListeners();
+        try
+        {
+            onAccept?.Invoke();
+            Debug.Log("onAccept");
+        }
+        catch (Exception e)
+        {
+            Debug.LogError(e);
+            Console.WriteLine(e);
+            throw;
+        }
     }
     
     private void ClearListeners()
     {
         acceptButton.onClick.RemoveAllListeners();
         rejectButton.onClick.RemoveAllListeners();
-        closeBgButton.onClick.RemoveAllListeners();
     }
 }
 }

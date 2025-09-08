@@ -14,50 +14,53 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   arrangements:
   - row: 0
-    column: 6
-    pieceType: 1
-  - row: 1
-    column: 6
-    pieceType: 1
-  - row: 2
-    column: 6
-    pieceType: 1
-  - row: 3
-    column: 6
-    pieceType: 1
-  - row: 4
-    column: 6
-    pieceType: 1
-  - row: 5
-    column: 6
-    pieceType: 1
-  - row: 6
-    column: 6
-    pieceType: 1
-  - row: 7
-    column: 6
-    pieceType: 1
-  - row: 0
     column: 7
-    pieceType: 1
+    pieceType: 2
   - row: 1
     column: 7
-    pieceType: 1
+    pieceType: 3
   - row: 2
     column: 7
-    pieceType: 1
+    pieceType: 4
   - row: 3
     column: 7
-    pieceType: 1
+    pieceType: 5
   - row: 4
     column: 7
     pieceType: 6
   - row: 5
     column: 7
-    pieceType: 1
+    pieceType: 4
   - row: 6
     column: 7
-    pieceType: 1
+    pieceType: 3
   - row: 7
     column: 7
+    pieceType: 2
+  - row: 1
+    column: 6
+    pieceType: 1
+  - row: 2
+    column: 6
+    pieceType: 4
+  - row: 3
+    column: 6
+    pieceType: 3
+  - row: 4
+    column: 6
+    pieceType: 3
+  - row: 5
+    column: 6
+    pieceType: 4
+  - row: 6
+    column: 6
+    pieceType: 1
+  - row: 2
+    column: 5
+    pieceType: 1
+  - row: 4
+    column: 5
+    pieceType: 1
+  - row: 2
+    column: 5
     pieceType: 1

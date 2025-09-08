@@ -52,7 +52,7 @@ public class PlayerRankingManager
         try
         {
             DocumentReference docRef = _db.Collection(CollectionName).Document(playerId);
-            await docRef.SetAsync(updatedStats, SetOptions.MergeFields(updatedStats.Elo.ToString()));
+            await docRef.SetAsync(updatedStats, SetOptions.MergeFields(nameof(PlayerRankingData.Elo)));
         }
         catch (Exception e)
         {

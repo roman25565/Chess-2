@@ -144,10 +144,11 @@ public class SignIn : MonoBehaviour
 
     public void OnSignOut()
     {
-
+        _global.FirestoreManager.OnSignOut?.Invoke();
         mainMenu.ShowSignInPanel();
         AuthenticationService.Instance.SignOut();
         LoadLastSignType(out var type);
+        PlayerPrefs.SetString(SignTypeKey, SignTypes.None.ToString());
         Debug.Log("Calling SignOut");
         if (type == SignTypes.Google)
         {
@@ -162,7 +163,7 @@ public class SignIn : MonoBehaviour
             }
         }
 
-        PlayerPrefs.SetString(SignTypeKey, SignTypes.None.ToString());
+        
     }
 
 

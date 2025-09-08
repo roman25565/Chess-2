@@ -1,5 +1,6 @@
 ﻿using System;
 using Board.Piece;
+using Game.Scripts.Board;
 using Setting;
 using UnityEngine;
 using UnityEngine.EventSystems;
@@ -23,7 +24,7 @@ public class Cell : MonoBehaviour, IPointerDownHandler, IPointerUpHandler
     public AbstractPiece Piece { get; private set; }
     public AbstractBoard Board { get; private set; }
 
-    [SerializeField] private Image pieceImage;
+    public Image pieceImage;
     [SerializeField] private Image movedImage;
     [SerializeField] private Image selectedImage;
     

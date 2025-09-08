@@ -29,6 +29,7 @@ public class Bootstrap : MonoBehaviour
     [SerializeReference] private SoundManager soundManager;
     [SerializeReference] private ADSManager adsManager;
     [SerializeField] private ReconnectFetcher reconnectFetcher;
+    [SerializeField] private OnlineStatsFetcher onlineStatsFetcher;
     
     [SerializeField] private Button startOnlineMatch;
     [SerializeField] private Button startSinglePlayVsBotMatchB;
@@ -51,7 +52,7 @@ public class Bootstrap : MonoBehaviour
 #endif
         Debug.Log("currentResolution.width" + Screen.currentResolution.width);
         SetupMatchButtonListeners();
-        if (_global.IsSignIn)//Is Return To Main Menu
+        if (_global.IsSignIn)//If Return To Main Menu
         {
             mainMenu.Init(true);
             mainMenu.InitUIComponents();
@@ -59,6 +60,7 @@ public class Bootstrap : MonoBehaviour
             soundManager.Init(true);
             _ = advancedMatchmaking.Init();
             signIn.Init(true);
+            onlineStatsFetcher.Init();
             return;
         }
         
@@ -71,17 +73,38 @@ public class Bootstrap : MonoBehaviour
         adsManager.Init();
         _ = advancedMatchmaking.Init();
         signIn.Init();
+        onlineStatsFetcher.Init();
+        SetButtonsInteractable();
     }
 
     private void SetupMatchButtonListeners()
     {
         startOnlineMatch.onClick.AddListener(() => { mainMenu.ShowGameModeSelectorPanel(); });
+        startSinglePlayVsBotMatchB.onClick.AddListener(() => { mainMenu.ShowBotDifficultySelectorPanel(); });
         advancedMatchmaking.onStateChanged.AddListener((state =>
         {
-            startOnlineMatch.interactable = state == MatchmakingState.Cancelled ? true : false;
+            Debug.Log("onStateChanged " + state);
+            var interactable = state == MatchmakingState.Cancelled ? true : false;
+            startOnlineMatch.interactable = interactable;
+            startSinglePlayVsBotMatchB.interactable = interactable;
         }));
-        startSinglePlayVsBotMatchB.onClick.AddListener(() => { mainMenu.ShowBotDifficultySelectorPanel(); });
         
+    }
+    
+    private void SetButtonsInteractable()
+    {
+        startOnlineMatch.interactable = false;
+        startSinglePlayVsBotMatchB.interactable = false;
+        _global.FirestoreManager.OnLogin.AddListener(() =>
+        {
+            startOnlineMatch.interactable = true;
+            startSinglePlayVsBotMatchB.interactable = true;
+        });
+        _global.FirestoreManager.OnSignOut.AddListener(() =>
+        {
+            startOnlineMatch.interactable = false;
+            startSinglePlayVsBotMatchB.interactable = false;
+        });
     }
 
     private async Task LoadSettings()
@@ -98,16 +121,9 @@ public class Bootstrap : MonoBehaviour
             Debug.LogError("CellStates not found");
         
         var firestore = new FirestoreManager(advancedMatchmaking);
-        firestore.OnLogin.AddListener((() =>
-        {
-            reconnectFetcher.StartFetching(() => firestore.RealtimeDatabase.ReConnectRequestsManager.FetchReConnectRequests());
-        }));
-        
-        
         await firestore.Init();
-        
-
         _global.Init(arrangement, piecesData, cellStates, firestore);
+        reconnectFetcher.Init();
         var icons = new Dictionary<BotDifficulty, Sprite>();
         icons.Add(BotDifficulty.Easy, GetIcon(BotDifficulty.Easy));
         icons.Add(BotDifficulty.Medium, GetIcon(BotDifficulty.Medium));
@@ -144,6 +160,7 @@ public class Bootstrap : MonoBehaviour
 
         void CallBack(string id, FirebasePlayerData result)
         {
+            Debug.Log($"SignInFireBase Result {result} {result == null}");
             if (result == null)
             {
                 _global.FirestoreManager.PlayerDataManager.CreatePlayerData(user);

@@ -6,6 +6,7 @@ using UnityEngine;
 using Chess.Core;
 using Chess.UI;
 using Chess.Players;
+using UnityEngine.Events;
 using UnityEngine.InputSystem;
 
 namespace Chess.Game
@@ -14,6 +15,7 @@ namespace Chess.Game
 	{
 		public event System.Action onPositionLoaded;
 		public event System.Action<Move> onMoveMade;
+		public event System.Action OnBotDie;
 
 		public enum PlayerType { Human, AI }
 
@@ -38,7 +40,7 @@ namespace Chess.Game
 
 		Player whitePlayer;
 		Player blackPlayer;
-		Player playerToMove;
+		public Player playerToMove;
 		BoardUI boardUI;
 
 		public Core.Board board { get; private set; }
@@ -46,7 +48,10 @@ namespace Chess.Game
 
 		public void BotStart()
 		{
-			boardUI = FindObjectOfType<BoardUI>();
+#if UNITY_EDITOR
+			// boardUI = FindObjectOfType<BoardUI>();
+			// boardUI.gameObject.SetActive(true);;
+#endif
 			board = new Core.Board();
 			searchBoard = new Core.Board();
 			aiSettings.diagnostics = new Searcher.SearchDiagnostics();
@@ -82,10 +87,10 @@ namespace Chess.Game
 
 		public void OnMoveChosen(Move move)
 		{
+			Debug.Log($"OnMoveChosen {move.Value}");
 			bool animateMove = playerToMove is AIPlayer;
 			try
 			{
-
 				Debug.Log($"move: {move.Value}");
 				board.MakeMove(move);
 				searchBoard.MakeMove(move);
@@ -96,32 +101,31 @@ namespace Chess.Game
 			{
 				Debug.LogWarning(e);
 				Console.WriteLine(e);
-				throw;
 			}
-			finally
-			{
-				onMoveMade?.Invoke(move);
-			}
-			boardUI.UpdatePosition(board, move, animateMove);
 
+			onMoveMade?.Invoke(move);
+#if UNITY_EDITOR
+			// boardUI.UpdatePosition(board, move, animateMove);
+#endif
+			// NotifyPlayerToMove();
 
-			NotifyPlayerToMove();
 		}
 
-		public void NewGame(bool humanPlaysWhite)
-		{
-			boardUI.SetPerspective(humanPlaysWhite);
-			NewGame((humanPlaysWhite) ? PlayerType.Human : PlayerType.AI, (humanPlaysWhite) ? PlayerType.AI : PlayerType.Human);
-		}
-
-		public void NewComputerVersusComputerGame()
-		{
-			boardUI.SetPerspective(true);
-			NewGame(PlayerType.AI, PlayerType.AI);
-		}
+		// public void NewGame(bool humanPlaysWhite)
+		// {
+		// 	boardUI.SetPerspective(humanPlaysWhite);
+		// 	NewGame((humanPlaysWhite) ? PlayerType.Human : PlayerType.AI, (humanPlaysWhite) ? PlayerType.AI : PlayerType.Human);
+		// }
+		//
+		// public void NewComputerVersusComputerGame()
+		// {
+		// 	boardUI.SetPerspective(true);
+		// 	NewGame(PlayerType.AI, PlayerType.AI);
+		// }
 
 		void NewGame(PlayerType whitePlayerType, PlayerType blackPlayerType)
 		{
+			Debug.Log("New Game" + loadCustomPosition);
 			if (loadCustomPosition)
 			{
 				currentFen = customPosition;
@@ -135,23 +139,19 @@ namespace Chess.Game
 				searchBoard.LoadStartPosition();
 			}
 			onPositionLoaded?.Invoke();
-			boardUI.UpdatePosition(board);
-			boardUI.ResetSquareColours();
-
+#if UNITY_EDITOR
+			// boardUI.UpdatePosition(board);
+			// boardUI.ResetSquareColours();
+#endif
 			CreatePlayer(ref whitePlayer, whitePlayerType);
 			CreatePlayer(ref blackPlayer, blackPlayerType);
 
-
-
 			gameResult = GameResult.Result.Playing;
-
-			NotifyPlayerToMove();
 		}
 
-		void NotifyPlayerToMove()
+		public void NotifyPlayerToMove()
 		{
-			Debug.Log("Notify Player To Move");
-			gameResult = GameResult.GetGameState(board);
+			// gameResult = GameResult.GetGameState(board);
 
 			if (gameResult == GameResult.Result.Playing)
 			{
@@ -168,6 +168,7 @@ namespace Chess.Game
 
 		void GameOver()
 		{
+			OnBotDie?.Invoke();
 			Debug.Log("Game Over " + gameResult);
 			PrintGameResult(gameResult);
 		}
