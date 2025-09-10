@@ -97,11 +97,13 @@ public class Bootstrap : MonoBehaviour
         startSinglePlayVsBotMatchB.interactable = false;
         _global.FirestoreManager.OnLogin.AddListener(() =>
         {
+            _global.IsSignIn = true;
             startOnlineMatch.interactable = true;
             startSinglePlayVsBotMatchB.interactable = true;
         });
         _global.FirestoreManager.OnSignOut.AddListener(() =>
         {
+            _global.IsSignIn = false;
             startOnlineMatch.interactable = false;
             startSinglePlayVsBotMatchB.interactable = false;
         });
@@ -166,11 +168,9 @@ public class Bootstrap : MonoBehaviour
                 _global.FirestoreManager.PlayerDataManager.CreatePlayerData(user);
                 _global.FirestoreManager.StatisticManager.CreatePlayerStatistics(user.UserId);
                 _global.FirestoreManager.PlayerRankingManager.CreateMyPlayerRanking(id);
-                _global.IsSignIn = true;
             }
             else
             {
-                _global.IsSignIn = true;
                 _global.FirestoreManager.Login(result);
             }
         }

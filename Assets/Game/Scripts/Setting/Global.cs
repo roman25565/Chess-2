@@ -7,6 +7,7 @@ using TMPro;
 using Firebase.RealtimeDatabase;
 #endif
 using UnityEngine;
+using UnityEngine.Events;
 
 namespace Setting
 {

@@ -62,6 +62,7 @@ public class SignIn : MonoBehaviour
                 UpdateUI(user);
             }
         }
+        
     }
     
     public void OnSignInGoogle()

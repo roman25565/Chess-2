@@ -267,7 +267,6 @@ public abstract class AbstractBoard : MonoBehaviour
 
     protected virtual void Move(Cell from, Cell to)
     {
-        Debug.Log("MOVE");
         to.SetPiece(from.Piece);
         from.SetPiece(null);
     }
