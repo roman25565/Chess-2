@@ -24,7 +24,7 @@ namespace UI
         {
             DestroyButtons();
             if (_targetPlayerId == null) return;
-            _global.FirestoreManager.LoadHistory(_targetPlayerId, AddButtons);
+            _global.BackendManager.LoadHistory(_targetPlayerId, AddButtons);
         }
         
         private void AddButton(HistoryMatchData historyMatchData)

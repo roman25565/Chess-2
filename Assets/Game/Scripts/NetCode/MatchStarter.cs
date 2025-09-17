@@ -74,11 +74,11 @@ public class MatchStarter : NetworkBehaviour
             case GameMode.Offline:
             {
                 var id = OwnerClientId;
-                SendConnectedDataRpc(id, _global.FirestoreManager.MyData.ID, _gameData.TimeControl, arrangementEntryArray.ArrangementEntry);
+                SendConnectedDataRpc(id, _global.BackendManager.MyData.ID, _gameData.TimeControl, arrangementEntryArray.ArrangementEntry);
                 break;
             }
             case GameMode.Reconnect:
-                GetReConnectDataRpc(OwnerClientId, _global.FirestoreManager.MyData.ID);
+                GetReConnectDataRpc(OwnerClientId, _global.BackendManager.MyData.ID);
                 break;
             case GameMode.SinglePlayVsBot:
                 StartMatchVsBot();
@@ -202,7 +202,7 @@ public class MatchStarter : NetworkBehaviour
     
     private void LoadFirestoreRefreshUI(MatchData matchData, MatchCore core)
     {
-        _global.FirestoreManager.LoadPlayerData(matchData.Player1.FirebasePlayer.ID, (_,result) =>
+        _global.BackendManager.LoadPlayerData(matchData.Player1.FirebasePlayer.ID, (_,result) =>
         {
             matchData.Player1.FirebasePlayer = new FirebasePlayerData(result.ID, result.Name,
                 new PlayerRankingData { Elo = result.PlayerRanking.Elo, Position = result.PlayerRanking.Position },
@@ -210,7 +210,7 @@ public class MatchStarter : NetworkBehaviour
 
             core.RefreshPlayerUI(matchData.Player1.PlayerId, matchData.Player1.PlayerId != OwnerClientId);
         });
-        _global.FirestoreManager.LoadPlayerData(matchData.Player2.FirebasePlayer.ID, (_,result) =>
+        _global.BackendManager.LoadPlayerData(matchData.Player2.FirebasePlayer.ID, (_,result) =>
         {
             matchData.Player2.FirebasePlayer = new FirebasePlayerData(result.ID, result.Name,
                 new PlayerRankingData { Elo = result.PlayerRanking.Elo, Position = result.PlayerRanking.Position },
@@ -338,7 +338,7 @@ public class MatchStarter : NetworkBehaviour
     private void SendReConnectRequest(ulong clientId)
     {
         var enemyPlayerId = _matchData.GetPlayerData(clientId).FirebasePlayer.ID;
-        _ = _global.FirestoreManager.RealtimeDatabase.ReConnectRequestsManager.SendReConnectRequest(enemyPlayerId, _gameData.RelayJoinCode);
+        _ = _global.BackendManager.RealtimeDatabase.ReConnectRequestsManager.SendReConnectRequest(enemyPlayerId, _gameData.RelayJoinCode);
     }
 
     [Rpc(SendTo.Server)]
@@ -535,7 +535,7 @@ public class MatchStarter : NetworkBehaviour
     private void StartMatchVsBot()
     {
         Debug.Log("StartMatchVsBot");
-        var firestoreId = _global.FirestoreManager.MyData.ID;
+        var firestoreId = _global.BackendManager.MyData.ID;
         var myArrangements = _global.MyArrangements;
         var arrangementsArray = myArrangements.ToArray();
         var whitePlayerId = GetWhitePlayerId(0, 1);
@@ -571,7 +571,7 @@ public class MatchStarter : NetworkBehaviour
     private void UpdateMatchDataSingleplayer(MatchData matchData, MatchCore core)
     {
         UpdateBotData();
-        var mydata = _global.FirestoreManager.GetSavedPlayer(_global.FirestoreManager.MyData.ID);
+        var mydata = _global.BackendManager.GetSavedPlayer(_global.BackendManager.MyData.ID);
         var newPlayerElo = mydata.Ranking.Data.Elo;
         var myIcon = mydata.PlayerData.Data.Icon; 
         _matchData.Player1.FirebasePlayer.Name = mydata.PlayerData.Data.Name;
@@ -659,16 +659,16 @@ public class MatchStarter : NetworkBehaviour
         switch (difficulty)
         {
             case BotDifficulty.Easy:
-                botPiecesCost = 20;
+                botPiecesCost = _global.BackendManager.RemoteConfigManager.GetValue(_global.BackendManager.RemoteConfigManager.PiceCostEasyBotKey);
                 break;
             case BotDifficulty.Medium:
-                botPiecesCost = 30;
+                botPiecesCost = _global.BackendManager.RemoteConfigManager.GetValue(_global.BackendManager.RemoteConfigManager.PiceCostNormalBotKey);
                 break;
             case BotDifficulty.Hard:
-                botPiecesCost = 40;
+                botPiecesCost = _global.BackendManager.RemoteConfigManager.GetValue(_global.BackendManager.RemoteConfigManager.PiceCostHardBotKey);
                 break;
             case BotDifficulty.Expert:
-                botPiecesCost = 50;
+                botPiecesCost = _global.BackendManager.RemoteConfigManager.GetValue(_global.BackendManager.RemoteConfigManager.PiceCostExpertBotKey);
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

@@ -155,7 +155,7 @@ public abstract class AbstractBoard : MonoBehaviour
         SetSelectedState(ref _secondSelectedCell, to);
         if (from.Piece != null && from.Piece.IsFirstMove) from.Piece.IsFirstMove = false;
         Move(from, to);
-        if ((to.Column == 0 || to.Column == 7) && to.Piece != null && to.Piece.PieceType == PieceType.Pawn) //Queen Update
+        if ((to.Column == 0 || to.Column == 7) && to.Piece != null && to.Piece.PieceType == PieceType.Pawn && this.GetType() != typeof(ArrangementBoard)) //Queen Update
         {
             var queen = Global.CreatePiece(PieceType.Queen);
             GetCell(to.Row, to.Column).SetPiece(queen);
@@ -165,6 +165,7 @@ public abstract class AbstractBoard : MonoBehaviour
         {
             AnimateMove(from, to);
         }
+        Debug.Log($"MovePiece {to.Piece.PieceType}, {moveHistory.HistoryIndex}");
     }
 
     protected virtual bool IsFantom()
@@ -213,11 +214,13 @@ public abstract class AbstractBoard : MonoBehaviour
 
         void SelectMyPiece(Cell cell1)
         {
+            Debug.Log($"cell1 {cell1.Piece.PieceType}");
             SelectCell(cell1);
 
             _thirdSelectedCell?.SetSelectedState(Cell.CellState.None);
             _thirdSelectedCell = cell1;
             _thirdSelectedCell.SetSelectedState(Cell.CellState.Selected);
+            Debug.Log($"SelectMyPiece {_selectedCell.Piece.PieceType}");
         }
 
         void SelectEnemyPiece(Cell cell1)

@@ -1,18 +1,14 @@
-﻿using Board;
-using Game.Scripts.Board;
+﻿using Game.Scripts.Board;
 using UnityEngine;
 using UnityEngine.Events;
-#if !UNITY_SERVER
-using System;
 using System.Collections.Generic;
 using Setting;
 using UI;
 using Unity.Netcode;
 using UnityEngine.SceneManagement;
-using UnityEngine.Serialization;
 using UnityEngine.UI;
 using Zenject;
-#endif
+
 public class MatchUIManager : MonoBehaviour
 {
 #if !UNITY_SERVER
@@ -24,8 +20,8 @@ public class MatchUIManager : MonoBehaviour
     private void Awake()
     {
         Instance = this;
-
-        InitButtons();
+        var isSinglePlayer = _gameData.Mode == GameMode.SinglePlayVsBot;
+        InitButtons(isSinglePlayer);
     }
 
     public void Init(PlayerData enemyPlayerData, PlayerData myPlayerData, MatchCore matchCore)
@@ -64,7 +60,7 @@ public class MatchUIManager : MonoBehaviour
     private MatchCore _matchCore;
     
     
-    private void InitButtons()
+    private void InitButtons(bool isSinglePlayer)
     {
         _buttons = new List<Button>();
         
@@ -92,6 +88,11 @@ public class MatchUIManager : MonoBehaviour
             cancelMatchButton.onClick.AddListener(CancelMatch);
         }
 
+        if (isSinglePlayer)
+        {
+            offerDrawButton.gameObject.SetActive(false);
+            surrenderButton.gameObject.SetActive(false);
+        }
     }
 
     private void BackToMenu()

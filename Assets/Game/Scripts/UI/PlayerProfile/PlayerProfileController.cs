@@ -37,12 +37,12 @@ public class PlayerProfileController : MonoBehaviour
     public void OnEnable()
     {
 #if UNITY_EDITOR
-        if (_global.FirestoreManager == null) return;
+        if (_global.BackendManager == null) return;
 #endif
         if (_targetPlayerId == null) return;
-        _global.FirestoreManager.LoadHistory(_targetPlayerId, UpdateEloGraph);
-        _global.FirestoreManager.LoadPlayerData(_targetPlayerId, UpdateTopProfile);
-        _global.FirestoreManager.LoadStatistic(_targetPlayerId, UpdateStatisticProfile);
+        _global.BackendManager.LoadHistory(_targetPlayerId, UpdateEloGraph);
+        _global.BackendManager.LoadPlayerData(_targetPlayerId, UpdateTopProfile);
+        _global.BackendManager.LoadStatistic(_targetPlayerId, UpdateStatisticProfile);
         historyPanel.ReloadUI();
         friendsPanel.ReloadUI();
     }

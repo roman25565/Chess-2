@@ -13,11 +13,11 @@ public class PlayerRankingManager
     private FirebaseFirestore _db;
     private const string CollectionName = "PlayersRankings";
     
-    private FirestoreManager _firestoreManager;
-    public PlayerRankingManager(FirebaseFirestore db, FirestoreManager firestoreManager)
+    private BackendManager _backendManager;
+    public PlayerRankingManager(FirebaseFirestore db, BackendManager backendManager)
     {
         _db = db;
-        _firestoreManager = firestoreManager;
+        _backendManager = backendManager;
     }
 
     public async void LoadRankings(string playerId, UnityAction<string, PlayerRankingData> callback)
@@ -43,7 +43,7 @@ public class PlayerRankingManager
     
     public async void UpdateMyPlayerRanking(string playerId, PlayerRankingData updatedStats)
     {
-        if (playerId != _firestoreManager.MyData.ID)
+        if (playerId != _backendManager.MyData.ID)
         {
             Debug.LogError("Invalid attempt to update statistics, user unavailable for this action");
             return;

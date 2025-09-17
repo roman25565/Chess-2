@@ -17,11 +17,11 @@ public class StatisticManager
     private FirebaseFirestore _db;
     private const string CollectionName = "Statistics";
     
-    private FirestoreManager _firestoreManager;
-    public StatisticManager(FirebaseFirestore db, FirestoreManager firestoreManager)
+    private BackendManager _backendManager;
+    public StatisticManager(FirebaseFirestore db, BackendManager backendManager)
     {
         _db = db;
-        _firestoreManager = firestoreManager;
+        _backendManager = backendManager;
     }
 
     public async void LoadPlayerStatistic(string playerId, UnityAction<string, PlayerStatistic> callback = null)
@@ -72,13 +72,13 @@ public class StatisticManager
 
     public void UpdatePlayerStatistics(string playerId, PlayerData player, List<Move> history, EndGameType endGameType, WonReason wonReason)
     {
-        if (_firestoreManager.MyData.ID != playerId)
+        if (_backendManager.MyData.ID != playerId)
         {
             Debug.LogError("Invalid attempt to update statistics, user unavailable for this action");
             return;
         }
 
-        _firestoreManager.LoadStatistic(_firestoreManager.MyData.ID, (arg0, oldStatistic) =>
+        _backendManager.LoadStatistic(_backendManager.MyData.ID, (arg0, oldStatistic) =>
         {
             oldStatistic.UpdateStatistics(player, history, endGameType, wonReason);
             SavePlayerStatistics(playerId, oldStatistic)

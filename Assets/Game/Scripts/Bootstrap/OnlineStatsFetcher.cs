@@ -14,10 +14,14 @@ public class OnlineStatsFetcher : MonoBehaviour
     private Coroutine _coroutine;
     private bool _isFetching;
 
-    public void Init()
+    public void Init(bool isSignIn = false)
     {
-        _global.FirestoreManager.OnLogin.AddListener(StartFetching);
-        _global.FirestoreManager.OnSignOut.AddListener(StopFetching);
+        _global.BackendManager.OnLogin.AddListener(StartFetching);
+        _global.BackendManager.OnSignOut.AddListener(StopFetching);
+        if (isSignIn)
+        {
+            StartFetching();
+        }
     }
 
 

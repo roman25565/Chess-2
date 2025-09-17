@@ -28,15 +28,15 @@ public class FriendsButton : MonoBehaviour
         _notifications = notifications;
         try
         {
-            Debug.Log($"{_global?.FirestoreManager?.MyData.Name}, {_global?.FirestoreManager?.MyData.ID}, {playerData.Name}, {playerData.ID}");
-            if (_global?.FirestoreManager?.MyData == null) 
+            Debug.Log($"{_global?.BackendManager?.MyData.Name}, {_global?.BackendManager?.MyData.ID}, {playerData.Name}, {playerData.ID}");
+            if (_global?.BackendManager?.MyData == null) 
             {
                 Debug.LogError("PlayerData is not initialized");
                 return;
             }
             
-            var myName = _global.FirestoreManager.MyData.Name;
-            var myId = _global.FirestoreManager.MyData.ID;
+            var myName = _global.BackendManager.MyData.Name;
+            var myId = _global.BackendManager.MyData.ID;
 
             playerIcon.color = new Color(255, 255, 255, 255);
             playerIcon.sprite = playerData.Icon;
@@ -45,7 +45,7 @@ public class FriendsButton : MonoBehaviour
 
             toProfileButton.onClick.AddListener(() => { mainMenu.ShowProfilePanel(playerData.ID); });
             sendMatchRequest.onClick.AddListener(() => OnSendMatchRequest(playerData.ID, myName, notificationParent));
-            var isMyFriend = _global.FirestoreManager.MyData.FriendIdsContains(playerData.ID);
+            var isMyFriend = _global.BackendManager.MyData.FriendIdsContains(playerData.ID);
             if (isMyFriend)
             {
                 sendDeleteFriendRequest.onClick.AddListener(() => { OnsendDeleteFriendRequest(myId, playerData.ID, notificationParent, gameObject); });
@@ -68,7 +68,7 @@ public class FriendsButton : MonoBehaviour
 
     private void OnSendMatchRequest(string recipientId, string senderName, Transform notificationParent)
     {
-        var realtimeDatabase = _global.FirestoreManager.RealtimeDatabase;
+        var realtimeDatabase = _global.BackendManager.RealtimeDatabase;
 
         var notification = Instantiate(prefab, notificationParent);
         ClearNotifications();
@@ -78,7 +78,7 @@ public class FriendsButton : MonoBehaviour
 
     private void OnsendDeleteFriendRequest(string myId, string friendId, Transform notificationParent, GameObject friendButton)
     {
-        var realtimeDatabase = _global.FirestoreManager.RealtimeDatabase;
+        var realtimeDatabase = _global.BackendManager.RealtimeDatabase;
 
         var notification = Instantiate(prefab, notificationParent);
         ClearNotifications();

@@ -38,7 +38,7 @@ public class Global : IDisposable
 {
     public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";
     public CellStates CellStates;
-    public FirestoreManager FirestoreManager;
+    public BackendManager BackendManager;
     public List<ArrangementEntry> MyArrangements;
     public Dictionary<PieceType, PieceData> Pieces;
     public Sound Sound;
@@ -48,12 +48,12 @@ public class Global : IDisposable
     
     public Dictionary<BotDifficulty, Sprite> BotIcons = new();
 
-    public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates, FirestoreManager firestoreManager)
+    public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates, BackendManager backendManager)
     {
         MyArrangements = RepackingArrangement(arrangement);
         CellStates = cellStates;
 #if !UNITY_SERVER
-        FirestoreManager = firestoreManager;
+        BackendManager = backendManager;
 #endif
         Pieces = new Dictionary<PieceType, PieceData>();
         foreach (var piece in pieces)

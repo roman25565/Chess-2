@@ -26,7 +26,7 @@ public class EndGamePanel : MonoBehaviour
         myProfile.EndGame(endGameData.MyPlayerData, endGameData.MyNewElo, mainMenu);
         enemyProfile.EndGame(endGameData.EnemyPlayerData, endGameData.EnemyNewElo, mainMenu);
 
-        var isMyFriend = _global.FirestoreManager.MyData.FriendIdsContains(enemyId);
+        var isMyFriend = _global.BackendManager.MyData.FriendIdsContains(enemyId);
         if (isMyFriend)
         {
             addToFriendB.interactable = false;
@@ -49,7 +49,7 @@ public class EndGamePanel : MonoBehaviour
         rematchB.onClick.AddListener(() => Rematch(enemyId));
         viewHistoryB.onClick.AddListener(() =>
         {
-            _global.FirestoreManager.LoadOneHistory(_global.FirestoreManager.MyData.ID, endGameData.MatchId,
+            _global.BackendManager.LoadOneHistory(_global.BackendManager.MyData.ID, endGameData.MatchId,
                 (historyMatchData) =>
                 {
                     viewHistoryB.onClick.RemoveAllListeners();
@@ -64,7 +64,7 @@ public class EndGamePanel : MonoBehaviour
     {
         rematchB.onClick.RemoveAllListeners();
         
-        _global.FirestoreManager.MyData.SendMatchRequest(enemyId);
+        _global.BackendManager.MyData.SendMatchRequest(enemyId);
         rematchB.interactable = false;
     }
 
@@ -72,7 +72,7 @@ public class EndGamePanel : MonoBehaviour
     {
         addToFriendB.onClick.RemoveAllListeners();
         
-        _global.FirestoreManager.MyData.SendFriendRequest(enemyId);
+        _global.BackendManager.MyData.SendFriendRequest(enemyId);
         addToFriendB.interactable = false;
     }
 }

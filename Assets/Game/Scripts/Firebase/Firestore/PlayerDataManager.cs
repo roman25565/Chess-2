@@ -28,27 +28,27 @@ public class PlayerDataManager
 
     
     private FirebaseFirestore _db;
-    private FirestoreManager _firestoreManager;
+    private BackendManager _backendManager;
     
-    public PlayerDataManager(FirebaseFirestore db, FirestoreManager firestoreManager ,string playersDataCollectionName, string nameKey)
+    public PlayerDataManager(FirebaseFirestore db, BackendManager backendManager ,string playersDataCollectionName, string nameKey)
     {
         _db = db;
-        _firestoreManager = firestoreManager;
+        _backendManager = backendManager;
         PlayersDataCollectionName = playersDataCollectionName;
         NameKey = nameKey;
     }
     
     public void AddFriend(string friendId)
     {
-        Debug.Log("TryAdFriendId: " + friendId + "myId" + _firestoreManager.MyData.ID);
-        var docRef = _db.Collection(PlayersDataCollectionName).Document(_firestoreManager.MyData.ID);
+        Debug.Log("TryAdFriendId: " + friendId + "myId" + _backendManager.MyData.ID);
+        var docRef = _db.Collection(PlayersDataCollectionName).Document(_backendManager.MyData.ID);
         
         docRef.UpdateAsync(FriendIdsKey, FieldValue.ArrayUnion(friendId))
             .ContinueWithOnMainThread(task =>
             {
                 if (task.IsCompleted)
                 {
-                    var playerDataLoader = _firestoreManager.GetSavedPlayer(_firestoreManager.MyData.ID).PlayerData;
+                    var playerDataLoader = _backendManager.GetSavedPlayer(_backendManager.MyData.ID).PlayerData;
                     playerDataLoader.Data.FriendIds.Add(friendId);
                     Debug.Log("Friend Added successfully.");
                 }
@@ -58,12 +58,12 @@ public class PlayerDataManager
     
     public void RemoveFriend(string friendId)
     {
-        var isMyFriend = _firestoreManager.MyData.FriendIdsContains(friendId);
+        var isMyFriend = _backendManager.MyData.FriendIdsContains(friendId);
         if (!isMyFriend) return;
         
-        _firestoreManager.GetSavedPlayer(_firestoreManager.MyData.ID).PlayerData.Data.FriendIds.Remove(friendId);
+        _backendManager.GetSavedPlayer(_backendManager.MyData.ID).PlayerData.Data.FriendIds.Remove(friendId);
         
-        var docRef = _db.Collection(PlayersDataCollectionName).Document(_firestoreManager.MyData.ID);
+        var docRef = _db.Collection(PlayersDataCollectionName).Document(_backendManager.MyData.ID);
         
         docRef.UpdateAsync(FriendIdsKey, FieldValue.ArrayRemove(friendId))
             .ContinueWithOnMainThread(task =>
@@ -115,7 +115,7 @@ public class PlayerDataManager
                 var imageURL = snapshot.GetValue<string>(IconURLKey);
                 var historyIds = snapshot.GetValue<List<string>>(HistoryIDsKey);
                 var friendIds = snapshot.GetValue<List<string>>(FriendIdsKey);
-                _firestoreManager.LoadPlayerRanking(playerId, (arg0, data) =>
+                _backendManager.LoadPlayerRanking(playerId, (arg0, data) =>
                 {
                     var existingElo = data;
                     Debug.Log("Load From DB");
@@ -200,8 +200,8 @@ public class PlayerDataManager
                     }
                     else
                     {
-                        _firestoreManager.StatisticManager.CreatePlayerStatistics(id);
-                        _firestoreManager.PlayerRankingManager.CreateMyPlayerRanking(id);
+                        _backendManager.StatisticManager.CreatePlayerStatistics(id);
+                        _backendManager.PlayerRankingManager.CreateMyPlayerRanking(id);
                         callback.Invoke(id);
                     }
 
@@ -266,7 +266,7 @@ public class PlayerDataManager
                 new List<string>()
             );
             callback?.Invoke(firebasePlayerData);
-            _firestoreManager.Login(firebasePlayerData);
+            _backendManager.Login(firebasePlayerData);
         });
     }
 }

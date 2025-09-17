@@ -31,17 +31,17 @@ public class ArrangementBoard : AbstractBoard
     {
         var result = new List<Vector2Int>();
         
-        foreach (var cell1 in BoardLines[5])
+        foreach (var cell in BoardLines[5])
         {
-            result.Add(new Vector2Int(cell1.Row, cell1.Column));
+            result.Add(new Vector2Int(cell.Row, cell.Column));
         }
-        foreach (var cell1 in BoardLines[6])
+        foreach (var cell in BoardLines[6])
         {
-            result.Add(new Vector2Int(cell1.Row, cell1.Column));
+            result.Add(new Vector2Int(cell.Row, cell.Column));
         }
-        foreach (var cell1 in BoardLines[7])
+        foreach (var cell in BoardLines[7])
         {
-            result.Add(new Vector2Int(cell1.Row, cell1.Column));
+            result.Add(new Vector2Int(cell.Row, cell.Column));
         }
         
         return result;
@@ -120,6 +120,7 @@ public class ArrangementBoard : AbstractBoard
             var cell = GetCell(vector2Int.x, vector2Int.y);
             if (cell.Piece != null)
             {
+                Debug.Log("SaveArrangement" + cell.Piece.PieceType + " " + cell.Row + " " + cell.Column);
                 arrangements.Add(new ArrangementEntry{row = cell.Row, column = cell.Column, pieceType = cell.Piece.PieceType});
             }
         }
@@ -175,6 +176,7 @@ public class ArrangementBoard : AbstractBoard
 
     protected override void Move(Cell from, Cell to)
     {
+        Debug.Log($"Move {from.Piece.PieceType}");
         var picetype = from.Piece.PieceType;
         var max = Global.Pieces[picetype].arrangementMax;
         if (_piecesCount[picetype] + 1 > max)
@@ -257,21 +259,26 @@ public class ArrangementBoard : AbstractBoard
 
         if (_piecesCount[PieceType.King] != 1)
         {
-            errorMessage = "Your army must contain exactly 1 King\n(Current: " + 
+            errorMessage = "Your army must contain exactly 1 King\n(Current: " +
                            _piecesCount[PieceType.King] + ")";
         }
-        
-        if (errorMessage == null) return true;
-        else
+
+        errorText.color = dangerColor;
+
+        if (errorMessage == null)
         {
-#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
-            Handheld.Vibrate();
-#endif
-            errorText.text = errorMessage;
-            shakeManager.ShakeObject(saveButton.transform);
-            shakeManager.ShakeObject(errorText.transform);
-            return false;
+            errorText.color = normalColor;
+            errorText.text = "Successfully saved";
+            return true;
         }
+#if (UNITY_ANDROID || UNITY_IOS) && !UNITY_EDITOR
+        Handheld.Vibrate();
+#endif
+        errorText.text = errorMessage;
+        shakeManager.ShakeObject(saveButton.transform);
+        shakeManager.ShakeObject(errorText.transform);
+        return false;
+
     }
 
     private void ClearArrangement()

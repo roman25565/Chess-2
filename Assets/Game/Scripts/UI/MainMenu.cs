@@ -38,9 +38,9 @@ namespace UI
             DisableFindMatchPanel();
             if (!isSignIn) ShowSignInPanel();
 
-            if (isSignIn) SetProfileImageText(_global.FirestoreManager.MyData);
-            if (isSignIn) SetProfileImage(_global.FirestoreManager.MyData.Icon);
-            _global.FirestoreManager.OnLogin.AddListener(OnLogin);
+            if (isSignIn) SetProfileImageText(_global.BackendManager.MyData);
+            if (isSignIn) SetProfileImage(_global.BackendManager.MyData.Icon);
+            _global.BackendManager.OnLogin.AddListener(OnLogin);
             if (isSignIn)
             {
                 var endGameData = _global.EndGameData;
@@ -53,15 +53,15 @@ namespace UI
             
             void OnLogin()
             {
-                SetProfileImageText(_global.FirestoreManager.MyData);
-                if (_global.FirestoreManager.MyData.Icon != null)
+                SetProfileImageText(_global.BackendManager.MyData);
+                if (_global.BackendManager.MyData.Icon != null)
                 {
-                    SetProfileImage(_global.FirestoreManager.MyData.Icon);
+                    SetProfileImage(_global.BackendManager.MyData.Icon);
                 }
                 else
                 {
-                    _global.FirestoreManager.MyData.OnIconLoaded.AddListener(() =>
-                        SetProfileImage(_global.FirestoreManager.MyData.Icon));
+                    _global.BackendManager.MyData.OnIconLoaded.AddListener(() =>
+                        SetProfileImage(_global.BackendManager.MyData.Icon));
                 }
             }
         }
@@ -126,7 +126,7 @@ namespace UI
         {
             if (profilePanel == null) return;
             DisableAllPanels();
-            profilePanel.SetTargetId(_global.FirestoreManager.MyData.ID);
+            profilePanel.SetTargetId(_global.BackendManager.MyData.ID);
             profilePanel.gameObject.SetActive(true);
         }
         

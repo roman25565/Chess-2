@@ -22,20 +22,20 @@ public class NotificationPanel : MonoBehaviour
 
     public void Init()
     {
-        _global.FirestoreManager.OnLogin.AddListener(Subscribe);
+        _global.BackendManager.OnLogin.AddListener(Subscribe);
     }
 
     private void Subscribe()
     {
         Debug.Log("Subscribed");
         UpdateNotificationCount();
-        _global.FirestoreManager.RealtimeDatabase.OnChangedRequests.AddListener(OnChanged);
+        _global.BackendManager.RealtimeDatabase.OnChangedRequests.AddListener(OnChanged);
     }
 
     public void OnDestroy()
     {
-        _global.FirestoreManager.OnLogin.RemoveListener(Subscribe);
-        _global.FirestoreManager.RealtimeDatabase.OnChangedRequests?.RemoveListener(OnChanged);
+        _global.BackendManager.OnLogin.RemoveListener(Subscribe);
+        _global.BackendManager.RealtimeDatabase.OnChangedRequests?.RemoveListener(OnChanged);
     }
 
     public void OnOpen()
@@ -58,7 +58,7 @@ public class NotificationPanel : MonoBehaviour
     private void UpdateNotificationCount(int count = -1)
     {
         if (count < 0)
-            count = _global.FirestoreManager.RealtimeDatabase.GetRequests.Count;
+            count = _global.BackendManager.RealtimeDatabase.GetRequests.Count;
         if (count == 0)
         {
             // notificationCountPanel.SetActive(false);
@@ -73,7 +73,7 @@ public class NotificationPanel : MonoBehaviour
     {
         DestroyAllNotifications();
         
-        var requests = _global.FirestoreManager.RealtimeDatabase.GetRequests;
+        var requests = _global.BackendManager.RealtimeDatabase.GetRequests;
         if (requests.Count == 0)
         {
             emptyText.text = EmptyText;
@@ -102,7 +102,7 @@ public class NotificationPanel : MonoBehaviour
 
     private void CreateNotification(AbstractRequestData request)
     {
-        var realtimeDatabase = _global.FirestoreManager.RealtimeDatabase;
+        var realtimeDatabase = _global.BackendManager.RealtimeDatabase;
         var notification = Instantiate(prefab, parent);
         notification.Init(
             GetNotificationText(request.RequestType, request.SenderName),

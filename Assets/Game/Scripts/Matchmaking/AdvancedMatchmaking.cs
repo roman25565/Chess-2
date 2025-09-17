@@ -99,7 +99,7 @@ public class AdvancedMatchmaking : MonoBehaviour
 
     public void SearchMatch(GameData gameData)
     {
-        _global.FirestoreManager.MyData.GetPlayerRanking(rankingData =>
+        _global.BackendManager.MyData.GetPlayerRanking(rankingData =>
         {
             var timeControl = gameData.TimeControl;
             StartMatchmaking(rankingData.Elo, timeControl.ToString());
@@ -199,40 +199,41 @@ public class AdvancedMatchmaking : MonoBehaviour
             _connectedLobby = null;
         }
     }
-    
+
     private async Task<Lobby> QuickJoinLobby(int playerElo, string timeControl)
     {
+        var maxEloDifference = _global.BackendManager.RemoteConfigManager.GetValue(_global.BackendManager.RemoteConfigManager.MaxEloDifferenceKey);
+        var filters = new List<QueryFilter>
+        {
+            new QueryFilter(
+                field: QueryFilter.FieldOptions.AvailableSlots,
+                op: QueryFilter.OpOptions.GT,
+                value: "0"),
+
+            new QueryFilter(
+                field: QueryFilter.FieldOptions.S1,
+                op: QueryFilter.OpOptions.EQ,
+                value: timeControl),
+
+            new QueryFilter(
+                field: QueryFilter.FieldOptions.N1,
+                op: QueryFilter.OpOptions.GT,
+                value: (playerElo - maxEloDifference).ToString()),
+
+            new QueryFilter(
+                field: QueryFilter.FieldOptions.N1,
+                op: QueryFilter.OpOptions.LT,
+                value: (playerElo + maxEloDifference).ToString())
+        };
+
+        var quickJoinOptions = new QuickJoinLobbyOptions
+        {
+            Filter = filters,
+            Player = new Player(AuthenticationService.Instance.PlayerId),
+        };
+
         try
         {
-            var filters = new List<QueryFilter>
-            {
-                new QueryFilter(
-                    field: QueryFilter.FieldOptions.AvailableSlots,
-                    op: QueryFilter.OpOptions.GT,
-                    value: "0"),
-
-                new QueryFilter(
-                    field: QueryFilter.FieldOptions.S1,
-                    op: QueryFilter.OpOptions.EQ,
-                    value: timeControl),
-
-                new QueryFilter(
-                    field: QueryFilter.FieldOptions.N1,
-                    op: QueryFilter.OpOptions.GT,
-                    value: (playerElo - 500).ToString()),
-
-                new QueryFilter(
-                    field: QueryFilter.FieldOptions.N1,
-                    op: QueryFilter.OpOptions.LT,
-                    value: (playerElo + 500).ToString())
-            };
-
-            var quickJoinOptions = new QuickJoinLobbyOptions
-            {
-                Filter = filters,
-                Player = new Player(AuthenticationService.Instance.PlayerId),
-            };
-
             var lobby = await LobbyService.Instance.QuickJoinLobbyAsync(quickJoinOptions);
             return lobby;
         }
@@ -246,6 +247,7 @@ public class AdvancedMatchmaking : MonoBehaviour
 
     private async Task<Lobby> CreateLobby(int playerElo, string timeControl)
     {
+        var lobbyId = _global.BackendManager.MyData.ID;
         Debug.Log("Creating lobby");
         try
         {
@@ -266,7 +268,7 @@ public class AdvancedMatchmaking : MonoBehaviour
                 }
             };
 
-            var lobby = await LobbyService.Instance.CreateLobbyAsync("Chess Lobby", MaxPlayers, options);
+            var lobby = await LobbyService.Instance.CreateLobbyAsync(lobbyId, MaxPlayers, options);
             _heartbeatCoroutine = StartCoroutine(HeartbeatLobbyCoroutine(lobby.Id, 15));
 
             return lobby;
@@ -515,23 +517,19 @@ public class AdvancedMatchmaking : MonoBehaviour
             try
             {
 
-            Debug.Log("GetLobbiesCount");
-            var options = new QueryLobbiesOptions
-            {
-                Count = 100,//max
-            };
-            var task = LobbyService.Instance.QueryLobbiesAsync(options).ContinueWithOnMainThread(res =>
-            {
-                var queryResponse = res.Result;
-                var lobbies = queryResponse.Results;
-                Debug.Log("Lobbies " + lobbies.Count);
-                _global.FirestoreManager.MyData.GetPlayerRanking((rankingData) =>
+                var options = new QueryLobbiesOptions
                 {
-                    var myElo = rankingData.Elo;
+                    Count = 100, //max
+                };
+                var task = LobbyService.Instance.QueryLobbiesAsync(options).ContinueWithOnMainThread(res =>
+                {
+                    var queryResponse = res.Result;
+                    var lobbies = queryResponse.Results;
+                    Debug.Log("Lobbies " + lobbies.Count);
+                    var playerId = _global.BackendManager.MyData.ID;
                     foreach (var lobby in lobbies)
                     {
-                        if (lobby.Data.TryGetValue(TimeControlKey, out var data) &&
-                            lobby.Data.TryGetValue(EloKey, out var eloData) && int.Parse(eloData.Value) != myElo)
+                        if (lobby.Name != playerId && lobby.Data.TryGetValue(TimeControlKey, out var data))
                         {
                             var timeControlValue = data.Value;
                             if (int.TryParse(timeControlValue, out var value))
@@ -544,8 +542,8 @@ public class AdvancedMatchmaking : MonoBehaviour
                         }
                     }
                 });
-            });
-            await task;
+
+                await task;
             }
             catch (Exception e)
             {

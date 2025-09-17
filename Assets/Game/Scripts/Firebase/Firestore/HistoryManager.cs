@@ -17,11 +17,11 @@ public class HistoryManager
 {
 
     private FirebaseFirestore _db;
-    private readonly FirestoreManager _firestoreManager;
-    public HistoryManager(FirebaseFirestore db ,FirestoreManager firestoreManager)
+    private readonly BackendManager _backendManager;
+    public HistoryManager(FirebaseFirestore db ,BackendManager backendManager)
     {
         _db = db;
-        _firestoreManager = firestoreManager;
+        _backendManager = backendManager;
     }
     public async void LoadHistory(string historyID, UnityAction<HistoryMatchData> callback)
     {
@@ -47,8 +47,8 @@ public class HistoryManager
 
                 var moveHistory =
                     ParseMoveList(snapshot.GetValue<List<Dictionary<string, object>>>(MoveHistory));
-                var player1Name = await _firestoreManager.GetPlayerName(player1ID);
-                var player2Name = await _firestoreManager.GetPlayerName(player2ID);
+                var player1Name = await _backendManager.GetPlayerName(player1ID);
+                var player2Name = await _backendManager.GetPlayerName(player2ID);
                 var historyMatchData = new HistoryMatchData
                 (
                     snapshot.Id,

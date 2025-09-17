@@ -32,7 +32,7 @@ public class ADSManager : MonoBehaviour
     {
         if (Application.platform == RuntimePlatform.Android)
         {
-            _global.FirestoreManager.OnLogin.AddListener(SetupAds);
+            _global.BackendManager.OnLogin.AddListener(SetupAds);
         }
     }
 

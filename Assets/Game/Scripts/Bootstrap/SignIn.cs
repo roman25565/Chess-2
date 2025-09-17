@@ -2,6 +2,8 @@
 using UnityEngine;
 using UI;
 using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Firebase.Extensions;
 
@@ -9,6 +11,7 @@ using Google;
 using Setting;
 using TMPro;
 using Unity.Services.Authentication;
+using Unity.VisualScripting;
 using UnityEngine.UI;
 using Zenject;
 
@@ -32,8 +35,17 @@ public class SignIn : MonoBehaviour
     [SerializeField] private Bootstrap bootstrap;
     [SerializeField] private MainMenu mainMenu;
     
+    [SerializeField] private Button signInGoogleButton;
+    [SerializeField] private Button signInDebugButton;
+    [SerializeField] private Button signInDebug2Button;
+    [SerializeField] private Button signInDebug3Button;
+    [SerializeField] private Button signInAnonymouslyButton;
+    
+    [SerializeField] private Button signOutButton;
+
     public void Init(bool isSignIn = false)
     {
+        SubscribeButtons();
         _configuration = new GoogleSignInConfiguration
         {
             WebClientId = WebClientId,
@@ -64,8 +76,18 @@ public class SignIn : MonoBehaviour
         }
         
     }
+
+    private void SubscribeButtons()
+    {
+        signInGoogleButton.onClick.AddListener(OnSignInGoogle);
+        signInDebugButton.onClick.AddListener(OnSignInDebug);
+        signInDebug2Button.onClick.AddListener(OnSignInDebug2);
+        signInDebug3Button.onClick.AddListener(OnSignInDebug3);
+        signInAnonymouslyButton.onClick.AddListener(OnSignUpAnonymously);
+        signOutButton.onClick.AddListener(OnSignOut);
+    }
     
-    public void OnSignInGoogle()
+    private void OnSignInGoogle()
     {
         GoogleSignIn.Configuration = _configuration;
         try
@@ -81,7 +103,7 @@ public class SignIn : MonoBehaviour
         }
     }
     
-    public void OnSignInDebug()
+    private void OnSignInDebug()
     {
         var user = new GoogleSignInUser
         {
@@ -94,7 +116,7 @@ public class SignIn : MonoBehaviour
         UpdateUI(user);
     }
     
-    public void OnSignInDebug2()
+    private void OnSignInDebug2()
     {
         var user = new GoogleSignInUser
         {
@@ -107,7 +129,7 @@ public class SignIn : MonoBehaviour
         UpdateUI(user);
     }
     
-    public void OnSignInDebug3()
+    private void OnSignInDebug3()
     {
         var user = new GoogleSignInUser
         {
@@ -120,10 +142,10 @@ public class SignIn : MonoBehaviour
         UpdateUI(user);
     }
 
-    public void OnSignUpAnonymously()
+    private void OnSignUpAnonymously()
     {
         var url = GetRandomImageUrl();
-        _global.FirestoreManager.PlayerDataManager.OnSignInAnonymously(url, id =>
+        _global.BackendManager.PlayerDataManager.OnSignInAnonymously(url, id =>
         {
             var user = new GoogleSignInUser
             {
@@ -143,9 +165,9 @@ public class SignIn : MonoBehaviour
         return "https://lh3.googleusercontent.com/a/ACg8ocKRgsvyDUJoW7yokTHMnHLrXSxy0hZdemCbQynpgBlST-xLnA=s288-c-no";
     }
 
-    public void OnSignOut()
+    private void OnSignOut()
     {
-        _global.FirestoreManager.OnSignOut?.Invoke();
+        _global.BackendManager.OnSignOut?.Invoke();
         mainMenu.ShowSignInPanel();
         AuthenticationService.Instance.SignOut();
         LoadLastSignType(out var type);

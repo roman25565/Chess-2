@@ -39,7 +39,7 @@ namespace Board
                     {
                         StartArrangement = null,
                         FirebasePlayer = null,
-                        IsRotate = historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.MyData.ID,
+                        IsRotate = historyMatchData.FirestorePlayer1Id != _global.BackendManager.MyData.ID,
                         PlayerId = 1,
                         TimeToMove = -1,
                         IsMoving = true,
@@ -49,7 +49,7 @@ namespace Board
                     {
                         StartArrangement = null,
                         FirebasePlayer = null,
-                        IsRotate = historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.MyData.ID,
+                        IsRotate = historyMatchData.FirestorePlayer2Id != _global.BackendManager.MyData.ID,
                         PlayerId = 2,
                         TimeToMove = -1,
                         IsMoving = false,
@@ -73,16 +73,16 @@ namespace Board
                     IsRotate = _matchData.Player2.IsRotate,
                     IsWhite = _matchData.Player2.IsWhite
                 });
-                _global.FirestoreManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer1Id, (Sprite sprite) =>
+                _global.BackendManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer1Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer1Id, historyMatchData.Player1Name,
-                       new PlayerRankingData{Elo = historyMatchData.Player1Elo, Position = -1}, sprite, null, null), historyMatchData.FirestorePlayer1Id != _global.FirestoreManager.MyData.ID);
+                       new PlayerRankingData{Elo = historyMatchData.Player1Elo, Position = -1}, sprite, null, null), historyMatchData.FirestorePlayer1Id != _global.BackendManager.MyData.ID);
                 });
                 
-                _global.FirestoreManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer2Id, (Sprite sprite) =>
+                _global.BackendManager.PlayerDataManager.GetIcon(historyMatchData.FirestorePlayer2Id, (Sprite sprite) =>
                 {
                     SetPlayerUI(new FirebasePlayerData(historyMatchData.FirestorePlayer2Id, historyMatchData.Player2Name,
-                        new PlayerRankingData{Elo = historyMatchData.Player2Elo, Position = -1}, sprite, null, null), historyMatchData.FirestorePlayer2Id != _global.FirestoreManager.MyData.ID);
+                        new PlayerRankingData{Elo = historyMatchData.Player2Elo, Position = -1}, sprite, null, null), historyMatchData.FirestorePlayer2Id != _global.BackendManager.MyData.ID);
                 });
 
                 _internalMoveHistory = new MoveHistory(Move);

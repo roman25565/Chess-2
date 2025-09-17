@@ -26,39 +26,39 @@ public class MyData
 
     public void GetPlayerRanking(UnityAction<PlayerRankingData> callback)
     {
-        _firestoreManager.LoadPlayerRanking(ID, (arg0, ranking) =>
+        _backendManager.LoadPlayerRanking(ID, (arg0, ranking) =>
         {
             callback.Invoke(ranking);
         });
     }
     
     
-    private readonly FirestoreManager _firestoreManager; 
-    public MyData(string id, string name, Sprite icon,FirestoreManager firestoreManager)
+    private readonly BackendManager _backendManager; 
+    public MyData(string id, string name, Sprite icon,BackendManager backendManager)
     {
         ID = id;
         Name = name;
         Icon = icon;
-        _firestoreManager = firestoreManager;
+        _backendManager = backendManager;
     }
 
     public bool FriendIdsContains(string playerDataID)
     {
-       var myData = _firestoreManager.GetSavedPlayer(ID);
+       var myData = _backendManager.GetSavedPlayer(ID);
        return myData.PlayerData.Data.FriendIds.Contains(playerDataID);
     }
 
     public void SendFriendRequest(string recipientId)
     {
-        _ = _firestoreManager.RealtimeDatabase.FriendRequestsManager.SendFriendRequest(recipientId, Name);
+        _ = _backendManager.RealtimeDatabase.FriendRequestsManager.SendFriendRequest(recipientId, Name);
     }
 
     public void SendMatchRequest(string recipientId)
     {
-        _ = _firestoreManager.RealtimeDatabase.MatchRequestsManager.SendMatchRequest(recipientId, Name);
+        _ = _backendManager.RealtimeDatabase.MatchRequestsManager.SendMatchRequest(recipientId, Name);
     }
 }
-public class FirestoreManager
+public class BackendManager
 {
     private const string PlayersDataCollectionName = "Players";
     private const string NameKey = "Name";
@@ -73,9 +73,10 @@ public class FirestoreManager
     public PlayerDataManager PlayerDataManager;
     public PlayerRankingManager PlayerRankingManager;
     public RealtimeDatabase RealtimeDatabase;
+    public RemoteConfigManager RemoteConfigManager;
     public readonly UnityEvent OnLogin = new UnityEvent();
     public readonly UnityEvent OnSignOut = new UnityEvent();
-    public FirestoreManager(AdvancedMatchmaking advancedMatchmaking)
+    public BackendManager(AdvancedMatchmaking advancedMatchmaking)
     {
         _advancedMatchmaking = advancedMatchmaking;
     }
@@ -112,6 +113,7 @@ public class FirestoreManager
         HistoryManager = new HistoryManager(_db, this);
         PlayerDataManager = new PlayerDataManager(_db, this, PlayersDataCollectionName, NameKey);
         PlayerRankingManager = new PlayerRankingManager(_db, this);
+        RemoteConfigManager = new RemoteConfigManager(_db, this);
     }
 
     private readonly Dictionary<string, SavedPlayerData> _savedPlayersData = new();

@@ -19,10 +19,10 @@ public class ReconnectFetcher : MonoBehaviour
     
     public void Init()
     {
-        _global.FirestoreManager.OnLogin.AddListener(() =>
-            StartFetching(() => _global.FirestoreManager.RealtimeDatabase.ReConnectRequestsManager.FetchReConnectRequests())
+        _global.BackendManager.OnLogin.AddListener(() =>
+            StartFetching(() => _global.BackendManager.RealtimeDatabase.ReConnectRequestsManager.FetchReConnectRequests())
         );
-        _global.FirestoreManager.OnSignOut.AddListener(StopFetching);
+        _global.BackendManager.OnSignOut.AddListener(StopFetching);
     }
     private void StartFetching(UnityAction func)
     {

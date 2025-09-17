@@ -24,11 +24,11 @@ public class FriendsPanel : MonoBehaviour
     {
         DestroyButtons();
         if (_targetPlayerId == null) return;
-        _global.FirestoreManager.LoadPlayerData(_targetPlayerId,(arg, player) =>
+        _global.BackendManager.LoadPlayerData(_targetPlayerId,(arg, player) =>
         {
             player.FriendIds.ForEach(id =>
             {
-                _global.FirestoreManager.LoadPlayerData(id, AddButton);
+                _global.BackendManager.LoadPlayerData(id, AddButton);
             });
         });
     }

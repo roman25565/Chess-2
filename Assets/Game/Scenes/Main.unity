@@ -413,19 +413,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 27401687}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 291858245}
-        m_TargetAssemblyTypeName: Bootstrap.SignIn, Assembly-CSharp
-        m_MethodName: OnSignInDebug3
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &27401687
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -3653,6 +3641,12 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   bootstrap: {fileID: 291858240}
   mainMenu: {fileID: 291858246}
+  signInGoogleButton: {fileID: 1892333827}
+  signInDebugButton: {fileID: 1360437509}
+  signInDebug2Button: {fileID: 1439123909}
+  signInDebug3Button: {fileID: 27401686}
+  signInAnonymouslyButton: {fileID: 1432991061}
+  signOutButton: {fileID: 2011326898}
 --- !u!114 &291858246
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -17708,19 +17702,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1360437510}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 291858245}
-        m_TargetAssemblyTypeName: GoogleAuthentication, Assembly-CSharp
-        m_MethodName: OnSignInDebug
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1360437510
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18719,19 +18701,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1432991062}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 291858245}
-        m_TargetAssemblyTypeName: Bootstrap.SignIn, Assembly-CSharp
-        m_MethodName: OnSignUpAnonymously
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1432991062
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -18852,19 +18822,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1439123910}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 291858245}
-        m_TargetAssemblyTypeName: Bootstrap.SignIn, Assembly-CSharp
-        m_MethodName: OnSignInDebug2
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1439123910
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -23761,19 +23719,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 1892333828}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 291858245}
-        m_TargetAssemblyTypeName: Bootstrap.SignIn, Assembly-CSharp
-        m_MethodName: OnSignInGoogle
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &1892333828
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -25186,19 +25132,7 @@ MonoBehaviour:
   m_TargetGraphic: {fileID: 2011326899}
   m_OnClick:
     m_PersistentCalls:
-      m_Calls:
-      - m_Target: {fileID: 291858245}
-        m_TargetAssemblyTypeName: Bootstrap.SignIn, Assembly-CSharp
-        m_MethodName: OnSignOut
-        m_Mode: 1
-        m_Arguments:
-          m_ObjectArgument: {fileID: 0}
-          m_ObjectArgumentAssemblyTypeName: UnityEngine.Object, UnityEngine
-          m_IntArgument: 0
-          m_FloatArgument: 0
-          m_StringArgument: 
-          m_BoolArgument: 0
-        m_CallState: 2
+      m_Calls: []
 --- !u!114 &2011326899
 MonoBehaviour:
   m_ObjectHideFlags: 0

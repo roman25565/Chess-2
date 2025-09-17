@@ -60,7 +60,7 @@ public class Bootstrap : MonoBehaviour
             soundManager.Init(true);
             _ = advancedMatchmaking.Init();
             signIn.Init(true);
-            onlineStatsFetcher.Init();
+            onlineStatsFetcher.Init(true);
             return;
         }
         
@@ -95,13 +95,13 @@ public class Bootstrap : MonoBehaviour
     {
         startOnlineMatch.interactable = false;
         startSinglePlayVsBotMatchB.interactable = false;
-        _global.FirestoreManager.OnLogin.AddListener(() =>
+        _global.BackendManager.OnLogin.AddListener(() =>
         {
             _global.IsSignIn = true;
             startOnlineMatch.interactable = true;
             startSinglePlayVsBotMatchB.interactable = true;
         });
-        _global.FirestoreManager.OnSignOut.AddListener(() =>
+        _global.BackendManager.OnSignOut.AddListener(() =>
         {
             _global.IsSignIn = false;
             startOnlineMatch.interactable = false;
@@ -122,7 +122,7 @@ public class Bootstrap : MonoBehaviour
         if (cellStates == null)
             Debug.LogError("CellStates not found");
         
-        var firestore = new FirestoreManager(advancedMatchmaking);
+        var firestore = new BackendManager(advancedMatchmaking);
         await firestore.Init();
         _global.Init(arrangement, piecesData, cellStates, firestore);
         reconnectFetcher.Init();
@@ -156,7 +156,7 @@ public class Bootstrap : MonoBehaviour
     {
         Debug.Log("SignInFireBase " + user);
 
-        _global.FirestoreManager.LoadPlayerData(user.UserId, CallBack);
+        _global.BackendManager.LoadPlayerData(user.UserId, CallBack);
         
         return;
 
@@ -165,13 +165,13 @@ public class Bootstrap : MonoBehaviour
             Debug.Log($"SignInFireBase Result {result} {result == null}");
             if (result == null)
             {
-                _global.FirestoreManager.PlayerDataManager.CreatePlayerData(user);
-                _global.FirestoreManager.StatisticManager.CreatePlayerStatistics(user.UserId);
-                _global.FirestoreManager.PlayerRankingManager.CreateMyPlayerRanking(id);
+                _global.BackendManager.PlayerDataManager.CreatePlayerData(user);
+                _global.BackendManager.StatisticManager.CreatePlayerStatistics(user.UserId);
+                _global.BackendManager.PlayerRankingManager.CreateMyPlayerRanking(id);
             }
             else
             {
-                _global.FirestoreManager.Login(result);
+                _global.BackendManager.Login(result);
             }
         }
     }

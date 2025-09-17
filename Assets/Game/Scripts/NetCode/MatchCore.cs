@@ -263,7 +263,7 @@ public class MatchCore : NetworkBehaviour
         Debug.Log($"HandleEndGameLogic winnerId {winnerId} endGameType {endGameType} wonReason {wonReason}");
 
         var isFirstPlayer = _matchData.Player1.PlayerId == _myId;
-        var myId = _global.FirestoreManager.MyData.ID;
+        var myId = _global.BackendManager.MyData.ID;
         var myPlayer = _matchData.GetPlayerData(_myId);
         var enemyPlayer = _matchData.GetPlayerData(_enemyId);
         var board = _gameData.ActiveBoard;
@@ -273,8 +273,8 @@ public class MatchCore : NetworkBehaviour
         if (endGameType == EndGameType.Lose || endGameType == EndGameType.Won)
         {
             var myNewElo = isFirstPlayer ? player1Elo : player2Elo;
-            _global.FirestoreManager.PlayerRankingManager.UpdateMyPlayerRanking(myId, new PlayerRankingData{Elo = myNewElo, Position = -1});
-            _global.FirestoreManager.MyData.GetPlayerRanking((ranking) =>
+            _global.BackendManager.PlayerRankingManager.UpdateMyPlayerRanking(myId, new PlayerRankingData{Elo = myNewElo, Position = -1});
+            _global.BackendManager.MyData.GetPlayerRanking((ranking) =>
             {
                 ranking.Elo = myNewElo;
             });
@@ -283,7 +283,7 @@ public class MatchCore : NetworkBehaviour
         _gameEnded = true;
         board.EndGame();
         
-        _global.FirestoreManager.StatisticManager.UpdatePlayerStatistics(myId, myPlayer, history, endGameType, wonReason);
+        _global.BackendManager.StatisticManager.UpdatePlayerStatistics(myId, myPlayer, history, endGameType, wonReason);
         OnGameEnded.AddListener((matchId) =>
         {
             
@@ -296,7 +296,7 @@ public class MatchCore : NetworkBehaviour
         if (!IsServerCore) return;
 
         var firebaseWinnerId = winnerId >= 0 ? _matchData.GetPlayerData((ulong)winnerId).FirebasePlayer.ID : winnerId.ToString();
-        _global.FirestoreManager.SaveMatchHistory(
+        _global.BackendManager.SaveMatchHistory(
             firebaseWinnerId,
             myPlayer.FirebasePlayer.ID, player1Elo, myPlayer.StartArrangement,
             enemyPlayer.FirebasePlayer.ID, player2Elo, enemyPlayer.StartArrangement,
@@ -330,15 +330,15 @@ public class MatchCore : NetworkBehaviour
     {
         var endGameType = EndGameType.Lose;
         var  newPlayerElo = _matchData.Player1.FirebasePlayer.PlayerRanking.Elo;
-        var myId = _global.FirestoreManager.MyData.ID;
+        var myId = _global.BackendManager.MyData.ID;
         
         if (id == 1)
         {
             endGameType = EndGameType.Won;
             newPlayerElo += 2 * (int)_gameData.BotDifficulty;
         }
-        _global.FirestoreManager.PlayerRankingManager.UpdateMyPlayerRanking(myId, new PlayerRankingData{Elo = newPlayerElo, Position = -1});
-        _global.FirestoreManager.MyData.GetPlayerRanking((ranking) =>
+        _global.BackendManager.PlayerRankingManager.UpdateMyPlayerRanking(myId, new PlayerRankingData{Elo = newPlayerElo, Position = -1});
+        _global.BackendManager.MyData.GetPlayerRanking((ranking) =>
         {
             ranking.Elo = newPlayerElo;
         });
@@ -716,16 +716,11 @@ public class MatchCore : NetworkBehaviour
     #region Draw
 
     [Rpc(SendTo.Server)]
-    public void TryOfferDrawRpc()
+    public void TryOfferDrawRpc(RpcParams rpcParams = default)
     {
-        var senderId = OwnerClientId;
+        var senderId = rpcParams.Receive.SenderClientId;
         var anotherPlayerId = _matchData.GetAnotherPlayerData(senderId).PlayerId;
-
-        _serverCore.ResendTryOfferDraw(anotherPlayerId);
-    }
-
-    private void ResendTryOfferDraw(ulong anotherPlayerId)
-    {
+        
         MatchCore targetPlayerCore = null;
         foreach (var core in _allMatchCores)
         {
@@ -743,6 +738,7 @@ public class MatchCore : NetworkBehaviour
 
         targetPlayerCore.OnAnotherPlayerWantsDrawRpc();
     }
+    
     private void OnAnotherPlayerWantsDrawRpc()
     {
         MatchUIManager.Instance.OnAnotherPlayerWantsDrawRpc();
