@@ -46,7 +46,7 @@ public class Bootstrap : MonoBehaviour
     
     private async void Awake()
     {
-        Application.targetFrameRate = 120;
+        // Application.targetFrameRate = 120;
 #if UNITY_STANDALONE_WIN && !UNITY_EDITOR
         Screen.SetResolution(500, 1040, false);
 #endif

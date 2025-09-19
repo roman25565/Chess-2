@@ -173,7 +173,8 @@ TextureImporter:
     secondaryTextures: []
     spriteCustomMetadata:
       entries: []
-    nameFileIdTable: {}
+    nameFileIdTable:
+      chess2_icon_0: -2169299634839749748
   mipmapLimitGroupName: 
   pSDRemoveMatte: 0
   userData: 
