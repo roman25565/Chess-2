@@ -192,28 +192,16 @@ namespace UI
             });
         }
 
-        private bool _notificationOpen;
         public void NotificationOnClick()
         {
             if (notificationPanel == null) return;
-            
-            if (_notificationOpen)
-            {
-                notificationPanel.gameObject.SetActive(false);
-                _notificationOpen = false;
-            }
-            else
-            {
                 notificationPanel.gameObject.SetActive(true);
                 notificationPanel.OnOpen();
-                _notificationOpen = true;
-            }
         }
 
         public void DisableNotificationPanel()
         {
             notificationPanel.gameObject.SetActive(false);
-            _notificationOpen = false;
         }
         
         public void ShowGameModeSelectorPanel()

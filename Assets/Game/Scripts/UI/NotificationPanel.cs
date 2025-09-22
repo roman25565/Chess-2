@@ -9,13 +9,10 @@ namespace UI
 {
 public class NotificationPanel : MonoBehaviour
 {
-    private const string EmptyText = "Null";
-
     [SerializeField] private MainMenu _mainMenu;
     [SerializeField] private Transform parent;
     [SerializeField] private Notification prefab;
 
-    [SerializeField] private TextMeshProUGUI emptyText;
     [SerializeField] private TextMeshProUGUI notificationCountText;
     [SerializeField] private GameObject notificationCountPanel;
     [Inject] private Global _global;
@@ -27,7 +24,6 @@ public class NotificationPanel : MonoBehaviour
 
     private void Subscribe()
     {
-        Debug.Log("Subscribed");
         UpdateNotificationCount();
         _global.BackendManager.RealtimeDatabase.OnChangedRequests.AddListener(OnChanged);
     }
@@ -47,7 +43,6 @@ public class NotificationPanel : MonoBehaviour
 
     private void OnChanged()
     {
-        Debug.Log("OnChanged");
         UpdateNotificationCount();
         if (gameObject.activeInHierarchy)
         {
@@ -61,11 +56,11 @@ public class NotificationPanel : MonoBehaviour
             count = _global.BackendManager.RealtimeDatabase.GetRequests.Count;
         if (count == 0)
         {
-            // notificationCountPanel.SetActive(false);
+            notificationCountPanel.SetActive(true);
         }
         else
         {
-            // notificationCountPanel.SetActive(true);
+            notificationCountPanel.SetActive(false);
         }
     }
 
@@ -74,19 +69,10 @@ public class NotificationPanel : MonoBehaviour
         DestroyAllNotifications();
         
         var requests = _global.BackendManager.RealtimeDatabase.GetRequests;
-        if (requests.Count == 0)
+        if (requests.Count == 0) return;
+        foreach (var request in requests)
         {
-            emptyText.text = EmptyText;
-        }
-        else
-        {
-            emptyText.text = "";
-
-
-            foreach (var request in requests)
-            {
-                CreateNotification(request);
-            }
+            CreateNotification(request);
         }
     }
 

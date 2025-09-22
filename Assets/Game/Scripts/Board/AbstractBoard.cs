@@ -165,7 +165,6 @@ public abstract class AbstractBoard : MonoBehaviour
         {
             AnimateMove(from, to);
         }
-        Debug.Log($"MovePiece {to.Piece.PieceType}, {moveHistory.HistoryIndex}");
     }
 
     protected virtual bool IsFantom()

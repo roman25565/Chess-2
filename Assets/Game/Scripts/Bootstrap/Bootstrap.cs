@@ -154,7 +154,7 @@ public class Bootstrap : MonoBehaviour
 
     private void SignInFireBase(GoogleSignInUser user)
     {
-        Debug.Log("SignInFireBase " + user);
+        Debug.Log("SignInFireBase ");
 
         _global.BackendManager.LoadPlayerData(user.UserId, CallBack);
         

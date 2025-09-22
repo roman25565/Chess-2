@@ -200,16 +200,26 @@ public class BackendManager
     
     public void Login(FirebasePlayerData playerData)
     {
-        MyData = new MyData(playerData.ID, playerData.Name, playerData.Icon, this);
-        var myID = MyData.ID;
-        LoadHistory(myID, (arg0, arg1) => { });;
-        LoadStatistic(myID, (arg0, arg1) => { });
-        LoadPlayerData(myID, (arg0, firebasePlayerData) =>
+        Debug.Log("Login");
+        try
         {
-            MyData.Icon = firebasePlayerData.Icon;
-        });
-        RealtimeDatabase = new RealtimeDatabase(playerData.ID, PlayerDataManager.AddFriend, PlayerDataManager.RemoveFriend, _advancedMatchmaking);
-        OnLogin?.Invoke();
+            MyData = new MyData(playerData.ID, playerData.Name, playerData.Icon, this);
+            var myID = MyData.ID;
+            LoadHistory(myID, (arg0, arg1) => { });;
+            LoadStatistic(myID, (arg0, arg1) => { });
+            LoadPlayerData(myID, (arg0, firebasePlayerData) =>
+            {
+                MyData.Icon = firebasePlayerData.Icon;
+                RealtimeDatabase = new RealtimeDatabase(playerData.ID, PlayerDataManager.AddFriend, PlayerDataManager.RemoveFriend, _advancedMatchmaking);
+                OnLogin?.Invoke();
+            });
+        }
+        catch (Exception D)
+        {
+            Debug.LogError(D);
+            Console.WriteLine(D);
+            throw;
+        }
         Debug.Log("Login success");
     }
 }

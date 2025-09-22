@@ -176,18 +176,20 @@ public class ArrangementBoard : AbstractBoard
 
     protected override void Move(Cell from, Cell to)
     {
-        Debug.Log($"Move {from.Piece.PieceType}");
-        var picetype = from.Piece.PieceType;
+        to.SetPiece(from.Piece);
+        if (from.Row != 8) from.SetPiece(null);
+        
+        Deselect();
+        
+        if (from.Row != 8) return;
+        
+        var picetype = to.Piece.PieceType;
         var max = Global.Pieces[picetype].arrangementMax;
         if (_piecesCount[picetype] + 1 > max)
         {
             return;
         };
-
-        SetPieceCount(from.Piece.PieceType, _piecesCount[picetype] + 1);
-
-        to.SetPiece(from.Piece);
-        Deselect();
+        SetPieceCount(to.Piece.PieceType, _piecesCount[picetype] + 1);
     }
 
     #endregion
