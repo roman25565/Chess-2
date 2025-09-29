@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Board;
 using Board.Piece;
 using Newtonsoft.Json;
 using Setting;
@@ -15,10 +14,12 @@ namespace Game.Scripts.Board
 {
 public class ArrangementBoard : AbstractBoard
 {
+    [Inject] private Global _global;
     [SerializeField] private Cell extraCellPrefab;
     [SerializeField] private Transform extraCellParent;
     [SerializeField] private Button saveButton;
     [SerializeField] private Button clearButton;
+    [SerializeField] private Saiver saiver;
     private List<Vector2Int> _allPoints;
     public override bool IsMyId(ulong id) => true;
     protected override bool IsRotated => false;
@@ -51,6 +52,7 @@ public class ArrangementBoard : AbstractBoard
         ClearBoard();
         saveButton.onClick.RemoveListener(SaveArrangement);
         clearButton.onClick.RemoveListener(ClearArrangement);
+        _global.OnArrangementChanged.RemoveListener(OnArrangementChanged);
     }
     protected override void OnEnable()
     {
@@ -60,6 +62,15 @@ public class ArrangementBoard : AbstractBoard
         LoadExtraLine();
         saveButton.onClick.AddListener(SaveArrangement);
         clearButton.onClick.AddListener(ClearArrangement);
+        
+        _global.OnArrangementChanged.AddListener(OnArrangementChanged);
+    }
+
+    private void OnArrangementChanged(List<ArrangementEntry> arg0)
+    {
+        ClearBoard();
+        SetUpPieceCount();
+        LoadArrangement();
     }
 
     private void SetUpPieceCount()
@@ -73,7 +84,7 @@ public class ArrangementBoard : AbstractBoard
 
     private void LoadArrangement()
     {
-        foreach (var arrangement in Global.MyArrangements)
+        foreach (var arrangement in Global.SelectedArrangement)
         {
             var row = arrangement.row;
             var column = arrangement.column;
@@ -124,17 +135,10 @@ public class ArrangementBoard : AbstractBoard
                 arrangements.Add(new ArrangementEntry{row = cell.Row, column = cell.Column, pieceType = cell.Piece.PieceType});
             }
         }
-        Global.MyArrangements = arrangements;
-        Debug.Log("SaveArrangement" + Global.MyArrangements.Count);
-        SaveToJson(arrangements);
+        
+        saiver.OnShowSave(arrangements);
     }
     
-    private void SaveToJson(List<ArrangementEntry> pieces)
-    {
-        string json = JsonConvert.SerializeObject(pieces, Formatting.Indented);
-
-        File.WriteAllText(Global.ArrangementFile, json);
-    }
 
     #region Move
 

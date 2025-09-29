@@ -177,18 +177,23 @@ public class Bootstrap : MonoBehaviour
     }
 
 
-    private List<ArrangementEntry> LoadArrangement()
+    private Dictionary<int,List<ArrangementEntry>> LoadArrangement()
     {
         var filePath = Application.persistentDataPath + "/game_pieces.json";
 
         if (File.Exists(filePath))
         {
             var json = File.ReadAllText(filePath);
-            var pieceData = JsonConvert.DeserializeObject<List<ArrangementEntry>>(json);
+            var pieceData = JsonConvert.DeserializeObject<Dictionary<int,List<ArrangementEntry>>>(json);
             return pieceData;
         }
 
-        return Resources.Load<Arrangement>("Settings/Arrangement").arrangements;
+        var arrangement = Resources.Load<Arrangement>("Settings/Arrangement").arrangements;
+        var arrangements = new Dictionary<int, List<ArrangementEntry>>
+        {
+            [0] = arrangement
+        };
+        return arrangements;
     }
 
     private void DisableButtons()

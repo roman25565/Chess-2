@@ -1,11 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Board.Piece;
 using Game.Scripts.Board.Piece;
-using TMPro;
-#if !UNITY_SERVER
-using Firebase.RealtimeDatabase;
-#endif
+using Newtonsoft.Json;
 using UnityEngine;
 using UnityEngine.Events;
 
@@ -36,21 +34,25 @@ public class EndGameData
 }
 public class Global : IDisposable
 {
-    public static readonly string ArrangementFile = Application.persistentDataPath + "/game_pieces.json";
+    private readonly string _arrangementFile = Application.persistentDataPath + "/game_pieces.json";
     public CellStates CellStates;
     public BackendManager BackendManager;
-    public List<ArrangementEntry> MyArrangements;
     public Dictionary<PieceType, PieceData> Pieces;
     public Sound Sound;
+
+    public List<ArrangementEntry> SelectedArrangement;
+    public Dictionary<int,List<ArrangementEntry>> SavedArrangements;
+    public UnityEvent<List<ArrangementEntry>> OnArrangementChanged = new UnityEvent<List<ArrangementEntry>>();
 
     public bool IsSignIn;
     public EndGameData EndGameData;
     
     public Dictionary<BotDifficulty, Sprite> BotIcons = new();
 
-    public void Init(List<ArrangementEntry> arrangement, PieceData[] pieces, CellStates cellStates, BackendManager backendManager)
+    public void Init(Dictionary<int,List<ArrangementEntry>> arrangements, PieceData[] pieces, CellStates cellStates, BackendManager backendManager)
     {
-        MyArrangements = RepackingArrangement(arrangement);
+        SavedArrangements = arrangements;
+        SelectedArrangement = arrangements[0];
         CellStates = cellStates;
 #if !UNITY_SERVER
         BackendManager = backendManager;
@@ -61,6 +63,30 @@ public class Global : IDisposable
             Debug.Log(piece);
             Pieces.Add(piece.pieceType, piece);
         };
+    }
+
+    public void SetSelectedArrangement(int index)
+    {
+        if (SavedArrangements[index] == null)
+        {
+            Debug.LogError("SavedArrangements[index] == null");
+            return;
+        }
+        SelectedArrangement = SavedArrangements[index];
+        OnArrangementChanged?.Invoke(SelectedArrangement);
+    }
+    
+    public void SaveToJson()
+    {
+        var json = JsonConvert.SerializeObject(SavedArrangements, Formatting.Indented);
+
+        File.WriteAllText(_arrangementFile, json);
+    }
+
+    public void SetArrangement(int index, List<ArrangementEntry> arr)
+    {
+        SavedArrangements[index] = arr;
+        SaveToJson();
     }
     
     public AbstractPiece CreatePiece(PieceType pieceType)
@@ -75,19 +101,6 @@ public class Global : IDisposable
             PieceType.King => new King(Pieces[pieceType]),
             _ => throw new ArgumentOutOfRangeException(nameof(pieceType), pieceType, null)
         };
-        return result;
-    }
-
-    private List<ArrangementEntry> RepackingArrangement(List<ArrangementEntry> arrangement)
-    {
-        List<ArrangementEntry> result = new();
-        foreach (var arrangementArrangement in arrangement)
-            result.Add(new ArrangementEntry
-            {
-                column = arrangementArrangement.column,
-                row = arrangementArrangement.row,
-                pieceType = arrangementArrangement.pieceType
-            });
         return result;
     }
 

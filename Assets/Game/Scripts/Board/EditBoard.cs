@@ -98,7 +98,7 @@ namespace Board
                     MovingPlayerId = 1,
                     Player1 = new PlayerData
                     {
-                        StartArrangement = _global.MyArrangements.ToArray(),
+                        StartArrangement = _global.SelectedArrangement.ToArray(),
                         FirebasePlayer = null,
                         IsRotate = false,
                         PlayerId = 1,
@@ -108,7 +108,7 @@ namespace Board
                     },
                     Player2 = new PlayerData
                     {
-                        StartArrangement = _global.MyArrangements.ToArray(),
+                        StartArrangement = _global.SelectedArrangement.ToArray(),
                         FirebasePlayer = null,
                         IsRotate = true,
                         PlayerId = 2,

@@ -52,7 +52,7 @@ public class MatchStarter : NetworkBehaviour
             Debug.Log("MatchStarter Start");
         
         var gameMode = _gameData.Mode;
-        var myArrangements = _global.MyArrangements;
+        var myArrangements = _global.SelectedArrangement;
         Debug.Log("myArrangements.Count" + myArrangements.Count);
 
         var arrangementsArray = myArrangements.ToArray();
@@ -536,7 +536,7 @@ public class MatchStarter : NetworkBehaviour
     {
         Debug.Log("StartMatchVsBot");
         var firestoreId = _global.BackendManager.MyData.ID;
-        var myArrangements = _global.MyArrangements;
+        var myArrangements = _global.SelectedArrangement;
         var arrangementsArray = myArrangements.ToArray();
         var whitePlayerId = GetWhitePlayerId(0, 1);
         var botArrangement = GetRandomArrangement();

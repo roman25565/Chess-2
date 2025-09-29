@@ -39,6 +39,7 @@ public class EndGamePanel : MonoBehaviour
 
         if (endGameData.IsLocal)
         {
+            
             addToFriendB.interactable = false;
             rematchB.interactable = (false);
             viewHistoryB.interactable = (false);

@@ -8,9 +8,10 @@ namespace Firebase.RealtimeDatabase.Data
 {
 public enum Type
 {
-    FriendRequest,
-    RemoveFriendRequest,
-    MatchRequest,
+    Null = 0,
+    FriendRequest = 2,
+    RemoveFriendRequest = 4,
+    MatchRequest = 8,
 }
 
 public class StatusKeys
