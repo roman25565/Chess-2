@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using Setting;
+using TMPro;
 using UnityEngine;
 using UnityEngine.Events;
 using UnityEngine.Serialization;
@@ -17,6 +18,9 @@ public class Saiver : MonoBehaviour
     [SerializeField] private Button button1;
     [SerializeField] private Button button2;
     [SerializeField] private Button button3;
+    
+    [SerializeField] private TextMeshProUGUI saveButtonText;
+    
     
 
     private Action<int> _action;
@@ -50,6 +54,7 @@ public class Saiver : MonoBehaviour
         {
             _global.SetArrangement(index, arr);
             HidePanel();
+            saveButtonText.text = index.ToString();
         };
         EnableButtons();
         ShowPanel();

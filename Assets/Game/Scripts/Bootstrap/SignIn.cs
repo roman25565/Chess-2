@@ -5,6 +5,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Firebase.Auth;
 using Firebase.Extensions;
 
 using Google;
@@ -232,6 +233,12 @@ public class SignIn : MonoBehaviour
         else
         {
             var user = task.Result;
+            // Credential credential = GoogleAuthProvider.GetCredential(user.IdToken, null);
+            // var auth = Firebase.Auth.FirebaseAuth.DefaultInstance;
+            // auth.SignInWithCredentialAsync(credential).ContinueWith(authTask =>
+            // {
+            //     if (authTask.IsCanceled) { }else if (authTask.IsFaulted) { }else { }
+            // });
             string defaultImageUrl =
                 "https://lh3.googleusercontent.com/a/ACg8ocL4wCFqm80fhBx6h117v0DUgjklmq84dmQf6ViCtsv01_y3W9zq";
             if (user.ImageUrl == null)
